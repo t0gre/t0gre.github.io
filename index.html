@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Home Page</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+
+<body>
+    <div>
+        <a class="active" href="/about/">About</a>
+        <div style="float: right;">
+            <a id="diamond">
+                <img style="margin-bottom: 0; padding: 0;" alt="linkedin" src="/resources/small-diamond-svgrepo-com.svg"
+                    width="20" height="20">
+            </a>
+        </div>
+    </div>
+
+    <script type="module" src="lib/index.js"></script>
+    <script type="module">
+        import { sayHello } from "/lib/index.js"
+        document.getElementById('diamond').onclick = sayHello
+    </script>
+</body>
+
+</html>
