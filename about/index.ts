@@ -68,5 +68,5 @@ export const updateTimes = () => {
         updateMyAge()
         updateMarriage()
         updateXandersAge()
-    }, 90)
+    }, 10)
 }
