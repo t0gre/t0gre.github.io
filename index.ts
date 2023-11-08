@@ -8,6 +8,49 @@ type Mat4 = [
     number, number, number, number,
 ]
 
+class Camera {
+    private projectionMatrix: Mat4
+    private matrix: Mat4
+    private viewMatrix: Mat4
+    public viewProjectionMatrix: Mat4
+    private up: Vec3
+    private position: Vec3
+    constructor(fieldOfViewRadians = degToRad(60),
+        aspect = 1,
+        near = 1,
+        far = 2000,
+        up: Vec3 = [0, 1, 0], position: Vec3 = [0, 0, 0]) {
+
+        this.position = position
+        this.projectionMatrix = m4.perspective(fieldOfViewRadians, aspect, near, far);
+        this.matrix = m4.yRotation(0);
+        this.viewMatrix = m4.inverse(this.matrix);
+        this.viewProjectionMatrix = m4.multiply(this.projectionMatrix, this.viewMatrix);
+        this.up = up;
+    }
+
+    lookAt(position: Vec3): void {
+        this.matrix = m4.lookAt(this.position, position, this.up);
+    }
+
+    setPosition(position: Vec3): void {
+        this.position = position;
+        // all matrices apart from projection must be updated
+        this.matrix = m4.translate(this.matrix, position[0], position[1], position[2]);
+        this.viewMatrix = m4.inverse(this.matrix);
+        this.viewProjectionMatrix = m4.multiply(this.projectionMatrix, this.viewMatrix);
+
+    }
+
+}
+// function radToDeg(r: number) {
+//     return r * 180 / Math.PI;
+// }
+
+function degToRad(d: number) {
+    return d * Math.PI / 180;
+}
+
 export const main = (canvas: HTMLCanvasElement): void => {
 
     const vertexShaderSource = `
@@ -38,15 +81,14 @@ export const main = (canvas: HTMLCanvasElement): void => {
     }
     `
 
-    var gl = canvas.getContext("webgl");
-
+    let gl = canvas.getContext("webgl");
 
     if (!gl) {
         alert('it looks like you dont have webgl available')
     } else {
         resizeCanvasToDisplaySize(canvas);
-
         const program = createProgramFromRaw(gl, vertexShaderSource, fragmentShaderSource)
+
         if (program) {
             const positionLocation = gl.getAttribLocation(program, "a_position");
             const colorLocation = gl.getAttribLocation(program, "a_color");
@@ -61,28 +103,21 @@ export const main = (canvas: HTMLCanvasElement): void => {
 
 
             // Create a buffer to put colors in
-            var colorBuffer = gl.createBuffer();
+            let colorBuffer = gl.createBuffer();
             // Bind it to ARRAY_BUFFER (think of it as ARRAY_BUFFER = colorBuffer)
             gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
             // Put color data into buffer
             setColors(gl);
 
-            function radToDeg(r: number) {
-                return r * 180 / Math.PI;
-            }
+            const camera = new Camera(degToRad(60), canvas.clientWidth / canvas.clientHeight, 1, 2000, [0, 1, 0]);
+            // put the camera somewhere it can see all the fs
+            camera.setPosition([0, 0, 600]);
 
-            function degToRad(d: number) {
-                return d * Math.PI / 180;
-            }
-
-            var cameraAngleRadians = degToRad(0);
-            var fieldOfViewRadians = degToRad(60);
-
-            drawScene(gl, program);
+            drawScene(gl, program, camera);
 
 
             // Draw the scene.
-            function drawScene(gl: WebGLRenderingContext, program: WebGLProgram) {
+            function drawScene(gl: WebGLRenderingContext, program: WebGLProgram, camera: Camera) {
                 resizeCanvasToDisplaySize(canvas);
 
                 // Tell WebGL how to convert from clip space to pixels
@@ -108,13 +143,16 @@ export const main = (canvas: HTMLCanvasElement): void => {
                 gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
 
                 // Tell the position attribute how to get data out of positionBuffer (ARRAY_BUFFER)
-                var size = 3;          // 3 components per iteration
-                var type: number = gl.FLOAT;   // the data is 32bit floats
-                var normalize = false; // don't normalize the data
-                var stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
-                var offset = 0;        // start at the beginning of the buffer
+                const positionBufferOptions = {
+                    size: 3,
+                    type: gl.FLOAT,  // the data is 32bit floats
+                    normalize: false,
+                    stride: 0, // 0 = move forward size * sizeof(type) each iteration to get the next position
+                    offset: 0 // start at the beginning of the buffer
+                }
+
                 gl.vertexAttribPointer(
-                    positionLocation, size, type, normalize, stride, offset);
+                    positionLocation, positionBufferOptions.size, positionBufferOptions.type, positionBufferOptions.normalize, positionBufferOptions.stride, positionBufferOptions.offset);
 
                 // Turn on the color attribute
                 gl.enableVertexAttribArray(colorLocation);
@@ -122,67 +160,45 @@ export const main = (canvas: HTMLCanvasElement): void => {
                 // Bind the color buffer.
                 gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
 
-                // Tell the attribute how to get data out of colorBuffer (ARRAY_BUFFER)
-                var size = 3;                 // 3 components per iteration
-                var type: number = gl.UNSIGNED_BYTE;  // the data is 8bit unsigned values
-                var normalize = true;         // normalize the data (convert from 0-255 to 0-1)
-                var stride = 0;               // 0 = move forward size * sizeof(type) each iteration to get the next position
-                var offset = 0;               // start at the beginning of the buffer
+                const colorBufferOptions = {
+                    size: 3,  // 3 components per iteration
+                    type: gl.UNSIGNED_BYTE, // the data is 8bit unsigned values
+                    normalize: true, // normalize the data (convert from 0-255 to 0-1)
+                    stride: 0,
+                    offset: 0
+                }
+
                 gl.vertexAttribPointer(
-                    colorLocation, size, type, normalize, stride, offset);
+                    colorLocation, colorBufferOptions.size, colorBufferOptions.type, colorBufferOptions.normalize, colorBufferOptions.stride, colorBufferOptions.offset);
 
 
-                var numFs = 5;
-                var radius = 200;
-
-                // Compute the projection matrix
-                var aspect = canvas.clientWidth / canvas.clientHeight;
-                var zNear = 1;
-                var zFar = 2000;
-                var projectionMatrix = m4.perspective(fieldOfViewRadians, aspect, zNear, zFar);
+                const numFs = 10;
+                const radius = 200;
 
                 // Compute the position of the first F
-                var fPosition: Vec3 = [radius, 0, 0];
+                const fPosition: Vec3 = [radius, 0, 0];
 
-                // Use matrix math to compute a position on a circle where
-                // the camera is
-                var cameraMatrix = m4.yRotation(cameraAngleRadians);
-                cameraMatrix = m4.translate(cameraMatrix, 0, 0, radius * 1.5);
 
-                // Get the camera's position from the matrix we computed
-                var cameraPosition: Vec3 = [
-                    cameraMatrix[12],
-                    cameraMatrix[13],
-                    cameraMatrix[14],
-                ];
 
-                var up: Vec3 = [0, 1, 0];
 
-                // Compute the camera's matrix using look at.
-                var cameraMatrix = m4.lookAt(cameraPosition, fPosition, up);
+                camera.lookAt(fPosition);
 
-                // Make a view matrix from the camera matrix
-                var viewMatrix = m4.inverse(cameraMatrix);
-
-                // Compute a view projection matrix
-                var viewProjectionMatrix = m4.multiply(projectionMatrix, viewMatrix);
-
-                for (var ii = 0; ii < numFs; ++ii) {
-                    var angle = ii * Math.PI * 2 / numFs;
-                    var x = Math.cos(angle) * radius;
-                    var y = Math.sin(angle) * radius;
+                for (let ii = 0; ii < numFs; ++ii) {
+                    const angle = ii * Math.PI * 2 / numFs;
+                    const x = Math.cos(angle) * radius;
+                    const y = Math.sin(angle) * radius;
 
                     // starting with the view projection matrix
                     // compute a matrix for the F
-                    var matrix = m4.translate(viewProjectionMatrix, x, 0, y);
+                    const matrix = m4.translate(camera.viewProjectionMatrix, x, 0, y);
 
                     // Set the matrix.
                     gl.uniformMatrix4fv(matrixLocation, false, matrix);
 
                     // Draw the geometry.
-                    var primitiveType = gl.TRIANGLES;
-                    var offset = 0;
-                    var count = 16 * 6;
+                    const primitiveType = gl.TRIANGLES;
+                    const offset = 0;
+                    const count = 16 * 6;
                     gl.drawArrays(primitiveType, offset, count);
                 }
             }
@@ -264,7 +280,7 @@ function subtractVectors(a: Vec3, b: Vec3): Vec3 {
 }
 
 function normalize(v: Vec3): Vec3 {
-    var length = Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+    const length = Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
     // make sure we don't divide by 0.
     if (length > 0.00001) {
         return [v[0] / length, v[1] / length, v[2] / length];
@@ -281,13 +297,13 @@ function cross(a: Vec3, b: Vec3): Vec3 {
 
 
 
-var m4 = {
+const m4 = {
 
     lookAt: function (cameraPosition: Vec3, target: Vec3, up: Vec3): Mat4 {
-        var zAxis = normalize(
+        const zAxis = normalize(
             subtractVectors(cameraPosition, target));
-        var xAxis = normalize(cross(up, zAxis));
-        var yAxis = normalize(cross(zAxis, xAxis));
+        const xAxis = normalize(cross(up, zAxis));
+        const yAxis = normalize(cross(zAxis, xAxis));
 
         return [
             xAxis[0], xAxis[1], xAxis[2], 0,
@@ -301,8 +317,8 @@ var m4 = {
     },
 
     perspective: function (fieldOfViewInRadians: number, aspect: number, near: number, far: number): Mat4 {
-        var f = Math.tan(Math.PI * 0.5 - 0.5 * fieldOfViewInRadians);
-        var rangeInv = 1.0 / (near - far);
+        const f = Math.tan(Math.PI * 0.5 - 0.5 * fieldOfViewInRadians);
+        const rangeInv = 1.0 / (near - far);
 
         return [
             f / aspect, 0, 0, 0,
@@ -385,8 +401,8 @@ var m4 = {
     },
 
     xRotation: function (angleInRadians: number): Mat4 {
-        var c = Math.cos(angleInRadians);
-        var s = Math.sin(angleInRadians);
+        const c = Math.cos(angleInRadians);
+        const s = Math.sin(angleInRadians);
 
         return [
             1, 0, 0, 0,
@@ -397,8 +413,8 @@ var m4 = {
     },
 
     yRotation: function (angleInRadians: number): Mat4 {
-        var c = Math.cos(angleInRadians);
-        var s = Math.sin(angleInRadians);
+        const c = Math.cos(angleInRadians);
+        const s = Math.sin(angleInRadians);
 
         return [
             c, 0, -s, 0,
@@ -409,8 +425,8 @@ var m4 = {
     },
 
     zRotation: function (angleInRadians: number): Mat4 {
-        var c = Math.cos(angleInRadians);
-        var s = Math.sin(angleInRadians);
+        const c = Math.cos(angleInRadians);
+        const s = Math.sin(angleInRadians);
 
         return [
             c, s, 0, 0,
@@ -535,10 +551,10 @@ var m4 = {
     },
 
     vectorMultiply: function (v: Vec4, m: Mat4) {
-        var dst = [];
-        for (var i = 0; i < 4; ++i) {
+        const dst = [];
+        for (let i = 0; i < 4; ++i) {
             dst[i] = 0.0;
-            for (var j = 0; j < 4; ++j) {
+            for (let j = 0; j < 4; ++j) {
                 dst[i] += v[j]! * m[j * 4 + i]!;
             }
         }
@@ -549,7 +565,7 @@ var m4 = {
 
 // Fill the buffer with the values that define a letter 'F'.
 function setGeometry(gl: WebGLRenderingContext) {
-    var positions = new Float32Array([
+    const positions = new Float32Array([
         // left column front
         0, 0, 0,
         0, 150, 0,
@@ -685,11 +701,11 @@ function setGeometry(gl: WebGLRenderingContext) {
     // We could do by changing all the values above but I'm lazy.
     // We could also do it with a matrix at draw time but you should
     // never do stuff at draw time if you can do it at init time.
-    var matrix = m4.xRotation(Math.PI);
+    let matrix = m4.xRotation(Math.PI);
     matrix = m4.translate(matrix, -50, -75, -15);
 
-    for (var ii = 0; ii < positions.length; ii += 3) {
-        var vector = m4.vectorMultiply([positions[ii + 0]!, positions[ii + 1]!, positions[ii + 2]!, 1], matrix);
+    for (let ii = 0; ii < positions.length; ii += 3) {
+        const vector = m4.vectorMultiply([positions[ii + 0]!, positions[ii + 1]!, positions[ii + 2]!, 1], matrix);
         positions[ii + 0] = vector[0]!;
         positions[ii + 1] = vector[1]!;
         positions[ii + 2] = vector[2]!;
