@@ -7,17 +7,31 @@ import {
     m4lookAt,
     m4translate,
     m4xRotation,
-    m4vectorMultiply
+    m4vectorMultiply,
+    m4xRotate,
+    m4yRotate,
+    m4zRotate
 } from './lib/mat4'
 
-import { Vec3 } from 'lib/vec3'
+import { Vec3 } from './lib/vec3'
+
+import { degToRad } from './lib/mathUtils'
+
 
 type ShaderType = WebGLRenderingContextBase["VERTEX_SHADER"] | WebGLRenderingContextBase["FRAGMENT_SHADER"]
-
+type Shape = {
+    program: WebGLProgram;
+    positionLocation: number;
+    colorLocation: number;
+    matrixLocation: WebGLUniformLocation;
+    rotation: Vec3;
+    positionBuffer: WebGLBuffer;
+    colorBuffer: WebGLBuffer;
+}
 
 class Camera {
     private projectionMatrix: Mat4
-    private matrix: Mat4
+    private worldMatrix: Mat4
     private viewMatrix: Mat4
     public viewProjectionMatrix: Mat4
     private up: Vec3
@@ -30,33 +44,30 @@ class Camera {
 
         this.position = position
         this.projectionMatrix = m4perspective(fieldOfViewRadians, aspect, near, far);
-        this.matrix = m4yRotation(0);
-        this.viewMatrix = m4inverse(this.matrix);
+        this.worldMatrix = m4yRotation(0);
+        this.viewMatrix = m4inverse(this.worldMatrix);
         this.viewProjectionMatrix = m4multiply(this.projectionMatrix, this.viewMatrix);
         this.up = up;
     }
 
     lookAt(position: Vec3): void {
-        this.matrix = m4lookAt(this.position, position, this.up);
+        this.worldMatrix = m4lookAt(this.position, position, this.up);
+        this.viewMatrix = m4inverse(this.worldMatrix);
+        this.viewProjectionMatrix = m4multiply(this.projectionMatrix, this.viewMatrix);
     }
 
     setPosition(position: Vec3): void {
         this.position = position;
         // all matrices apart from projection must be updated
-        this.matrix = m4translate(this.matrix, position[0], position[1], position[2]);
-        this.viewMatrix = m4inverse(this.matrix);
+        this.worldMatrix = m4translate(this.worldMatrix, position[0], position[1], position[2]);
+        this.viewMatrix = m4inverse(this.worldMatrix);
         this.viewProjectionMatrix = m4multiply(this.projectionMatrix, this.viewMatrix);
 
     }
 
 }
-// function radToDeg(r: number) {
-//     return r * 180 / Math.PI;
-// }
 
-function degToRad(d: number) {
-    return d * Math.PI / 180;
-}
+const ROTATION_SPEED = 1.2;
 
 export const main = (canvas: HTMLCanvasElement): void => {
 
@@ -97,6 +108,7 @@ export const main = (canvas: HTMLCanvasElement): void => {
         const program = createProgramFromRaw(gl, vertexShaderSource, fragmentShaderSource)
 
         if (program) {
+
             const positionLocation = gl.getAttribLocation(program, "a_position");
             const colorLocation = gl.getAttribLocation(program, "a_color");
 
@@ -108,7 +120,6 @@ export const main = (canvas: HTMLCanvasElement): void => {
             // Put geometry data into buffer
             setGeometry(gl);
 
-
             // Create a buffer to put colors in
             let colorBuffer = gl.createBuffer();
             // Bind it to ARRAY_BUFFER (think of it as ARRAY_BUFFER = colorBuffer)
@@ -116,105 +127,127 @@ export const main = (canvas: HTMLCanvasElement): void => {
             // Put color data into buffer
             setColors(gl);
 
+            const fShape: Shape = {
+                program,
+                positionLocation,
+                colorLocation,
+                matrixLocation: matrixLocation!,
+                positionBuffer: positionBuffer!,
+                colorBuffer: colorBuffer!,
+                rotation: [degToRad(190), degToRad(40), degToRad(320)],
+            }
+            
             const camera = new Camera(degToRad(60), canvas.clientWidth / canvas.clientHeight, 1, 2000, [0, 1, 0]);
             // put the camera somewhere it can see all the fs
             camera.setPosition([0, 0, 600]);
 
-            drawScene(gl, program, camera);
-
-
-            // Draw the scene.
-            function drawScene(gl: WebGLRenderingContext, program: WebGLProgram, camera: Camera) {
-                resizeCanvasToDisplaySize(canvas);
-
-                // Tell WebGL how to convert from clip space to pixels
-                gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-
-                // Clear the canvas AND the depth buffer.
-                gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-                // Turn on culling. By default backfacing triangles
-                // will be culled.
-                gl.enable(gl.CULL_FACE);
-
-                // Enable the depth buffer
-                gl.enable(gl.DEPTH_TEST);
-
-                // Tell it to use our program (pair of shaders)
-                gl.useProgram(program);
-
-                // Turn on the position attribute
-                gl.enableVertexAttribArray(positionLocation);
-
-                // Bind the position buffer.
-                gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-
-                // Tell the position attribute how to get data out of positionBuffer (ARRAY_BUFFER)
-                const positionBufferOptions = {
-                    size: 3,
-                    type: gl.FLOAT,  // the data is 32bit floats
-                    normalize: false,
-                    stride: 0, // 0 = move forward size * sizeof(type) each iteration to get the next position
-                    offset: 0 // start at the beginning of the buffer
-                }
-
-                gl.vertexAttribPointer(
-                    positionLocation, positionBufferOptions.size, positionBufferOptions.type, positionBufferOptions.normalize, positionBufferOptions.stride, positionBufferOptions.offset);
-
-                // Turn on the color attribute
-                gl.enableVertexAttribArray(colorLocation);
-
-                // Bind the color buffer.
-                gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-
-                const colorBufferOptions = {
-                    size: 3,  // 3 components per iteration
-                    type: gl.UNSIGNED_BYTE, // the data is 8bit unsigned values
-                    normalize: true, // normalize the data (convert from 0-255 to 0-1)
-                    stride: 0,
-                    offset: 0
-                }
-
-                gl.vertexAttribPointer(
-                    colorLocation, colorBufferOptions.size, colorBufferOptions.type, colorBufferOptions.normalize, colorBufferOptions.stride, colorBufferOptions.offset);
-
-
-                const numFs = 10;
-                const radius = 200;
-
-                // Compute the position of the first F
-                const fPosition: Vec3 = [radius, 0, 0];
-
-
-
-
-                camera.lookAt(fPosition);
-
-                for (let ii = 0; ii < numFs; ++ii) {
-                    const angle = ii * Math.PI * 2 / numFs;
-                    const x = Math.cos(angle) * radius;
-                    const y = Math.sin(angle) * radius;
-
-                    // starting with the view projection matrix
-                    // compute a matrix for the F
-                    const matrix = m4translate(camera.viewProjectionMatrix, x, 0, y);
-
-                    // Set the matrix.
-                    gl.uniformMatrix4fv(matrixLocation, false, matrix);
-
-                    // Draw the geometry.
-                    const primitiveType = gl.TRIANGLES;
-                    const offset = 0;
-                    const count = 16 * 6;
-                    gl.drawArrays(primitiveType, offset, count);
-                }
+            drawShape(gl, fShape, camera, canvas);
+            function animate() {
+                fShape.rotation[1] += ROTATION_SPEED / 60.0;
+                drawShape(gl!, fShape, camera, canvas)
+                requestAnimationFrame(animate)
             }
+
+            animate()
+            
 
         }
     }
 }
 
 
+
+
+// Draw the scene.
+function drawShape(gl: WebGLRenderingContext, shape: Shape, camera: Camera, canvas: HTMLCanvasElement) {
+    
+    resizeCanvasToDisplaySize(canvas);
+
+    // Tell WebGL how to convert from clip space to pixels
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+
+    // Clear the canvas AND the depth buffer.
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    // Turn on culling. By default backfacing triangles
+    // will be culled.
+    gl.enable(gl.CULL_FACE);
+
+    // Enable the depth buffer
+    gl.enable(gl.DEPTH_TEST);
+
+    // Tell it to use our program (pair of shaders)
+    gl.useProgram(shape.program);
+
+    // Turn on the position attribute
+    gl.enableVertexAttribArray(shape.positionLocation);
+
+    // Bind the position buffer.
+    gl.bindBuffer(gl.ARRAY_BUFFER, shape.positionBuffer);
+
+    // Tell the position attribute how to get data out of positionBuffer (ARRAY_BUFFER)
+    const positionBufferOptions = {
+        size: 3,
+        type: gl.FLOAT,  // the data is 32bit floats
+        normalize: false,
+        stride: 0, // 0 = move forward size * sizeof(type) each iteration to get the next position
+        offset: 0 // start at the beginning of the buffer
+    }
+
+    gl.vertexAttribPointer(
+        shape.positionLocation, positionBufferOptions.size, positionBufferOptions.type, positionBufferOptions.normalize, positionBufferOptions.stride, positionBufferOptions.offset);
+
+    // Turn on the color attribute
+    gl.enableVertexAttribArray(shape.colorLocation);
+
+    // Bind the color buffer.
+    gl.bindBuffer(gl.ARRAY_BUFFER, shape.colorBuffer);
+
+    const colorBufferOptions = {
+        size: 3,  // 3 components per iteration
+        type: gl.UNSIGNED_BYTE, // the data is 8bit unsigned values
+        normalize: true, // normalize the data (convert from 0-255 to 0-1)
+        stride: 0,
+        offset: 0
+    }
+
+    gl.vertexAttribPointer(
+        shape.colorLocation, colorBufferOptions.size, colorBufferOptions.type, colorBufferOptions.normalize, colorBufferOptions.stride, colorBufferOptions.offset);
+
+
+    const numFs = 10;
+    const radius = 200;
+
+    // Compute the position of the first F
+    const fPosition: Vec3 = [0, 0, radius];
+
+
+    camera.lookAt(fPosition);
+
+    for (let ii = 0; ii < numFs; ++ii) {
+        const angle = ii * Math.PI * 2 / numFs;
+        const x = Math.cos(angle) * radius;
+        const y = Math.sin(angle) * radius;
+
+        // starting with the view projection matrix
+        // compute a matrix for the F
+        let matrix = m4translate(camera.viewProjectionMatrix, x, 0, y);
+        matrix = m4xRotate(matrix, shape.rotation[0]);
+        matrix = m4yRotate(matrix, shape.rotation[1]);
+        matrix = m4zRotate(matrix, shape.rotation[2]);
+        
+
+
+        // Set the matrix.
+        gl.uniformMatrix4fv(shape.matrixLocation, false, matrix);
+
+        // Draw the geometry.
+        const primitiveType = gl.TRIANGLES;
+        const offset = 0;
+        const count = 16 * 6;
+        gl.drawArrays(primitiveType, offset, count);
+    }
+}
 
 function createShader(gl: WebGLRenderingContext, type: ShaderType, source: string): WebGLShader | undefined {
     const shader = gl.createShader(type);
