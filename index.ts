@@ -71,35 +71,38 @@ const ROTATION_SPEED = 1.2;
 
 export const main = (canvas: HTMLCanvasElement): void => {
 
-    const vertexShaderSource = `
-    attribute vec4 a_position;
-    attribute vec4 a_color;
+    const vertexShaderSource = `#version 300 es
+    in  vec4 a_position;
+    in  vec4 a_color;
 
     uniform mat4 u_matrix;
 
-    varying vec4 v_color;
+    out vec4 v_color;
 
     void main() {
-    // Multiply the position by the matrix.
-    gl_Position = u_matrix * a_position;
+        // Multiply the position by the matrix.
+        gl_Position = u_matrix * a_position;
 
-    // Pass the color to the fragment shader.
-    v_color = a_color;
+        // Pass the color to the fragment shader.
+        v_color = a_color;
     }
     `
 
-    const fragmentShaderSource = `
+    const fragmentShaderSource = `#version 300 es
     precision mediump float;
 
     // Passed in from the vertex shader.
-    varying vec4 v_color;
+    in vec4 v_color;
+
+    // we need to declare an output for the fragment shader
+    out vec4 outColor;
 
     void main() {
-    gl_FragColor = v_color;
+        outColor = v_color;
     }
     `
 
-    let gl = canvas.getContext("webgl");
+    let gl = canvas.getContext("webgl2");
 
     if (!gl) {
         alert('it looks like you dont have webgl available')
@@ -141,14 +144,17 @@ export const main = (canvas: HTMLCanvasElement): void => {
             // put the camera somewhere it can see all the fs
             camera.setPosition([0, 0, 600]);
 
-            drawShape(gl, fShape, camera, canvas);
-            function animate() {
-                fShape.rotation[1] += ROTATION_SPEED / 60.0;
+            let lastTime = 0;
+            function animate(time: DOMHighResTimeStamp) {
+                time *= 0.001 // convert from millis to seconds
+                const deltaTime = time - lastTime;
+                lastTime = time;
+                fShape.rotation[1] += ROTATION_SPEED * deltaTime;
                 drawShape(gl!, fShape, camera, canvas)
                 requestAnimationFrame(animate)
             }
 
-            animate()
+            requestAnimationFrame(animate)
             
 
         }
