@@ -1,159 +1,155 @@
 import {
-    Mat4,
     m4perspective,
     m4inverse,
-    m4yRotation,
     m4multiply,
-    m4lookAt,
-    m4translate,
-    m4xRotation,
-    m4vectorMultiply,
-    m4xRotate,
-    m4yRotate,
-    m4zRotate
+    m4transpose,
+    m4fromPositionAndEuler
 } from './lib/mat4'
 
 import { Vec3 } from './lib/vec3'
 
 import { degToRad } from './lib/mathUtils'
+import { createProgramFromRaw } from './lib/shaderUtils'
+import { Mesh, createMesh } from './lib/mesh'
+import { Light, createLight } from './lib/light'
+import { Camera, createCamera } from './lib/camera'
+import { createFVertices } from './lib/primitives/fShape'
 
-
-type ShaderType = WebGLRenderingContextBase["VERTEX_SHADER"] | WebGLRenderingContextBase["FRAGMENT_SHADER"]
-type Shape = {
-    program: WebGLProgram;
-    positionLocation: number;
-    colorLocation: number;
-    matrixLocation: WebGLUniformLocation;
-    rotation: Vec3;
-    positionBuffer: WebGLBuffer;
-    colorBuffer: WebGLBuffer;
-}
-
-class Camera {
-    private projectionMatrix: Mat4
-    private worldMatrix: Mat4
-    private viewMatrix: Mat4
-    public viewProjectionMatrix: Mat4
-    private up: Vec3
-    private position: Vec3
-    constructor(fieldOfViewRadians = degToRad(60),
-        aspect = 1,
-        near = 1,
-        far = 2000,
-        up: Vec3 = [0, 1, 0], position: Vec3 = [0, 0, 0]) {
-
-        this.position = position
-        this.projectionMatrix = m4perspective(fieldOfViewRadians, aspect, near, far);
-        this.worldMatrix = m4yRotation(0);
-        this.viewMatrix = m4inverse(this.worldMatrix);
-        this.viewProjectionMatrix = m4multiply(this.projectionMatrix, this.viewMatrix);
-        this.up = up;
-    }
-
-    lookAt(position: Vec3): void {
-        this.worldMatrix = m4lookAt(this.position, position, this.up);
-        this.viewMatrix = m4inverse(this.worldMatrix);
-        this.viewProjectionMatrix = m4multiply(this.projectionMatrix, this.viewMatrix);
-    }
-
-    setPosition(position: Vec3): void {
-        this.position = position;
-        // all matrices apart from projection must be updated
-        this.worldMatrix = m4translate(this.worldMatrix, position[0], position[1], position[2]);
-        this.viewMatrix = m4inverse(this.worldMatrix);
-        this.viewProjectionMatrix = m4multiply(this.projectionMatrix, this.viewMatrix);
-
-    }
-
-}
 
 const ROTATION_SPEED = 1.2;
 
-export const main = (canvas: HTMLCanvasElement): void => {
+const vertexShaderSource = `#version 300 es
 
-    const vertexShaderSource = `#version 300 es
-    in  vec4 a_position;
-    in  vec4 a_color;
+// an attribute is an input (in) to a vertex shader.
+// It will receive data from a buffer
+in vec4 a_position;
+in vec3 a_normal;
 
-    uniform mat4 u_matrix;
+uniform vec3 u_lightWorldPosition;
+uniform vec3 u_viewWorldPosition;
 
-    out vec4 v_color;
+uniform mat4 u_world;
+uniform mat4 u_worldViewProjection;
+uniform mat4 u_worldInverseTranspose;
 
-    void main() {
-        // Multiply the position by the matrix.
-        gl_Position = u_matrix * a_position;
+// constyings to pass values to the fragment shader
+out vec3 v_normal;
+out vec3 v_surfaceToLight;
+out vec3 v_surfaceToView;
 
-        // Pass the color to the fragment shader.
-        v_color = a_color;
-    }
-    `
+// all shaders have a main function
+void main() {
+  // Multiply the position by the matrix.
+  gl_Position = u_worldViewProjection * a_position;
 
-    const fragmentShaderSource = `#version 300 es
-    precision mediump float;
+  // orient the normals and pass to the fragment shader
+  v_normal = mat3(u_worldInverseTranspose) * a_normal;
 
-    // Passed in from the vertex shader.
-    in vec4 v_color;
+  // compute the world position of the surfoace
+  vec3 surfaceWorldPosition = (u_world * a_position).xyz;
 
+  // compute the vector of the surface to the light
+  // and pass it to the fragment shader
+  v_surfaceToLight = u_lightWorldPosition - surfaceWorldPosition;
+
+  // compute the vector of the surface to the view/camera
+  // and pass it to the fragment shader
+  v_surfaceToView = u_viewWorldPosition - surfaceWorldPosition;
+}
+`
+
+const fragmentShaderSource = `#version 300 es
+
+    precision highp float;
+    
+    // Passed in and constied from the vertex shader.
+    in vec3 v_normal;
+    in vec3 v_surfaceToLight;
+    in vec3 v_surfaceToView;
+    
+    uniform vec4 u_color;
+    uniform float u_shininess;
+    uniform vec3 u_lightColor;
+    uniform vec3 u_specularColor;
+    
     // we need to declare an output for the fragment shader
     out vec4 outColor;
-
+    
     void main() {
-        outColor = v_color;
+      // because v_normal is a constying it's interpolated
+      // so it will not be a uint vector. Normalizing it
+      // will make it a unit vector again
+      vec3 normal = normalize(v_normal);
+    
+      vec3 surfaceToLightDirection = normalize(v_surfaceToLight);
+      vec3 surfaceToViewDirection = normalize(v_surfaceToView);
+      vec3 halfVector = normalize(surfaceToLightDirection + surfaceToViewDirection);
+    
+      // compute the light by taking the dot product
+      // of the normal to the light's reverse direction
+      float light = dot(normal, surfaceToLightDirection);
+      float specular = 0.0;
+      if (light > 0.0) {
+        specular = pow(dot(normal, halfVector), u_shininess);
+      }
+    
+      outColor = u_color;
+    
+      // Lets multiply just the color portion (not the alpha)
+      // by the light
+      outColor.rgb *= light * u_lightColor;
+    
+      // Just add in the specular
+      outColor.rgb += specular * u_specularColor;
     }
     `
 
+export const main = (canvas: HTMLCanvasElement): void => {
+
+    
     let gl = canvas.getContext("webgl2");
 
     if (!gl) {
         alert('it looks like you dont have webgl available')
+        return;
     } else {
         resizeCanvasToDisplaySize(canvas);
+
+
         const program = createProgramFromRaw(gl, vertexShaderSource, fragmentShaderSource)
 
         if (program) {
 
-            const positionLocation = gl.getAttribLocation(program, "a_position");
-            const colorLocation = gl.getAttribLocation(program, "a_color");
-
-            // lookup uniforms
-            const matrixLocation = gl.getUniformLocation(program, "u_matrix");
-
-            const positionBuffer = gl.createBuffer();
-            gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-            // Put geometry data into buffer
-            setGeometry(gl);
-
-            // Create a buffer to put colors in
-            let colorBuffer = gl.createBuffer();
-            // Bind it to ARRAY_BUFFER (think of it as ARRAY_BUFFER = colorBuffer)
-            gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-            // Put color data into buffer
-            setColors(gl);
-
-            const fShape: Shape = {
-                program,
-                positionLocation,
-                colorLocation,
-                matrixLocation: matrixLocation!,
-                positionBuffer: positionBuffer!,
-                colorBuffer: colorBuffer!,
-                rotation: [degToRad(190), degToRad(40), degToRad(320)],
-            }
+            const shape = createMesh(gl, 
+                [0,0,0], 
+                [degToRad(190), degToRad(40), degToRad(320)],  
+                program, 
+                createFVertices());
+    
+            const light = createLight(gl, program, [0, 0, -60], [0,0,0])
+          
+            const fieldOfViewRadians = degToRad(60);
+            const aspect = canvas.clientWidth / canvas.clientHeight;
+            const near = 1;
+            const far = 2000;
+            const up: Vec3 = [0, 1, 0]; 
+            const position: Vec3 = [0, 0, -600];
+            const rotation: Vec3 = [0,0,0];
             
-            const camera = new Camera(degToRad(60), canvas.clientWidth / canvas.clientHeight, 1, 2000, [0, 1, 0]);
-            // put the camera somewhere it can see all the fs
-            camera.setPosition([0, 0, 600]);
+            const camera = createCamera(gl, program, fieldOfViewRadians, aspect, near, far, up, position, rotation)
+            
 
             let lastTime = 0;
             function animate(time: DOMHighResTimeStamp) {
                 time *= 0.001 // convert from millis to seconds
-                const deltaTime = time - lastTime;
+                const dt = time - lastTime;
                 lastTime = time;
-                fShape.rotation[1] += ROTATION_SPEED * deltaTime;
-                drawShape(gl!, fShape, camera, canvas)
-                requestAnimationFrame(animate)
+                updateShape(shape, dt)
+                drawShape(gl!, shape, light, camera, canvas)
+                requestAnimationFrame(animate)    
             }
 
+            
             requestAnimationFrame(animate)
             
 
@@ -161,11 +157,14 @@ export const main = (canvas: HTMLCanvasElement): void => {
     }
 }
 
-
+function updateShape(shape: Mesh, dt: number) {
+    shape.rotation[1] += ROTATION_SPEED * dt;
+    shape.position = [Math.sin(1 * dt) * 100, Math.cos(1 * dt) * 100, 0]
+}
 
 
 // Draw the scene.
-function drawShape(gl: WebGLRenderingContext, shape: Shape, camera: Camera, canvas: HTMLCanvasElement) {
+function drawShape(gl: WebGL2RenderingContext, shape: Mesh, light: Light, camera: Camera, canvas: HTMLCanvasElement) {
     
     resizeCanvasToDisplaySize(canvas);
 
@@ -183,127 +182,53 @@ function drawShape(gl: WebGLRenderingContext, shape: Shape, camera: Camera, canv
     gl.enable(gl.DEPTH_TEST);
 
     // Tell it to use our program (pair of shaders)
-    gl.useProgram(shape.program);
+    gl.useProgram(shape.material);
 
-    // Turn on the position attribute
-    gl.enableVertexAttribArray(shape.positionLocation);
+    // Bind the shape vao.
+    gl.bindVertexArray(shape.vao);
 
-    // Bind the position buffer.
-    gl.bindBuffer(gl.ARRAY_BUFFER, shape.positionBuffer);
+    // set uniforms
+    // uniform mat4 u_world;
+    const shapeWorld = m4fromPositionAndEuler(shape.position, shape.rotation);
+    gl.uniformMatrix4fv(shape.worldLocation, false, shapeWorld);
 
-    // Tell the position attribute how to get data out of positionBuffer (ARRAY_BUFFER)
-    const positionBufferOptions = {
-        size: 3,
-        type: gl.FLOAT,  // the data is 32bit floats
-        normalize: false,
-        stride: 0, // 0 = move forward size * sizeof(type) each iteration to get the next position
-        offset: 0 // start at the beginning of the buffer
-    }
+    // uniform mat4 u_worldViewProjection;
+    const viewMatrix = m4fromPositionAndEuler(camera.position, camera.rotation);
+    const projectionMatrix = m4perspective(camera.fieldOfViewRadians, camera.aspect, camera.near, camera.far)
+    const viewProjectionMatrix = m4multiply(projectionMatrix, viewMatrix);
+       
+    const shapeWorldViewProjection = m4multiply(viewProjectionMatrix, shapeWorld);
+    gl.uniformMatrix4fv(shape.worldViewProjectionLocation, false, shapeWorldViewProjection);
 
-    gl.vertexAttribPointer(
-        shape.positionLocation, positionBufferOptions.size, positionBufferOptions.type, positionBufferOptions.normalize, positionBufferOptions.stride, positionBufferOptions.offset);
+    // uniform mat4 u_worldInverseTranspose;
+    const shapeWorldInverseTranspose = m4transpose(m4inverse(shapeWorld));
+    gl.uniformMatrix4fv(shape.worldInverseTransposeLocation, false, shapeWorldInverseTranspose);
 
-    // Turn on the color attribute
-    gl.enableVertexAttribArray(shape.colorLocation);
+    // uniform vec3 u_viewWorldPosition;
+    gl.uniform3fv(camera.viewWorldPositionLocation, camera.position);
+    
+    // uniform vec4 u_color;
+    gl.uniform4fv(shape.colorLocation, [0.2, 1, 0.2, 1])
 
-    // Bind the color buffer.
-    gl.bindBuffer(gl.ARRAY_BUFFER, shape.colorBuffer);
+    // uniform float u_shininess;
+    gl.uniform1f(shape.shininessLocation,  150);
 
-    const colorBufferOptions = {
-        size: 3,  // 3 components per iteration
-        type: gl.UNSIGNED_BYTE, // the data is 8bit unsigned values
-        normalize: true, // normalize the data (convert from 0-255 to 0-1)
-        stride: 0,
-        offset: 0
-    }
+    // uniform vec3 u_lightWorldPosition;
+    gl.uniform3fv(light.worldPositionLocation, light.position);
 
-    gl.vertexAttribPointer(
-        shape.colorLocation, colorBufferOptions.size, colorBufferOptions.type, colorBufferOptions.normalize, colorBufferOptions.stride, colorBufferOptions.offset);
+    // uniform vec3 u_lightColor;
+    gl.uniform3fv(light.colorLocation, [1, 0.6, 0.6]);  // red light
+    
+    // uniform vec3 u_specularColor;
+    gl.uniform3fv(light.specularColorLocation, [1, 0.2, 0.2]);  // red light
 
-
-    const numFs = 10;
-    const radius = 200;
-
-    // Compute the position of the first F
-    const fPosition: Vec3 = [0, 0, radius];
-
-
-    camera.lookAt(fPosition);
-
-    for (let ii = 0; ii < numFs; ++ii) {
-        const angle = ii * Math.PI * 2 / numFs;
-        const x = Math.cos(angle) * radius;
-        const y = Math.sin(angle) * radius;
-
-        // starting with the view projection matrix
-        // compute a matrix for the F
-        let matrix = m4translate(camera.viewProjectionMatrix, x, 0, y);
-        matrix = m4xRotate(matrix, shape.rotation[0]);
-        matrix = m4yRotate(matrix, shape.rotation[1]);
-        matrix = m4zRotate(matrix, shape.rotation[2]);
-        
-
-
-        // Set the matrix.
-        gl.uniformMatrix4fv(shape.matrixLocation, false, matrix);
-
-        // Draw the geometry.
-        const primitiveType = gl.TRIANGLES;
-        const offset = 0;
-        const count = 16 * 6;
-        gl.drawArrays(primitiveType, offset, count);
-    }
+    // draw the shape
+    // gl.drawElements(gl.TRIANGLES, shape.count, gl.UNSIGNED_SHORT,  0);
+    gl.drawArrays(gl.TRIANGLES, 0, shape.count );
+    
 }
 
-function createShader(gl: WebGLRenderingContext, type: ShaderType, source: string): WebGLShader | undefined {
-    const shader = gl.createShader(type);
-    if (shader) {
-        gl.shaderSource(shader, source);
-        gl.compileShader(shader);
-        const success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
-        if (success) {
-            return shader;
-        } else {
-            alert(`Error: ${gl.getShaderInfoLog(shader)})`);
-            gl.deleteShader(shader);
-            return undefined
-        }
-    } else {
-        alert('Failed to create shader')
-        return undefined
-    }
-}
 
-function createProgram(gl: WebGLRenderingContext, vertexShader: WebGLShader, fragmentShader: WebGLShader): WebGLProgram | undefined {
-    const program = gl.createProgram();
-    if (program) {
-        gl.attachShader(program, vertexShader);
-        gl.attachShader(program, fragmentShader);
-        gl.linkProgram(program);
-        const success = gl.getProgramParameter(program, gl.LINK_STATUS);
-        if (success) {
-            return program;
-        } else {
-            alert(`Error: ${gl.getProgramInfoLog(program)}`);
-            gl.deleteProgram(program);
-            return undefined
-        }
-    } else {
-        alert('Failed to create WebGL program')
-        return undefined
-    }
-}
-
-function createProgramFromRaw(gl: WebGLRenderingContext, vertexShaderSource: string, fragmentShaderSource: string) {
-    const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
-    const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
-    if (vertexShader && fragmentShader) {
-        return createProgram(gl, vertexShader, fragmentShader)
-
-    } else {
-        return undefined
-    }
-}
 
 function resizeCanvasToDisplaySize(canvas: HTMLCanvasElement): void {
     const displayWidth = canvas.clientWidth;
@@ -321,290 +246,6 @@ function resizeCanvasToDisplaySize(canvas: HTMLCanvasElement): void {
 
 }
 
-// Fill the buffer with the values that define a letter 'F'.
-function setGeometry(gl: WebGLRenderingContext) {
-    const positions = new Float32Array([
-        // left column front
-        0, 0, 0,
-        0, 150, 0,
-        30, 0, 0,
-        0, 150, 0,
-        30, 150, 0,
-        30, 0, 0,
 
-        // top rung front
-        30, 0, 0,
-        30, 30, 0,
-        100, 0, 0,
-        30, 30, 0,
-        100, 30, 0,
-        100, 0, 0,
-
-        // middle rung front
-        30, 60, 0,
-        30, 90, 0,
-        67, 60, 0,
-        30, 90, 0,
-        67, 90, 0,
-        67, 60, 0,
-
-        // left column back
-        0, 0, 30,
-        30, 0, 30,
-        0, 150, 30,
-        0, 150, 30,
-        30, 0, 30,
-        30, 150, 30,
-
-        // top rung back
-        30, 0, 30,
-        100, 0, 30,
-        30, 30, 30,
-        30, 30, 30,
-        100, 0, 30,
-        100, 30, 30,
-
-        // middle rung back
-        30, 60, 30,
-        67, 60, 30,
-        30, 90, 30,
-        30, 90, 30,
-        67, 60, 30,
-        67, 90, 30,
-
-        // top
-        0, 0, 0,
-        100, 0, 0,
-        100, 0, 30,
-        0, 0, 0,
-        100, 0, 30,
-        0, 0, 30,
-
-        // top rung right
-        100, 0, 0,
-        100, 30, 0,
-        100, 30, 30,
-        100, 0, 0,
-        100, 30, 30,
-        100, 0, 30,
-
-        // under top rung
-        30, 30, 0,
-        30, 30, 30,
-        100, 30, 30,
-        30, 30, 0,
-        100, 30, 30,
-        100, 30, 0,
-
-        // between top rung and middle
-        30, 30, 0,
-        30, 60, 30,
-        30, 30, 30,
-        30, 30, 0,
-        30, 60, 0,
-        30, 60, 30,
-
-        // top of middle rung
-        30, 60, 0,
-        67, 60, 30,
-        30, 60, 30,
-        30, 60, 0,
-        67, 60, 0,
-        67, 60, 30,
-
-        // right of middle rung
-        67, 60, 0,
-        67, 90, 30,
-        67, 60, 30,
-        67, 60, 0,
-        67, 90, 0,
-        67, 90, 30,
-
-        // bottom of middle rung.
-        30, 90, 0,
-        30, 90, 30,
-        67, 90, 30,
-        30, 90, 0,
-        67, 90, 30,
-        67, 90, 0,
-
-        // right of bottom
-        30, 90, 0,
-        30, 150, 30,
-        30, 90, 30,
-        30, 90, 0,
-        30, 150, 0,
-        30, 150, 30,
-
-        // bottom
-        0, 150, 0,
-        0, 150, 30,
-        30, 150, 30,
-        0, 150, 0,
-        30, 150, 30,
-        30, 150, 0,
-
-        // left side
-        0, 0, 0,
-        0, 0, 30,
-        0, 150, 30,
-        0, 0, 0,
-        0, 150, 30,
-        0, 150, 0]);
-
-    // Center the F around the origin and Flip it around. We do this because
-    // we're in 3D now with and +Y is up where as before when we started with 2D
-    // we had +Y as down.
-
-    // We could do by changing all the values above but I'm lazy.
-    // We could also do it with a matrix at draw time but you should
-    // never do stuff at draw time if you can do it at init time.
-    let matrix = m4xRotation(Math.PI);
-    matrix = m4translate(matrix, -50, -75, -15);
-
-    for (let ii = 0; ii < positions.length; ii += 3) {
-        const vector = m4vectorMultiply([positions[ii + 0]!, positions[ii + 1]!, positions[ii + 2]!, 1], matrix);
-        positions[ii + 0] = vector[0]!;
-        positions[ii + 1] = vector[1]!;
-        positions[ii + 2] = vector[2]!;
-    }
-
-    gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
-}
-
-// Fill the buffer with colors for the 'F'.
-function setColors(gl: WebGLRenderingContext) {
-    gl.bufferData(
-        gl.ARRAY_BUFFER,
-        new Uint8Array([
-            // left column front
-            200, 70, 120,
-            200, 70, 120,
-            200, 70, 120,
-            200, 70, 120,
-            200, 70, 120,
-            200, 70, 120,
-
-            // top rung front
-            200, 70, 120,
-            200, 70, 120,
-            200, 70, 120,
-            200, 70, 120,
-            200, 70, 120,
-            200, 70, 120,
-
-            // middle rung front
-            200, 70, 120,
-            200, 70, 120,
-            200, 70, 120,
-            200, 70, 120,
-            200, 70, 120,
-            200, 70, 120,
-
-            // left column back
-            80, 70, 200,
-            80, 70, 200,
-            80, 70, 200,
-            80, 70, 200,
-            80, 70, 200,
-            80, 70, 200,
-
-            // top rung back
-            80, 70, 200,
-            80, 70, 200,
-            80, 70, 200,
-            80, 70, 200,
-            80, 70, 200,
-            80, 70, 200,
-
-            // middle rung back
-            80, 70, 200,
-            80, 70, 200,
-            80, 70, 200,
-            80, 70, 200,
-            80, 70, 200,
-            80, 70, 200,
-
-            // top
-            70, 200, 210,
-            70, 200, 210,
-            70, 200, 210,
-            70, 200, 210,
-            70, 200, 210,
-            70, 200, 210,
-
-            // top rung right
-            200, 200, 70,
-            200, 200, 70,
-            200, 200, 70,
-            200, 200, 70,
-            200, 200, 70,
-            200, 200, 70,
-
-            // under top rung
-            210, 100, 70,
-            210, 100, 70,
-            210, 100, 70,
-            210, 100, 70,
-            210, 100, 70,
-            210, 100, 70,
-
-            // between top rung and middle
-            210, 160, 70,
-            210, 160, 70,
-            210, 160, 70,
-            210, 160, 70,
-            210, 160, 70,
-            210, 160, 70,
-
-            // top of middle rung
-            70, 180, 210,
-            70, 180, 210,
-            70, 180, 210,
-            70, 180, 210,
-            70, 180, 210,
-            70, 180, 210,
-
-            // right of middle rung
-            100, 70, 210,
-            100, 70, 210,
-            100, 70, 210,
-            100, 70, 210,
-            100, 70, 210,
-            100, 70, 210,
-
-            // bottom of middle rung.
-            76, 210, 100,
-            76, 210, 100,
-            76, 210, 100,
-            76, 210, 100,
-            76, 210, 100,
-            76, 210, 100,
-
-            // right of bottom
-            140, 210, 80,
-            140, 210, 80,
-            140, 210, 80,
-            140, 210, 80,
-            140, 210, 80,
-            140, 210, 80,
-
-            // bottom
-            90, 130, 110,
-            90, 130, 110,
-            90, 130, 110,
-            90, 130, 110,
-            90, 130, 110,
-            90, 130, 110,
-
-            // left side
-            160, 160, 220,
-            160, 160, 220,
-            160, 160, 220,
-            160, 160, 220,
-            160, 160, 220,
-            160, 160, 220]),
-        gl.STATIC_DRAW);
-}
 
 

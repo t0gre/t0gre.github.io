@@ -175,7 +175,43 @@ export function m4scaling(sx: number, sy: number, sz: number): Mat4 {
         return m4multiply(m, m4scaling(sx, sy, sz));
     
     }
-    export function m4inverse(m: Mat4): Mat4 {
+    
+/**
+   * Transposes a matrix.
+   * @param {Matrix4} m matrix to transpose.
+   * @param {Matrix4} [dst] optional matrix to store result
+   * @return {Matrix4} dst or a new matrix if none provided
+   * @memberOf module:webgl-3d-math
+   */
+export function m4transpose(m: Mat4) {
+    const dst: Mat4 = [
+        0,0,0,0,
+        0,0,0,0,
+        0,0,0,0,
+        0,0,0,0,
+    ];
+
+    dst[ 0] = m[0];
+    dst[ 1] = m[4];
+    dst[ 2] = m[8];
+    dst[ 3] = m[12];
+    dst[ 4] = m[1];
+    dst[ 5] = m[5];
+    dst[ 6] = m[9];
+    dst[ 7] = m[13];
+    dst[ 8] = m[2];
+    dst[ 9] = m[6];
+    dst[10] = m[10];
+    dst[11] = m[14];
+    dst[12] = m[3];
+    dst[13] = m[7];
+    dst[14] = m[11];
+    dst[15] = m[15];
+
+    return dst;
+  }
+
+export function m4inverse(m: Mat4): Mat4 {
         const m00 = m[0 * 4 + 0]!;
         const m01 = m[0 * 4 + 1]!;
         const m02 = m[0 * 4 + 2]!;
@@ -260,7 +296,7 @@ export function m4scaling(sx: number, sy: number, sz: number): Mat4 {
         ];
     }
 
-    export function m4vectorMultiply(v: Vec4, m: Mat4) {
+export function m4vectorMultiply(v: Vec4, m: Mat4) {
         const dst = [];
         for (let i = 0; i < 4; ++i) {
             dst[i] = 0.0;
@@ -271,3 +307,10 @@ export function m4scaling(sx: number, sy: number, sz: number): Mat4 {
         return dst;
     }
 
+export function m4fromPositionAndEuler(position: Vec3, euler: Vec3): Mat4 {
+    let mat4 = m4translate(m4yRotation(0), position[0], position[1], position[2]) ;
+    mat4 = m4xRotate(mat4, euler[0]);
+    mat4 = m4yRotate(mat4, euler[1]);
+    mat4 = m4zRotate(mat4, euler[2]);
+    return mat4;
+}
