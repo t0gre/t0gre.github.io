@@ -1,5 +1,6 @@
 
-import { Vec3 } from "./vec3";
+import { Material } from "./shaders/shaderUtils";
+import { Vec3 } from "./vec";
 
 export type Vertices = {
     positions: Float32Array,
@@ -9,29 +10,42 @@ export type Vertices = {
   }
 
 export type Mesh = {
-    material: WebGLProgram;
+    material: Material;
     vao: WebGLVertexArrayObject;
     count: number;
-    colorLocation: WebGLUniformLocation;
-    shininessLocation: WebGLUniformLocation;
-    worldLocation: WebGLUniformLocation;
-    worldViewProjectionLocation: WebGLUniformLocation;
-    worldInverseTransposeLocation: WebGLUniformLocation;
+    uniforms: {
+        colorLocation?: WebGLUniformLocation;
+        shininessLocation?: WebGLUniformLocation;
+        worldLocation: WebGLUniformLocation;
+        worldViewProjectionLocation: WebGLUniformLocation;
+        worldInverseTransposeLocation: WebGLUniformLocation;
+        viewWorldPositionLocation: WebGLUniformLocation;
+        worldPositionLocation: WebGLUniformLocation,
+        lightColorLocation: WebGLUniformLocation,
+        specularColorLocation: WebGLUniformLocation
+    }
     position: Vec3;
     rotation: Vec3;
 }
 
 
-export function createMesh(gl: WebGL2RenderingContext, position: Vec3, rotation: Vec3, material: WebGLProgram, vertices: Vertices): Mesh {
+export function createMesh(
+        gl: WebGL2RenderingContext, 
+        position: Vec3, 
+        rotation: Vec3, 
+        material: Material, 
+        vertices: Vertices): Mesh | undefined {
     
     const {positions, normals, texcoords, indices} = vertices;
 
     const vao = gl.createVertexArray()
     gl.bindVertexArray(vao);
 
+    const program = material.program;
+
 
     // positions are always present
-    const positionAttributeLocation = gl.getAttribLocation(material, "a_position");
+    const positionAttributeLocation = gl.getAttribLocation(program, "a_position");
     // create the buffer
     const positionBuffer = gl.createBuffer();
     // Turn on the attribute
@@ -47,7 +61,7 @@ export function createMesh(gl: WebGL2RenderingContext, position: Vec3, rotation:
     if (texcoords) {
         // create the buffer
     
-        const texcoordAttributeLocation = gl.getAttribLocation(material, "a_texcoord");
+        const texcoordAttributeLocation = gl.getAttribLocation(program, "a_texcoord");
         const normalBuffer = gl.createBuffer();
         // turn on the attribute
         gl.enableVertexAttribArray(texcoordAttributeLocation);
@@ -66,7 +80,7 @@ export function createMesh(gl: WebGL2RenderingContext, position: Vec3, rotation:
 
     // create the buffer
     if (normals) {
-        const normalAttributeLocation = gl.getAttribLocation(material, "a_normal");
+        const normalAttributeLocation = gl.getAttribLocation(program, "a_normal");
         const normalBuffer = gl.createBuffer();
         // turn on the attribute
         gl.enableVertexAttribArray(normalAttributeLocation);
@@ -98,30 +112,67 @@ export function createMesh(gl: WebGL2RenderingContext, position: Vec3, rotation:
     gl.bindVertexArray(null);
 
 
-    const worldLocation = gl.getUniformLocation(material, "u_world");
-    const worldViewProjectionLocation = gl.getUniformLocation(material, "u_worldViewProjection");
-    const worldInverseTransposeLocation = gl.getUniformLocation(material, "u_worldInverseTranspose");
-    const colorLocation = gl.getUniformLocation(material, "u_color");
-    const shininessLocation = gl.getUniformLocation(material, "u_shininess");
-
+    const worldLocation = gl.getUniformLocation(program, "u_world");
+    const worldViewProjectionLocation = gl.getUniformLocation(program, "u_worldViewProjection");
+    const worldInverseTransposeLocation = gl.getUniformLocation(program, "u_worldInverseTranspose");
     
-    
+    // setup uniforms for camera
+    const viewWorldPositionLocation = gl.getUniformLocation(program, "u_viewWorldPosition");
 
-    
+     // setup uniforms for lights
+     const lightWorldPositionLocation = gl.getUniformLocation(program, "u_lightWorldPosition");
+     const lightColorLocation = gl.getUniformLocation(program, "u_lightColor");
+     const specularColorLocation = gl.getUniformLocation(program, "u_specularColor");
 
-    const mesh: Mesh = {
-        material,
-        vao: vao!,
-        count: positions.length,
-        colorLocation: colorLocation!,
-        shininessLocation: shininessLocation!,
-        worldLocation: worldLocation!,
-        worldViewProjectionLocation: worldViewProjectionLocation!,
-        worldInverseTransposeLocation: worldInverseTransposeLocation!,
-        position,
-        rotation
-        
+    // extra uniforms
+
+    let colorLocation;
+    if (material.extraUniforms?.color) {
+        const result = gl.getUniformLocation(program, "u_color");
+        if (result) {
+            colorLocation = result
+        }
     }
+    
+    let shininessLocation;
+    if (material.extraUniforms) {
+        const result = gl.getUniformLocation(program, "u_shininess");
+        if (result) {
+            shininessLocation = result;
+        } 
+    }
+
+    
+    let mesh: Mesh | undefined;
+     if (vao && 
+        worldLocation &&
+        worldViewProjectionLocation &&
+        worldInverseTransposeLocation &&
+        viewWorldPositionLocation &&
+        lightWorldPositionLocation &&
+        lightColorLocation &&
+        specularColorLocation) {
+        mesh = {
+                material,
+                vao: vao,
+                count: positions.length,
+                uniforms: {
+                colorLocation: colorLocation,
+                shininessLocation: shininessLocation,
+                worldLocation: worldLocation,
+                worldViewProjectionLocation: worldViewProjectionLocation,
+                worldInverseTransposeLocation: worldInverseTransposeLocation,
+                viewWorldPositionLocation: viewWorldPositionLocation,
+                worldPositionLocation: lightWorldPositionLocation,
+                lightColorLocation: lightColorLocation,
+                specularColorLocation: specularColorLocation,
+                },
+                
+                position,
+                rotation
+                
+            }
+        }
 
     return mesh
 }

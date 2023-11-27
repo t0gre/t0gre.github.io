@@ -1,4 +1,4 @@
-import { Vec3, Vec4, normalize, subtractVectors, cross } from './vec3'
+import { Vec3, Vec4, normalize, subtractVectors, cross } from './vec'
 
 
 export type Mat4 = [

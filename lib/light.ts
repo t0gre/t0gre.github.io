@@ -1,30 +1,21 @@
-import { Vec3 } from "./vec3";
+import { Vec3 } from "./vec";
 
 
 export type Light = {
-    worldPositionLocation: WebGLUniformLocation;
-    colorLocation: WebGLUniformLocation;
-    specularColorLocation: WebGLUniformLocation;
+    color: Vec3;
+    specularColor: Vec3;
     rotation: Vec3;
     position: Vec3;
 }
 
 
-export function createLight(gl: WebGL2RenderingContext, material: WebGLProgram, position: Vec3, rotation: Vec3): Light {
-    // setup uniforms
-    const lightWorldPositionLocation =
-    gl.getUniformLocation(material, "u_lightWorldPosition");
-    const lightColorLocation =
-    gl.getUniformLocation(material, "u_lightColor");
-    const specularColorLocation =
-    gl.getUniformLocation(material, "u_specularColor");
+export function createLight(position: Vec3, rotation: Vec3, color: Vec3, specularColor: Vec3): Light {
 
     const light: Light = {
-        worldPositionLocation: lightWorldPositionLocation!,
-        colorLocation: lightColorLocation!,
-        specularColorLocation: specularColorLocation!,
         position,
-        rotation
+        rotation,
+        color,
+        specularColor
     }
 
     return light
