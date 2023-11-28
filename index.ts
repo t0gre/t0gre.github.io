@@ -13,8 +13,8 @@ import { Mesh, createMesh } from './lib/mesh'
 import { Light, createLight } from './lib/light'
 import { Camera, createCamera } from './lib/camera'
 import { createFVertices } from './lib/shapePrimitives/fShape'
-import { createTriangleVertices } from './lib/shapePrimitives/triangle'
 import { createShinyMaterial } from './lib/shaders/shinyMaterial'
+import { createTriangleVertices } from './lib/shapePrimitives/triangle'
 
 
 const ROTATION_SPEED = 1.2;
@@ -39,9 +39,9 @@ export const main = (canvas: HTMLCanvasElement): 1 | undefined => {
 
             const shape = createMesh(gl, 
                 [0,0,0], 
-                [degToRad(190), degToRad(40), degToRad(320)],  
+                [0, 0, 0],  
                 material, 
-                createFVertices());
+                createTriangleVertices());
 
             if (!shape) {
                 console.log('failed to create shape')
@@ -55,7 +55,7 @@ export const main = (canvas: HTMLCanvasElement): 1 | undefined => {
             const near = 1;
             const far = 2000;
             const up: Vec3 = [0, 1, 0]; 
-            const position: Vec3 = [0, 0, -600];
+            const position: Vec3 = [0, 0, -300];
             const rotation: Vec3 = [0,0,0];
             
             const camera = createCamera(fieldOfViewRadians, aspect, near, far, up, position, rotation)

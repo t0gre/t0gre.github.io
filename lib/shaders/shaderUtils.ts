@@ -1,19 +1,9 @@
-import { Vec3 } from "../vec";
-import { Mat4 } from "../mat4";
 import { ShinyMaterialExtraUniforms } from "./shinyMaterial";
 
 type ShaderType = WebGLRenderingContextBase["VERTEX_SHADER"] | WebGLRenderingContextBase["FRAGMENT_SHADER"]
 
 // collect more here
 type ExtraUniforms = ShinyMaterialExtraUniforms
-
-type Uniforms = {
-    world: Mat4;
-    worldViewProjection:Mat4;
-    worldInverseTranspose:Mat4;
-    lightColor: Vec3;
-    viewWorldPosition: Vec3
-}
 
 export type MaterialSource = {
     vertexShaderSource: string;

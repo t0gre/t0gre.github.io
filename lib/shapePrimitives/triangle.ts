@@ -6,7 +6,7 @@ export function createTriangleVertices(): Vertices {
             // left corner
             -30,   0,  0,
             // top
-            0, 200,  0,
+            0, 60,  0,
             // right corner
             30,   0,  0,
             
@@ -15,11 +15,11 @@ export function createTriangleVertices(): Vertices {
   
     const normals = new Float32Array([
             // left
-            -0.2, 0, 0,
+            0, 0, 1,
             // top
-            0, 0.2, 0,
+            0, 0, 1,
             // right
-            0.2, 0, 0,
+            0, 0, 1,
            
         ]);
     return {
