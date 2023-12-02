@@ -1,20 +1,5 @@
-import { ShinyMaterialExtraUniforms } from "./shinyMaterial";
-
 type ShaderType = WebGLRenderingContextBase["VERTEX_SHADER"] | WebGLRenderingContextBase["FRAGMENT_SHADER"]
 
-// collect more here
-type ExtraUniforms = ShinyMaterialExtraUniforms
-
-export type MaterialSource = {
-    vertexShaderSource: string;
-    fragmentShaderSource: string;
-    extraUniforms?: ExtraUniforms
-}
-
-export type Material = {
-    program: WebGLProgram;
-    extraUniforms?: ExtraUniforms
-}
 
 function createShader(gl: WebGLRenderingContext, type: ShaderType, source: string): WebGLShader | undefined {
     const shader = gl.createShader(type);
@@ -62,18 +47,6 @@ export function createProgramFromRaw(gl: WebGLRenderingContext, vertexShaderSour
         return createProgram(gl, vertexShader, fragmentShader)
 
     } else {
-        return undefined
-    }
-}
-
-export function createMaterial(gl: WebGL2RenderingContext, materialSource: MaterialSource): Material | undefined {
-    const program = createProgramFromRaw(gl, materialSource.vertexShaderSource, materialSource.fragmentShaderSource)
-    if (program) {
-        return {
-            program,
-            extraUniforms: materialSource.extraUniforms
-        }
-    }  else {
         return undefined
     }
 }

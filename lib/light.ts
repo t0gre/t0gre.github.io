@@ -1,7 +1,7 @@
 import { Vec3 } from "./vec";
 
 
-export type Light = {
+export type PointLight = {
     color: Vec3;
     specularColor: Vec3;
     rotation: Vec3;
@@ -9,13 +9,36 @@ export type Light = {
 }
 
 
-export function createLight(position: Vec3, rotation: Vec3, color: Vec3, specularColor: Vec3): Light {
+export function createPointLight(
+    position: Vec3, 
+    rotation: Vec3, 
+    color: Vec3, 
+    specularColor: Vec3): PointLight {
 
-    const light: Light = {
+    const light: PointLight = {
         position,
         rotation,
         color,
         specularColor
+    }
+
+    return light
+}
+
+
+export type DirectionalLight = {
+    color: Vec3;
+    rotation: Vec3; 
+}
+
+
+export function createDirectionalLight(
+    rotation: Vec3, 
+    color: Vec3): DirectionalLight {
+
+    const light: DirectionalLight = {
+        rotation,
+        color,     
     }
 
     return light
