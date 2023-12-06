@@ -31,23 +31,25 @@ function parseOBJ(text: string): Vertices {
     const positionIndex = parseInt(ptn[0]!)
     const positionValues = data.positions[positionIndex]! as [number, number, number];
     webglVertexData.positions.push(...positionValues)
-    if (ptn.length == 2) {
+    if (ptn.length === 2) {
       const texIndex = parseInt(ptn[1]!)
       const texValues = data.texcoords[texIndex]! as [number, number, number];
       webglVertexData.texcoords.push(...texValues)
     } else {
-      if (ptn[1] === '') {  
-        const normIndex = parseInt(ptn[2]!)
-        const normValues = data.normals[normIndex]! as [number, number, number];
-        webglVertexData.normals.push(...normValues)
-      } else {
-        const texIndex = parseInt(ptn[1]!)
-        const texValues = data.texcoords[texIndex]! as [number, number, number];
-        const normIndex = parseInt(ptn[2]!)
-        const normValues = data.normals[normIndex]! as [number, number, number];
-        webglVertexData.texcoords.push(...texValues)
-        webglVertexData.normals.push(...normValues)
-      }
+      if (ptn.length === 3) {
+        if (ptn[1] === '') {  
+          const normIndex = parseInt(ptn[2]!)
+          const normValues = data.normals[normIndex]! as [number, number, number];
+          webglVertexData.normals.push(...normValues)
+        } else {
+          const texIndex = parseInt(ptn[1]!)
+          const texValues = data.texcoords[texIndex]! as [number, number, number];
+          const normIndex = parseInt(ptn[2]!)
+          const normValues = data.normals[normIndex]! as [number, number, number];
+          webglVertexData.texcoords.push(...texValues)
+          webglVertexData.normals.push(...normValues)
+        }
+      }   
     } 
   }
       
@@ -80,9 +82,7 @@ function parseOBJ(text: string): Vertices {
       case 'f':
         // this handles converting a face into triangles
         const numTriangles = parts.length - 2;
-        for (let tri = 0; tri < numTriangles; ++tri) {
-
-         
+        for (let tri = 0; tri < numTriangles; ++tri) {  
           addVertex(parts[0]!);
           addVertex(parts[tri + 1]!);
           addVertex(parts[tri + 2]!);

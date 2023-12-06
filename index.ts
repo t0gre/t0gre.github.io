@@ -28,7 +28,7 @@ export async function main(canvas: HTMLCanvasElement): Promise<1 | undefined> {
 
         if (material) {
 
-            const vertices = await loadObj('cube.obj');
+            const vertices = await loadObj('rainbowtree.obj');
             const shape = createMesh(gl, 
                 [0,0,0], 
                 [0, 0, 0],  
@@ -47,7 +47,7 @@ export async function main(canvas: HTMLCanvasElement): Promise<1 | undefined> {
             const near = 1;
             const far = 2000;
             const up: Vec3 = [0, 1, 0]; 
-            const position: Vec3 = [0, 0, -10];
+            const position: Vec3 = [0, 0, -20];
             const rotation: Vec3 = [0,0,0];
             
             const light = createDirectionalLight([0, 0, 0.5], [0.5, 0.5, 0.5])
