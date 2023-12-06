@@ -1,40 +1,56 @@
 import { Vertices } from "../mesh";
 
 function parseOBJ(text: string): Vertices {
+  
+
   // because indices are base 1 let's just fill in the 0th data
-  const objPositions = [[0, 0, 0]];
-  const objTexcoords = [[0, 0]];
-  const objNormals = [[0, 0, 0]];
+  const data = {
+    positions: [[0, 0, 0]],
+    texcoords: [[0, 0]],
+    normals: [[0, 0, 0]],
+  };
 
   // same order as `f` indices
-  const objVertexData = [
-    objPositions,
-    objTexcoords,
-    objNormals,
-  ];
-
-  // same order as `f` indices
-  let webglVertexData: [[], [], []] = [
-    [],   // positions
-    [],   // texcoords
-    [],   // normals
-  ];
+  let webglVertexData: {
+    positions: number[];
+    texcoords: number[]
+    normals: number[]
+  } = {
+    positions: [],
+    texcoords: [],
+    normals: [],
+  }; 
 
   
-  // vert is of the for 'a/b/c'
+  // f 1 2 3            # indices for positions only
+  // f 1/1 2/2 3/3        # indices for positions and texcoords
+  // f 1/1/1 2/2/2 3/3/3  # indices for positions, texcoords, and normals
+  // f 1//1 2//2 3//3     # indices for positions and normals
   function addVertex(vert: string) {
-    const ptn: [string, string, string] = vert.split('/') as [string, string, string];
-    ptn.forEach((objIndexStr, i) => {
-      if (!objIndexStr) {
-        return;
+    const ptn = vert.split('/');
+    const positionIndex = parseInt(ptn[0]!)
+    const positionValues = data.positions[positionIndex]! as [number, number, number];
+    webglVertexData.positions.push(...positionValues)
+    if (ptn.length == 2) {
+      const texIndex = parseInt(ptn[1]!)
+      const texValues = data.texcoords[texIndex]! as [number, number, number];
+      webglVertexData.texcoords.push(...texValues)
+    } else {
+      if (ptn[1] === '') {  
+        const normIndex = parseInt(ptn[2]!)
+        const normValues = data.normals[normIndex]! as [number, number, number];
+        webglVertexData.normals.push(...normValues)
+      } else {
+        const texIndex = parseInt(ptn[1]!)
+        const texValues = data.texcoords[texIndex]! as [number, number, number];
+        const normIndex = parseInt(ptn[2]!)
+        const normValues = data.normals[normIndex]! as [number, number, number];
+        webglVertexData.texcoords.push(...texValues)
+        webglVertexData.normals.push(...normValues)
       }
-      const objIndex = parseInt(objIndexStr);
-      const index = objIndex + (objIndex >= 0 ? 0 : objVertexData[i]!.length);
-      // safe since i will never be bigger than 2
-      // @ts-ignore
-      webglVertexData[i]!.push(...objVertexData[i]![index]);
-    });
+    } 
   }
+      
 
 
   const keywordRE = /(\w*)(?: )*(.*)/;
@@ -53,24 +69,23 @@ function parseOBJ(text: string): Vertices {
     const parts = line.split(/\s+/).slice(1);
     switch(keyword) {
       case 'v':
-        objPositions.push(parts.map(parseFloat));
+        data.positions.push(parts.map(parseFloat));
         break;
       case 'vn':
-        objNormals.push(parts.map(parseFloat));
+        data.normals.push(parts.map(parseFloat));
         break;
       case 'vt':
-        objTexcoords.push(parts.map(parseFloat));
+        data.texcoords.push(parts.map(parseFloat));
         break;
       case 'f':
+        // this handles converting a face into triangles
         const numTriangles = parts.length - 2;
         for (let tri = 0; tri < numTriangles; ++tri) {
 
-          // @ts-ignore
-          addVertex(parts[0]);
-          // @ts-ignore
-          addVertex(parts[tri + 1]);
-          // @ts-ignore
-          addVertex(parts[tri + 2]);
+         
+          addVertex(parts[0]!);
+          addVertex(parts[tri + 1]!);
+          addVertex(parts[tri + 2]!);
         }
         break;
     } ;
@@ -78,9 +93,9 @@ function parseOBJ(text: string): Vertices {
   }
 
   return {
-    positions: new Float32Array(webglVertexData[0]) ,
-    texcoords: new Float32Array(webglVertexData[1]),
-    normals: new Float32Array(webglVertexData[2]),
+    positions: new Float32Array(webglVertexData.positions) ,
+    texcoords: new Float32Array(webglVertexData.texcoords),
+    normals: new Float32Array(webglVertexData.normals),
   };
 }
 
