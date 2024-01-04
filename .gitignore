@@ -2,3 +2,6 @@ node_modules
 build
 dist
 **/.DS_Store
+
+a.out.js
+a.out.wasm
