@@ -1,0 +1,31 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "c17",
+            "cppStandard": "gnu++17",
+            "intelliSenseMode": "linux-gcc-x64"
+        },
+        {
+            "name": "Emscriptem",
+            "includePath": [
+                "/home/tom/repos/emsdk/upstream/emscripten/cache/sysroot/include/SDL2",
+                "/home/tom/repos/emsdk/upstream/emscripten/cache/sysroot/include/compat",
+                "/home/tom/repos/emsdk/upstream/emscripten/cache/sysroot/include/c++/v1",
+                "/home/tom/repos/emsdk/upstream/lib/clang/18/include",
+                "/home/tom/repos/emsdk/upstream/emscripten/cache/sysroot/include"
+            ],
+            "defines": ["__EMSCRIPTEN__"],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "c17",
+            "cppStandard": "gnu++17",
+            "intelliSenseMode": "linux-gcc-x64"
+        }
+    ],
+    "version": 4
+}
