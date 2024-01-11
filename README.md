@@ -1,4 +1,8 @@
 ### to dev
 
 vite dev
-emcc index.c
+make build
+
+
+### if you want 
+make clean

@@ -17,8 +17,7 @@ void EventHandler::windowResizeEvent(int width, int height)
 void EventHandler::initWindow(const char* title)
 {
     // Create SDL window
-    mpWindow = 
-        SDL_CreateWindow(title, 
+    mpWindow = SDL_CreateWindow(title, 
                          SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                          mCamera.windowSize().width, mCamera.windowSize().height, 
                          SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE| SDL_WINDOW_SHOWN);
