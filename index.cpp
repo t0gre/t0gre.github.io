@@ -26,17 +26,11 @@
 // Vertex shader
 GLint shaderPan, shaderZoom, shaderAspect;
 const GLchar* vertexSource =
-    "uniform vec2 pan;                             \n"
-    "uniform float zoom;                           \n"
-    "uniform float aspect;                         \n"
     "attribute vec4 position;                      \n"
     "varying vec3 color;                           \n"
     "void main()                                   \n"
     "{                                             \n"
     "    gl_Position = vec4(position.xyz, 1.0);    \n"
-    "    gl_Position.xy += pan;                    \n"
-    "    gl_Position.xy *= zoom;                   \n"
-    "    gl_Position.y *= aspect;                  \n"
     "    color = gl_Position.xyz + vec3(0.5);      \n"
     "}                                             \n";
 
@@ -51,11 +45,11 @@ const GLchar* fragmentSource =
 
 void updateShader(EventHandler& eventHandler)
 {
-    Camera& camera = eventHandler.camera();
+    // Camera& camera = eventHandler.camera();
 
-    glUniform2fv(shaderPan, 1, camera.pan());
-    glUniform1f(shaderZoom, camera.zoom()); 
-    glUniform1f(shaderAspect, camera.aspect());
+    // glUniform2fv(shaderPan, 1, camera.pan());
+    // glUniform1f(shaderZoom, camera.zoom()); 
+    // glUniform1f(shaderAspect, camera.aspect());
 }
 
 GLuint initShader(EventHandler& eventHandler)
@@ -124,8 +118,8 @@ void mainLoop(void* mainLoopArg)
     eventHandler.processEvents();
 
     // Update shader if camera changed
-    if (eventHandler.camera().updated())
-        updateShader(eventHandler);
+    // if (eventHandler.camera().updated())
+    //     updateShader(eventHandler);
 
     redraw(eventHandler);
 }
