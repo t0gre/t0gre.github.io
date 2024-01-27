@@ -10,7 +10,7 @@ public:
 
     void processEvents();
     // Camera& camera() { return mCamera; }
-    void swapWindow();
+    // void swapWindow();
     SDL_Window* initWindow(const char* title);
 
 private:

@@ -35,10 +35,10 @@ SDL_Window* EventHandler::initWindow(const char* title)
     return mpWindow;
 }
 
-void EventHandler::swapWindow()
-{
-    SDL_GL_SwapWindow(mpWindow);
-}
+// void EventHandler::swapWindow()
+// {
+//     SDL_GL_SwapWindow(mpWindow);
+// }
 
 // void EventHandler::zoomEventMouse(bool mouseWheelDown, int x, int y)
 // {                
