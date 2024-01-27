@@ -11,6 +11,7 @@ public:
     void processEvents();
     // Camera& camera() { return mCamera; }
     void swapWindow();
+    SDL_Window* initWindow(const char* title);
 
 private:
     // // Camera
@@ -20,7 +21,7 @@ private:
     SDL_Window* mpWindow;
     Uint32 mWindowID;
     // void windowResizeEvent(int width, int height);
-    void initWindow(const char* title);
+    
 
     // // Mouse input
     // const float cMouseWheelZoomDelta;
@@ -64,6 +65,6 @@ inline EventHandler::EventHandler(const char* windowTitle)
     // , cPinchZoomThreshold (0.001f)
     // , cPinchScale (8.0f)
     // , mPinch (false)
-{
-    initWindow(windowTitle);
+{ 
+   
 }

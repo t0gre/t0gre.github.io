@@ -100,7 +100,7 @@ void initGeometry(GLuint shaderProgram)
     glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
 }
 
-void redraw(EventHandler& eventHandler)
+void redraw(SDL_Window* window)
 {
     // Clear screen
     glClear(GL_COLOR_BUFFER_BIT);
@@ -109,31 +109,33 @@ void redraw(EventHandler& eventHandler)
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
     // Swap front/back framebuffers
-    eventHandler.swapWindow();
+    SDL_GL_SwapWindow(window);
 }
 
 void mainLoop(void* mainLoopArg) 
 {   
-    EventHandler& eventHandler = *((EventHandler*)mainLoopArg);
-    eventHandler.processEvents();
+    // EventHandler& eventHandler = *((EventHandler*)mainLoopArg);
+    // eventHandler.processEvents();
 
     // Update shader if camera changed
     // if (eventHandler.camera().updated())
     //     updateShader(eventHandler);
+    SDL_Window* window = (SDL_Window*)mainLoopArg;
 
-    redraw(eventHandler);
+    redraw(window);
 }
 
 int main(int argc, char** argv)
 {
     EventHandler eventHandler("Hello Triangle");
+    SDL_Window* window = eventHandler.initWindow("Tom");
 
     // Initialize shader and geometry
     GLuint shaderProgram = initShader(eventHandler);
     initGeometry(shaderProgram);
 
     // Start the main loop
-    void* mainLoopArg = &eventHandler;
+    void* mainLoopArg = window;
 
 #ifdef __EMSCRIPTEN__
     int fps = 0; // Use browser's requestAnimationFrame

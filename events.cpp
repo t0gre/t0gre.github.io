@@ -10,7 +10,7 @@
 
 
 
-void EventHandler::initWindow(const char* title)
+SDL_Window* EventHandler::initWindow(const char* title)
 {
     // Create SDL window
     mpWindow = SDL_CreateWindow(title, 
@@ -32,6 +32,7 @@ void EventHandler::initWindow(const char* title)
 
     // Initialize viewport
     glViewport(0,0 ,480, 640);
+    return mpWindow;
 }
 
 void EventHandler::swapWindow()
