@@ -8,11 +8,7 @@
 
 // #define EVENTS_DEBUG
 
-void EventHandler::windowResizeEvent(int width, int height)
-{
-    glViewport(0, 0, width, height);
-    // mCamera.setWindowSize(width, height);
-}
+
 
 void EventHandler::initWindow(const char* title)
 {
@@ -35,7 +31,7 @@ void EventHandler::initWindow(const char* title)
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     // Initialize viewport
-    windowResizeEvent(480, 640);
+    glViewport(0,0 ,480, 640);
 }
 
 void EventHandler::swapWindow()
@@ -119,7 +115,7 @@ void EventHandler::processEvents()
                     && event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
                 {
                     int width = event.window.data1, height = event.window.data2;
-                    windowResizeEvent(width, height);
+                    glViewport(0, 0, width, height);;
                 }
                 break;
             }

@@ -19,7 +19,7 @@ private:
     // Window
     SDL_Window* mpWindow;
     Uint32 mWindowID;
-    void windowResizeEvent(int width, int height);
+    // void windowResizeEvent(int width, int height);
     void initWindow(const char* title);
 
     // // Mouse input
