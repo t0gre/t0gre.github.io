@@ -7,7 +7,7 @@
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",
-            "cStandard": "c17",
+            "cStandard": "c11",
             "cppStandard": "gnu++17",
             "intelliSenseMode": "linux-gcc-x64"
         },
@@ -16,7 +16,6 @@
             "includePath": [
                 "/home/tom/repos/emsdk/upstream/emscripten/cache/sysroot/include/SDL2",
                 "/home/tom/repos/emsdk/upstream/emscripten/cache/sysroot/include/compat",
-                "/home/tom/repos/emsdk/upstream/emscripten/cache/sysroot/include/c++/v1",
                 "/home/tom/repos/emsdk/upstream/lib/clang/18/include",
                 "/home/tom/repos/emsdk/upstream/emscripten/cache/sysroot/include"
             ],
