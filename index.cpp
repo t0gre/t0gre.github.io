@@ -21,7 +21,6 @@
 #include <SDL.h>
 #include <SDL_opengles2.h>
 
-#include "events.h"
 #include <stdexcept>
 
 // Vertex shader
@@ -44,16 +43,8 @@ const GLchar* fragmentSource =
     "    gl_FragColor = vec4 ( color, 1.0 );      \n"
     "}                                            \n";
 
-void updateShader(EventHandler& eventHandler)
-{
-    // Camera& camera = eventHandler.camera();
 
-    // glUniform2fv(shaderPan, 1, camera.pan());
-    // glUniform1f(shaderZoom, camera.zoom()); 
-    // glUniform1f(shaderAspect, camera.aspect());
-}
-
-GLuint initShader(EventHandler& eventHandler)
+GLuint initShader(void)
 {
     // Create and compile vertex shader
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -76,10 +67,16 @@ GLuint initShader(EventHandler& eventHandler)
     shaderPan = glGetUniformLocation(shaderProgram, "pan");
     shaderZoom = glGetUniformLocation(shaderProgram, "zoom");    
     shaderAspect = glGetUniformLocation(shaderProgram, "aspect");
-    updateShader(eventHandler);
 
     return shaderProgram;
 }
+
+typedef struct WindowState  {
+    SDL_Window* window_object;
+    Uint32 id;
+} WindowState;
+
+
 
 WindowState initWindow(const char* title)
 {
@@ -182,11 +179,11 @@ void mainLoop(void* mainLoopArg)
 
 int main(int argc, char** argv)
 {
-    EventHandler eventHandler("Hello Triangle");
+
     WindowState window = initWindow("Tom");
 
     // Initialize shader and geometry
-    GLuint shaderProgram = initShader(eventHandler);
+    GLuint shaderProgram = initShader();
     initGeometry(shaderProgram);
 
     // Start the main loop
