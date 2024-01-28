@@ -1,19 +1,3 @@
-//
-// Emscripten/SDL2/OpenGLES2 sample that demonstrates simple geometry and shaders, mouse and touch input, and window resizing
-//
-// Setup:
-//     Install emscripten: http://kripken.github.io/emscripten-site/docs/getting_started/downloads.html
-//
-// Build:
-//     emcc -std=c++11 hello_triangle.cpp events.cpp camera.cpp -s USE_SDL=2 -s FULL_ES2=1 -s WASM=0 -o hello_triangle.html
-//
-// Run:
-//     emrun hello_triangle.html
-//
-// Result:
-//     A colorful triangle.  Left mouse pans, mouse wheel zooms in/out.  Window is resizable.
-//
-
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #endif
@@ -24,9 +8,10 @@
 #include <stdexcept>
 
 // Vertex shader
-GLint shaderPan, shaderZoom, shaderAspect;
 const GLchar* vertexSource =
     "attribute vec4 position;                      \n"
+    "uniform mat4 view;                             \n"
+    "uniform mat4 perspective;                     \n"
     "varying vec3 color;                           \n"
     "void main()                                   \n"
     "{                                             \n"
@@ -63,16 +48,15 @@ GLuint initShader(void)
     glLinkProgram(shaderProgram);
     glUseProgram(shaderProgram);
 
-    // Get shader variables and initialize them
-    shaderPan = glGetUniformLocation(shaderProgram, "pan");
-    shaderZoom = glGetUniformLocation(shaderProgram, "zoom");    
-    shaderAspect = glGetUniformLocation(shaderProgram, "aspect");
+    // Get shader uniforms and initialize them
+    GLuint viewUniformLocation = glGetUniformLocation(shaderProgram, "view");
+    GLuint perspectiveUniformLocation = glGetUniformLocation(shaderProgram, "perspective");
 
     return shaderProgram;
 }
 
 typedef struct WindowState  {
-    SDL_Window* window_object;
+    SDL_Window* object;
     Uint32 id;
 } WindowState;
 
@@ -81,11 +65,11 @@ typedef struct WindowState  {
 WindowState initWindow(const char* title)
 {
     // Create SDL window
-    SDL_Window* mpWindow = SDL_CreateWindow(title, 
+    SDL_Window* window_object = SDL_CreateWindow(title, 
                          SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                           480, 640, 
                          SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE| SDL_WINDOW_SHOWN);
-    Uint32 mWindowID = SDL_GetWindowID(mpWindow);
+    Uint32 window_id = SDL_GetWindowID(window_object);
 
     // Create OpenGLES 2 context on SDL window
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
@@ -93,17 +77,19 @@ WindowState initWindow(const char* title)
     SDL_GL_SetSwapInterval(1);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-    SDL_GLContext glc = SDL_GL_CreateContext(mpWindow);
+    SDL_GLContext glc = SDL_GL_CreateContext(window_object);
 
     // Set clear color to black
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     // Initialize viewport
     glViewport(0,0 ,480, 640);
-    return {
-        mpWindow, 
-        mWindowID
+    WindowState window = {
+        .object = window_object, 
+        .id = window_id
         };
+        
+    return window;
 }
 
 void initGeometry(GLuint shaderProgram)
@@ -135,7 +121,7 @@ void redraw(WindowState* window)
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
     // Swap front/back framebuffers
-    SDL_GL_SwapWindow(window->window_object);
+    SDL_GL_SwapWindow(window->object);
 }
 
 void processEvents(WindowState* window)
@@ -172,8 +158,8 @@ void mainLoop(void* mainLoopArg)
 {   
    
     WindowState* window = (WindowState*)mainLoopArg;
-    processEvents(window);
 
+    processEvents(window);
     redraw(window);
 }
 
