@@ -5,7 +5,6 @@
 #include <SDL.h>
 #include <SDL_opengles2.h>
 
-#include <stdexcept>
 
 // Vertex shader
 const GLchar* vertexSource =
@@ -133,7 +132,7 @@ void processEvents(WindowState* window)
         switch (event.type)
         {
             case SDL_QUIT:
-                std::terminate();
+                SDL_Quit();
                 break;
 
             case SDL_WINDOWEVENT:
@@ -177,9 +176,9 @@ int main(int argc, char** argv)
 
 #ifdef __EMSCRIPTEN__
     int fps = 0; // Use browser's requestAnimationFrame
-    emscripten_set_main_loop_arg(mainLoop, mainLoopArg, fps, true);
+    emscripten_set_main_loop_arg(mainLoop, mainLoopArg, fps, 1);
 #else
-    while(true) 
+    while(1) 
         mainLoop(mainLoopArg);
 #endif
 
