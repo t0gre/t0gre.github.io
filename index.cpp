@@ -22,6 +22,7 @@
 #include <SDL_opengles2.h>
 
 #include "events.h"
+#include <stdexcept>
 
 // Vertex shader
 GLint shaderPan, shaderZoom, shaderAspect;
@@ -80,6 +81,34 @@ GLuint initShader(EventHandler& eventHandler)
     return shaderProgram;
 }
 
+WindowState initWindow(const char* title)
+{
+    // Create SDL window
+    SDL_Window* mpWindow = SDL_CreateWindow(title, 
+                         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+                          480, 640, 
+                         SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE| SDL_WINDOW_SHOWN);
+    Uint32 mWindowID = SDL_GetWindowID(mpWindow);
+
+    // Create OpenGLES 2 context on SDL window
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+    SDL_GL_SetSwapInterval(1);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+    SDL_GLContext glc = SDL_GL_CreateContext(mpWindow);
+
+    // Set clear color to black
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+    // Initialize viewport
+    glViewport(0,0 ,480, 640);
+    return {
+        mpWindow, 
+        mWindowID
+        };
+}
+
 void initGeometry(GLuint shaderProgram)
 {
     // Create vertex buffer object and copy vertex data into it
@@ -100,7 +129,7 @@ void initGeometry(GLuint shaderProgram)
     glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
 }
 
-void redraw(SDL_Window* window)
+void redraw(WindowState* window)
 {
     // Clear screen
     glClear(GL_COLOR_BUFFER_BIT);
@@ -109,18 +138,44 @@ void redraw(SDL_Window* window)
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
     // Swap front/back framebuffers
-    SDL_GL_SwapWindow(window);
+    SDL_GL_SwapWindow(window->window_object);
+}
+
+void processEvents(WindowState* window)
+{
+    // Handle events
+    SDL_Event event;
+    while (SDL_PollEvent(&event))
+    {
+        switch (event.type)
+        {
+            case SDL_QUIT:
+                std::terminate();
+                break;
+
+            case SDL_WINDOWEVENT:
+            {
+                if (event.window.windowID == window->id
+                    && event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
+                {
+                    int width = event.window.data1, height = event.window.data2;
+                    glViewport(0, 0, width, height);;
+                }
+                break;
+            }
+
+         
+        }
+
+        
+    }
 }
 
 void mainLoop(void* mainLoopArg) 
 {   
-    // EventHandler& eventHandler = *((EventHandler*)mainLoopArg);
-    // eventHandler.processEvents();
-
-    // Update shader if camera changed
-    // if (eventHandler.camera().updated())
-    //     updateShader(eventHandler);
-    SDL_Window* window = (SDL_Window*)mainLoopArg;
+   
+    WindowState* window = (WindowState*)mainLoopArg;
+    processEvents(window);
 
     redraw(window);
 }
@@ -128,14 +183,14 @@ void mainLoop(void* mainLoopArg)
 int main(int argc, char** argv)
 {
     EventHandler eventHandler("Hello Triangle");
-    SDL_Window* window = eventHandler.initWindow("Tom");
+    WindowState window = initWindow("Tom");
 
     // Initialize shader and geometry
     GLuint shaderProgram = initShader(eventHandler);
     initGeometry(shaderProgram);
 
     // Start the main loop
-    void* mainLoopArg = window;
+    void* mainLoopArg = &window;
 
 #ifdef __EMSCRIPTEN__
     int fps = 0; // Use browser's requestAnimationFrame

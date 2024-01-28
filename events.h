@@ -3,15 +3,18 @@
 //
 #include "camera.h"
 
+typedef struct WindowState  {
+    SDL_Window* window_object;
+    Uint32 id;
+} WindowState;
+
+
 class EventHandler
 {
 public:
     EventHandler(const char* windowTitle);
 
-    void processEvents();
-    // Camera& camera() { return mCamera; }
-    // void swapWindow();
-    SDL_Window* initWindow(const char* title);
+    WindowState initWindow(const char* title);
 
 private:
     // // Camera
