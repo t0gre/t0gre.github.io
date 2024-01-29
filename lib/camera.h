@@ -19,15 +19,4 @@ Camera createCamera(
   float far,
   Vec3 up,
   Vec3 position,
-  Vec3 rotation) {
-    
-    return { 
-        .field_of_view_radians = field_of_view_radians,
-        .aspect = aspect,
-        .near = near,
-        .far = far,
-        .up = up, 
-        .position = position,
-        .rotation = rotation,
-        };
-}
+  Vec3 rotation);
