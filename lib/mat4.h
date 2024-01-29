@@ -46,4 +46,4 @@ Mat4 m4vectorMultiply(Vec4 v, Mat4 m);
 
 Mat4 m4fromPositionAndEuler(Vec3 position, Vec3 euler);
 
-void m4toArray(Mat4 m, float out_buf[16]);
+void m4toArray(Mat4 m, float out_buf[4][4]);

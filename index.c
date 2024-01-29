@@ -15,13 +15,12 @@ const GLchar* vertexSource =
     "attribute vec4 position;                      \n"
     "uniform mat4 model;                           \n"
     "uniform mat4 view;                            \n"
-    "uniform mat4 perspective;                     \n"
+    "uniform mat4 projection;                     \n"
     "varying vec3 color;                           \n"
     "void main()                                   \n"
     "{                                             \n"
-
-    "    gl_Position = vec4(position.xyz, 1.0);    \n"
-    "    color = gl_Position.xyz + vec3(0.5);      \n"
+    "    gl_Position = projection * view * model * position;    \n"
+    "    color = gl_Position.xyz + vec3(0.5);     \n"
     "}                                             \n";
 
 // Fragment/pixel shader
@@ -77,6 +76,30 @@ RenderProgram initShader(void)
         .projectionUniformLocation = projectionUniformLocation,
         .opacityUniformLocation = opacityUniformLocation,
     };
+
+    Vec3 camera_up = { 0.f, 1.f, 0.f };
+    Vec3 camera_position = { 0.f, 0.f, -5.f };
+    Vec3 camera_rotation = { 0.f, 0.f, 0.f };
+    Camera camera = createCamera(degreeToRad(60.f), 1.f, 1.f, 2000.f, camera_up, camera_position, camera_rotation);
+    Mat4 projection = m4perspective(camera.field_of_view_radians, camera.aspect, camera.near, camera.far);
+    Mat4 view = m4fromPositionAndEuler(camera.position, camera.rotation);
+    Vec3 model_position = { 0.f, 0.f, 0.f };
+    Vec3 model_rotation = { 0.f, 0.f, 0.f };
+    Mat4 model = m4fromPositionAndEuler(model_position, model_rotation);
+
+    float mBuf[4][4] = {};
+    m4toArray(model, mBuf);
+    glUniformMatrix4fv(renderProgram.modelUniformLocation,1,0, &mBuf[0][0]);
+
+    float vBuf[4][4] = {};
+    m4toArray(view, vBuf);
+    glUniformMatrix4fv(renderProgram.viewUniformLocation,1,0, &vBuf[0][0]);
+
+    float pBuf[4][4] = {};
+    m4toArray(projection, pBuf);
+    glUniformMatrix4fv(renderProgram.projectionUniformLocation,1,0, &pBuf[0][0]);
+
+    glUniform1f(renderProgram.opacityUniformLocation, 0.1);
 
     return renderProgram; 
 }
@@ -137,43 +160,9 @@ void initGeometry(RenderProgram renderProgram)
     glEnableVertexAttribArray(posAttrib);
     glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-    Vec3 camera_up = { 0.f, 1.f, 0.f };
-    Vec3 camera_position = { 0.f, 0.f, -20.f };
-    Vec3 camera_rotation = { 0.f, 0.f, 0.f };
-    Camera camera = createCamera(degreeToRad(60.f), 1.f, 1.f, 2000.f, camera_up, camera_position, camera_rotation);
-    Mat4 projection = m4perspective(camera.field_of_view_radians, camera.aspect, camera.near, camera.far);
-    Mat4 view = m4fromPositionAndEuler(camera.position, camera.rotation);
-    Vec3 model_position = { 0.f, 0.f, 0.f };
-    Vec3 model_rotation = { 0.f, 0.f, 0.f };
-    Mat4 model = m4fromPositionAndEuler(model_position, model_rotation);
+    
 
-
-    float mBuf[16] = {};
-    m4toArray(model, mBuf);
-    for (int i = 0; i < 16; i++) {
-        printf("%.3f, ", mBuf[i]);
-        
-    }
-    printf("\n");
-    glUniformMatrix4fv(renderProgram.modelUniformLocation,1,0, mBuf);
-
-    float vBuf[16] = {};
-    m4toArray(view, mBuf);
-    for (int i = 0; i < 16; i++) {
-        printf("%.3f, ", mBuf[i]);
-       
-    }
-    printf("\n");
-    glUniformMatrix4fv(renderProgram.viewUniformLocation,1,0, vBuf);
-
-    float pBuf[16] = {};
-    m4toArray(projection, mBuf);
-    for (int i = 0; i < 16; i++) {
-        printf("%.3f, ", mBuf[i]);
-    }
-    printf("\n");
-    glUniformMatrix4fv(renderProgram.projectionUniformLocation,1,0, pBuf);
-    glUniform1f(renderProgram.opacityUniformLocation, 0.1);
+    
 }
 
 void redraw(WindowState* window)

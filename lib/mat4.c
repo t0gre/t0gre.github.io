@@ -267,38 +267,32 @@ Mat4 m4fromPositionAndEuler(Vec3 position, Vec3 euler) {
     return mat4;
 }
 
-void m4toArray(Mat4 m, float out_buff[16]) {
-    out_buff[0] = m.m00;
-    out_buff[1] = m.m01;
-    out_buff[2] = m.m02;
-    out_buff[3] = m.m03;
-    out_buff[4] = m.m10; 
-    out_buff[5] = m.m11; 
-    out_buff[6] = m.m12; 
-    out_buff[7] = m.m13;
-    out_buff[8] = m.m20; 
-    out_buff[9] = m.m21; 
-    out_buff[10] = m.m22; 
-    out_buff[11] = m.m23;
-    out_buff[12] = m.m30; 
-    out_buff[13] = m.m31; 
-    out_buff[14] = m.m32; 
-    out_buff[15] = m.m33;
-    // out_buff[0] = m.m00;
-    // out_buff[1] = m.m10;
-    // out_buff[2] = m.m20;
-    // out_buff[3] = m.m30;
-    // out_buff[4] = m.m01; 
-    // out_buff[5] = m.m11; 
-    // out_buff[6] = m.m21; 
-    // out_buff[7] = m.m31;
-    // out_buff[8] = m.m02; 
-    // out_buff[9] = m.m12; 
-    // out_buff[10] = m.m22; 
-    // out_buff[11] = m.m32;
-    // out_buff[12] = m.m03; 
-    // out_buff[13] = m.m13; 
-    // out_buff[14] = m.m23; 
-    // out_buff[15] = m.m33;
+void m4toArray(Mat4 m, float out_buff[4][4]) {
+    
+    out_buff[0][0] = m.m00;
+    out_buff[1][0] = m.m10;
+    out_buff[2][0] = m.m20;
+    out_buff[3][0] = m.m30;
+    out_buff[0][1] = m.m01; 
+    out_buff[1][1] = m.m11; 
+    out_buff[2][1] = m.m21; 
+    out_buff[3][1] = m.m31;
+    out_buff[0][2] = m.m02; 
+    out_buff[1][2] = m.m12; 
+    out_buff[2][2] = m.m22; 
+    out_buff[3][2] = m.m32;
+    out_buff[0][3] = m.m03; 
+    out_buff[1][3] = m.m13; 
+    out_buff[2][3] = m.m23; 
+    out_buff[3][3] = m.m33;
     
 }
+
+// use for logging out array values
+// for (int i = 0; i < 4; i++) {
+//         for (int j = 0; j < 4; j++) {
+//             printf("%.3f, ", mBuf[i][j]);
+//         }
+        
+        
+//     }
