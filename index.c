@@ -12,25 +12,30 @@
 
 // Vertex shader
 const GLchar* vertexSource =
-    "attribute vec4 position;                      \n"
+    "attribute vec4 a_position;                    \n"
+    "attribute vec3 a_normal;                      \n"
     "uniform mat4 model;                           \n"
     "uniform mat4 view;                            \n"
-    "uniform mat4 projection;                     \n"
-    "varying vec3 color;                           \n"
+    "uniform mat4 projection;                      \n"
+    "varying vec3 v_normal;                        \n"
     "void main()                                   \n"
     "{                                             \n"
-    "    gl_Position = projection * view * model * position;    \n"
-    "    color = gl_Position.xyz + vec3(0.5);     \n"
+    "    gl_Position = projection * view * model * a_position;    \n"
+    "    v_normal = mat3(model) * a_normal;        \n"
     "}                                             \n";
 
 // Fragment/pixel shader
 const GLchar* fragmentSource =
     "precision mediump float;                     \n"
     "uniform float opacity;                       \n"
-    "varying vec3 color;                          \n"
+    "varying vec3 v_normal;                       \n"
     "void main()                                  \n"
     "{                                            \n"
-    "    gl_FragColor = vec4 ( color, opacity );  \n"
+    "    vec3 lightDirection = vec3(-0.5, 0.0, 0.0);               \n"
+    "    vec4 diffuse = vec4(0.5, 0.5, 0.5, 0.5); \n"
+    "    vec3 normal = normalize(v_normal);       \n"
+    "    float fakeLight = dot(lightDirection, normal) * .5 + .5;  \n"
+    "    gl_FragColor = vec4(diffuse.rgb * fakeLight, diffuse.a);  \n"
     "}                                            \n";
 
 typedef struct RenderProgram  {
@@ -84,7 +89,7 @@ RenderProgram initShader(void)
     Mat4 projection = m4perspective(camera.field_of_view_radians, camera.aspect, camera.near, camera.far);
     Mat4 view = m4fromPositionAndEuler(camera.position, camera.rotation);
     Vec3 model_position = { 0.f, 0.f, 0.f };
-    Vec3 model_rotation = { 0.f, 0.f, 0.f };
+    Vec3 model_rotation = { 0.f, 0.5f, 0.f };
     Mat4 model = m4fromPositionAndEuler(model_position, model_rotation);
 
     float mBuf[4][4] = {};
@@ -130,6 +135,8 @@ WindowState initWindow(const char* title)
 
     // Set clear color to black
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glEnable(GL_DEPTH_TEST);
+    
 
     // Initialize viewport
     glViewport(0,0 ,480, 640);
@@ -147,18 +154,113 @@ void initGeometry(RenderProgram renderProgram)
     GLuint vbo;
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    
+
     GLfloat vertices[] = 
-    {
-        0.0f, 0.5f, 0.0f,
-        -0.5f, -0.5f, 0.0f,
-        0.5f, -0.5f, 0.0f
-    };
+   {
+    -0.5f, -0.5f, -0.5f,  
+     0.5f, -0.5f, -0.5f,  
+     0.5f,  0.5f, -0.5f,  
+     0.5f,  0.5f, -0.5f,  
+    -0.5f,  0.5f, -0.5f,  
+    -0.5f, -0.5f, -0.5f,  
+
+    -0.5f, -0.5f,  0.5f,  
+     0.5f, -0.5f,  0.5f,  
+     0.5f,  0.5f,  0.5f,  
+     0.5f,  0.5f,  0.5f,  
+    -0.5f,  0.5f,  0.5f,  
+    -0.5f, -0.5f,  0.5f,  
+
+    -0.5f,  0.5f,  0.5f,  
+    -0.5f,  0.5f, -0.5f,  
+    -0.5f, -0.5f, -0.5f,  
+    -0.5f, -0.5f, -0.5f,  
+    -0.5f, -0.5f,  0.5f,  
+    -0.5f,  0.5f,  0.5f,  
+
+     0.5f,  0.5f,  0.5f,  
+     0.5f,  0.5f, -0.5f,  
+     0.5f, -0.5f, -0.5f,  
+     0.5f, -0.5f, -0.5f,  
+     0.5f, -0.5f,  0.5f,  
+     0.5f,  0.5f,  0.5f,  
+
+    -0.5f, -0.5f, -0.5f,  
+     0.5f, -0.5f, -0.5f,  
+     0.5f, -0.5f,  0.5f,  
+     0.5f, -0.5f,  0.5f,  
+    -0.5f, -0.5f,  0.5f,  
+    -0.5f, -0.5f, -0.5f,  
+
+    -0.5f,  0.5f, -0.5f,  
+     0.5f,  0.5f, -0.5f,  
+     0.5f,  0.5f,  0.5f,  
+     0.5f,  0.5f,  0.5f,  
+    -0.5f,  0.5f,  0.5f,  
+    -0.5f,  0.5f, -0.5f, 
+};
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     // Specify the layout of the shader vertex data (positions only, 3 floats)
-    GLint posAttrib = glGetAttribLocation(renderProgram.shaderProgram, "position");
+    GLint posAttrib = glGetAttribLocation(renderProgram.shaderProgram, "a_position");
     glEnableVertexAttribArray(posAttrib);
     glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+    GLuint vbo_norm;
+    glGenBuffers(1, &vbo_norm);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo_norm);
+    
+    GLfloat normals[] = 
+    {
+      0.0f,  0.0f, -1.0f,
+      0.0f,  0.0f, -1.0f, 
+      0.0f,  0.0f, -1.0f, 
+      0.0f,  0.0f, -1.0f, 
+      0.0f,  0.0f, -1.0f, 
+      0.0f,  0.0f, -1.0f, 
+
+      0.0f,  0.0f, 1.0f,
+      0.0f,  0.0f, 1.0f,
+      0.0f,  0.0f, 1.0f,
+      0.0f,  0.0f, 1.0f,
+      0.0f,  0.0f, 1.0f,
+      0.0f,  0.0f, 1.0f,
+
+     -1.0f,  0.0f,  0.0f,
+     -1.0f,  0.0f,  0.0f,
+     -1.0f,  0.0f,  0.0f,
+     -1.0f,  0.0f,  0.0f,
+     -1.0f,  0.0f,  0.0f,
+     -1.0f,  0.0f,  0.0f,
+
+      1.0f,  0.0f,  0.0f,
+      1.0f,  0.0f,  0.0f,
+      1.0f,  0.0f,  0.0f,
+      1.0f,  0.0f,  0.0f,
+      1.0f,  0.0f,  0.0f,
+      1.0f,  0.0f,  0.0f,
+
+      0.0f, -1.0f,  0.0f,
+      0.0f, -1.0f,  0.0f,
+      0.0f, -1.0f,  0.0f,
+      0.0f, -1.0f,  0.0f,
+      0.0f, -1.0f,  0.0f,
+      0.0f, -1.0f,  0.0f,
+
+      0.0f,  1.0f,  0.0f,
+      0.0f,  1.0f,  0.0f,
+      0.0f,  1.0f,  0.0f,
+      0.0f,  1.0f,  0.0f,
+      0.0f,  1.0f,  0.0f,
+      0.0f,  1.0f,  0.0f
+};
+    glBufferData(GL_ARRAY_BUFFER, sizeof(normals), normals, GL_STATIC_DRAW);
+
+    // Specify the layout of the shader vertex data (positions only, 3 floats)
+    GLint normAttrib = glGetAttribLocation(renderProgram.shaderProgram, "a_normal");
+    glEnableVertexAttribArray(normAttrib);
+    glVertexAttribPointer(normAttrib, 3, GL_FLOAT, GL_TRUE, 0, 0);
 
     
 
@@ -171,7 +273,7 @@ void redraw(WindowState* window)
     glClear(GL_COLOR_BUFFER_BIT);
 
     // Draw the vertex buffer
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawArrays(GL_TRIANGLES, 0, 36); // TOD0: get this length dynimically
 
     // Swap front/back framebuffers
     SDL_GL_SwapWindow(window->object);

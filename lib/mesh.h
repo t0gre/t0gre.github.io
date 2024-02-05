@@ -4,26 +4,25 @@
 #include <SDL_opengles2.h>
 #include <SDL.h>
 
-typedef struct Vectices {
-  float positions[9];
-  float normals[9];
-
-} Vertices;
+typedef struct Vertex {
+  Vec3 position;
+  Vec3 normal;
+} Vertex;
 
 
 typedef struct Mesh {
   Vec3 position;
   Vec3 rotation;
-  Vertices vertices;
   GLuint shader_program;
   GLuint positions_vbo;
   GLuint normals_vbo;
+  Vertex vertices[];
 
 } Mesh;
 
 Mesh createMesh(Vec3 position,
   Vec3 rotation,
-  Vertices vertices,
+  Vertex vertices[],
   GLuint shader_program,
   GLuint vao) {
 
@@ -40,30 +39,30 @@ Mesh createMesh(Vec3 position,
   return {
     .position = position,
     .rotation = rotation,
-    .vertices = vertices,
     .shader_program = shader_program,
     .positions_vbo = positions_vbo,
     .normals_vbo = normals_vbo,
+    .vertices = *vertices,
   };
 }
 
-void drawMesh(Mesh mesh, DirectionalLight light, Camera camera) {
+// void drawMesh(Mesh mesh, DirectionalLight light, Camera camera) {
   
-  glUseProgram(mesh.shader_program);
+//   glUseProgram(mesh.shader_program);
   
 
-  glBindBuffer(GL_ARRAY_BUFFER, mesh.positions_vbo);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(mesh.vertices.positions), mesh.vertices.positions, GL_STATIC_DRAW);
+//   glBindBuffer(GL_ARRAY_BUFFER, mesh.positions_vbo);
+//   glBufferData(GL_ARRAY_BUFFER, sizeof(mesh.vertices), mesh.vertices, GL_STATIC_DRAW);
 
-  GLint pos_attrib = glGetAttribLocation(mesh.shader_program, "a_position");
-  glEnableVertexAttribArray(pos_attrib);
-  glVertexAttribPointer(pos_attrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
+//   GLint pos_attrib = glGetAttribLocation(mesh.shader_program, "a_position");
+//   glEnableVertexAttribArray(pos_attrib);
+//   glVertexAttribPointer(pos_attrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-  glBindBuffer(GL_ARRAY_BUFFER, mesh.normals_vbo);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(mesh.vertices.normals), mesh.vertices.normals, GL_STATIC_DRAW);
+//   glBindBuffer(GL_ARRAY_BUFFER, mesh.normals_vbo);
+//   glBufferData(GL_ARRAY_BUFFER, sizeof(mesh.vertices.normals), mesh.vertices.normals, GL_STATIC_DRAW);
 
-  GLint norm_attrib = glGetAttribLocation(mesh.shader_program, "a_normal");
-  glEnableVertexAttribArray(norm_attrib);
-  glVertexAttribPointer(norm_attrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
+//   GLint norm_attrib = glGetAttribLocation(mesh.shader_program, "a_normal");
+//   glEnableVertexAttribArray(norm_attrib);
+//   glVertexAttribPointer(norm_attrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-}
+// }
