@@ -4,11 +4,11 @@
 
 #include <SDL.h>
 #include <SDL_opengles2.h>
+#include <stdbool.h>
 
 #include "lib/mat4.h"
 #include "lib/math_utils.h"
 #include "lib/camera.h"
-
 
 // Vertex shader
 const GLchar* vertexSource =
@@ -51,28 +51,28 @@ typedef struct RenderProgram  {
 RenderProgram initShader(void)
 {
     // Create and compile vertex shader
-    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    const GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &vertexSource, NULL);
     glCompileShader(vertexShader);
 
     // Create and compile fragment shader
-    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    const GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
     glCompileShader(fragmentShader);
 
     // Link vertex and fragment shader into shader program and use it
-    GLuint shaderProgram = glCreateProgram();
+    const GLuint shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragmentShader);
     glLinkProgram(shaderProgram);
     glUseProgram(shaderProgram);
 
     // Get shader uniforms and initialize them
-    GLuint modelUniformLocation = glGetUniformLocation(shaderProgram, "model");
-    GLuint viewUniformLocation = glGetUniformLocation(shaderProgram, "view");
-    GLuint projectionUniformLocation = glGetUniformLocation(shaderProgram, "projection");
+    const GLuint modelUniformLocation = glGetUniformLocation(shaderProgram, "model");
+    const GLuint viewUniformLocation = glGetUniformLocation(shaderProgram, "view");
+    const GLuint projectionUniformLocation = glGetUniformLocation(shaderProgram, "projection");
     
-    GLuint opacityUniformLocation = glGetUniformLocation(shaderProgram, "opacity");
+    const GLuint opacityUniformLocation = glGetUniformLocation(shaderProgram, "opacity");
 
     RenderProgram renderProgram = {
         .shaderProgram = shaderProgram,
@@ -82,15 +82,15 @@ RenderProgram initShader(void)
         .opacityUniformLocation = opacityUniformLocation,
     };
 
-    Vec3 camera_up = { 0.f, 1.f, 0.f };
-    Vec3 camera_position = { 0.f, 0.f, -5.f };
-    Vec3 camera_rotation = { 0.f, 0.f, 0.f };
-    Camera camera = createCamera(degreeToRad(60.f), 1.f, 1.f, 2000.f, camera_up, camera_position, camera_rotation);
-    Mat4 projection = m4perspective(camera.field_of_view_radians, camera.aspect, camera.near, camera.far);
-    Mat4 view = m4fromPositionAndEuler(camera.position, camera.rotation);
-    Vec3 model_position = { 0.f, 0.f, 0.f };
-    Vec3 model_rotation = { 0.f, 0.5f, 0.f };
-    Mat4 model = m4fromPositionAndEuler(model_position, model_rotation);
+    const Vec3 camera_up = { 0.f, 1.f, 0.f };
+    const Vec3 camera_position = { 0.f, 0.f, -5.f };
+    const Vec3 camera_rotation = { 0.f, 0.f, 0.f };
+    const Camera camera = createCamera(degreeToRad(60.f), 1.f, 1.f, 2000.f, camera_up, camera_position, camera_rotation);
+    const Mat4 projection = m4perspective(camera.field_of_view_radians, camera.aspect, camera.near, camera.far);
+    const Mat4 view = m4fromPositionAndEuler(camera.position, camera.rotation);
+    const Vec3 model_position = { 0.f, 0.f, 0.f };
+    const Vec3 model_rotation = { 0.f, 0.5f, 0.f };
+    const Mat4 model = m4fromPositionAndEuler(model_position, model_rotation);
 
     float mBuf[4][4] = {};
     m4toArray(model, mBuf);
@@ -112,6 +112,7 @@ RenderProgram initShader(void)
 typedef struct WindowState  {
     SDL_Window* object;
     Uint32 id;
+    bool should_close;
 } WindowState;
 
 
@@ -123,15 +124,17 @@ WindowState initWindow(const char* title)
                          SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                           480, 640, 
                          SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE| SDL_WINDOW_SHOWN);
-    Uint32 window_id = SDL_GetWindowID(window_object);
+    const Uint32 window_id = SDL_GetWindowID(window_object);
 
     // Create OpenGLES 2 context on SDL window
+    
+    const SDL_GLContext glc = SDL_GL_CreateContext(window_object); 
+    SDL_GL_MakeCurrent(window_object, glc);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
     SDL_GL_SetSwapInterval(1);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-    SDL_GLContext glc = SDL_GL_CreateContext(window_object);
 
     // Set clear color to black
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -140,7 +143,7 @@ WindowState initWindow(const char* title)
 
     // Initialize viewport
     glViewport(0,0 ,480, 640);
-    WindowState window = {
+    const WindowState window = {
         .object = window_object, 
         .id = window_id
         };
@@ -156,7 +159,7 @@ void initGeometry(RenderProgram renderProgram)
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     
 
-    GLfloat vertices[] = 
+    const GLfloat vertices[] = 
    {
     -0.5f, -0.5f, -0.5f,  
      0.5f, -0.5f, -0.5f,  
@@ -211,7 +214,7 @@ void initGeometry(RenderProgram renderProgram)
     glGenBuffers(1, &vbo_norm);
     glBindBuffer(GL_ARRAY_BUFFER, vbo_norm);
     
-    GLfloat normals[] = 
+    const GLfloat normals[] = 
     {
       0.0f,  0.0f, -1.0f,
       0.0f,  0.0f, -1.0f, 
@@ -257,13 +260,11 @@ void initGeometry(RenderProgram renderProgram)
 };
     glBufferData(GL_ARRAY_BUFFER, sizeof(normals), normals, GL_STATIC_DRAW);
 
-    // Specify the layout of the shader vertex data (positions only, 3 floats)
+    // Specify the layout of the shader vertex data (normals only, 3 floats)
     GLint normAttrib = glGetAttribLocation(renderProgram.shaderProgram, "a_normal");
     glEnableVertexAttribArray(normAttrib);
     glVertexAttribPointer(normAttrib, 3, GL_FLOAT, GL_TRUE, 0, 0);
-
     
-
     
 }
 
@@ -288,7 +289,7 @@ void processEvents(WindowState* window)
         switch (event.type)
         {
             case SDL_QUIT:
-                SDL_Quit();
+                window->should_close = true;
                 break;
 
             case SDL_WINDOWEVENT:
@@ -297,7 +298,7 @@ void processEvents(WindowState* window)
                     && event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
                 {
                     int width = event.window.data1, height = event.window.data2;
-                    glViewport(0, 0, width, height);;
+                    glViewport(0, 0, width, height);
                 }
                 break;
             }
@@ -314,6 +315,11 @@ void mainLoop(void* mainLoopArg)
    
     WindowState* window = (WindowState*)mainLoopArg;
 
+    // log errors
+    const char* error = SDL_GetError();
+    puts(error);
+    SDL_ClearError();
+   
     processEvents(window);
     redraw(window);
 }
@@ -322,7 +328,7 @@ int main(int argc, char** argv)
 {
 
     WindowState window = initWindow("Tom");
-
+   
     // Initialize shader and geometry
     RenderProgram renderProgram = initShader();
     initGeometry(renderProgram);
@@ -330,12 +336,17 @@ int main(int argc, char** argv)
     // Start the main loop
     void* mainLoopArg = &window;
 
+
 #ifdef __EMSCRIPTEN__
+   
     int fps = 0; // Use browser's requestAnimationFrame
     emscripten_set_main_loop_arg(mainLoop, mainLoopArg, fps, 1);
+   
 #else
-    while(1) 
+    while(!window.should_close) 
+        
         mainLoop(mainLoopArg);
+
 #endif
 
     return 0;

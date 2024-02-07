@@ -6,3 +6,6 @@ dist
 a.out.js
 a.out.wasm
 a.out.data
+
+
+native
