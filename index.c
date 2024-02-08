@@ -46,9 +46,13 @@ typedef struct RenderProgram  {
     GLuint opacityUniformLocation;
 } RenderProgram;
 
+typedef struct Model {
+    Vec3 position;
+    Vec3 rotation;
+    RenderProgram renderProgram;
+} Model;    
 
-
-RenderProgram initShader(void)
+RenderProgram initShader()
 {
     // Create and compile vertex shader
     const GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -82,31 +86,36 @@ RenderProgram initShader(void)
         .opacityUniformLocation = opacityUniformLocation,
     };
 
-    const Vec3 camera_up = { 0.f, 1.f, 0.f };
-    const Vec3 camera_position = { 0.f, 0.f, -5.f };
-    const Vec3 camera_rotation = { 0.f, 0.f, 0.f };
-    const Camera camera = createCamera(degreeToRad(60.f), 1.f, 1.f, 2000.f, camera_up, camera_position, camera_rotation);
+
+    return renderProgram; 
+}
+
+void drawModel(Model model, Camera camera) {
+
+    glUseProgram(model.renderProgram.shaderProgram);
+
+  
     const Mat4 projection = m4perspective(camera.field_of_view_radians, camera.aspect, camera.near, camera.far);
     const Mat4 view = m4fromPositionAndEuler(camera.position, camera.rotation);
-    const Vec3 model_position = { 0.f, 0.f, 0.f };
-    const Vec3 model_rotation = { 0.f, 0.5f, 0.f };
-    const Mat4 model = m4fromPositionAndEuler(model_position, model_rotation);
+    const Mat4 model_m = m4fromPositionAndEuler(model.position, model.rotation);
 
     float mBuf[4][4] = {};
-    m4toArray(model, mBuf);
-    glUniformMatrix4fv(renderProgram.modelUniformLocation,1,0, &mBuf[0][0]);
+    m4toArray(model_m, mBuf);
+    glUniformMatrix4fv(model.renderProgram.modelUniformLocation,1,0, &mBuf[0][0]);
 
     float vBuf[4][4] = {};
     m4toArray(view, vBuf);
-    glUniformMatrix4fv(renderProgram.viewUniformLocation,1,0, &vBuf[0][0]);
+    glUniformMatrix4fv(model.renderProgram.viewUniformLocation,1,0, &vBuf[0][0]);
 
     float pBuf[4][4] = {};
     m4toArray(projection, pBuf);
-    glUniformMatrix4fv(renderProgram.projectionUniformLocation,1,0, &pBuf[0][0]);
+    glUniformMatrix4fv(model.renderProgram.projectionUniformLocation,1,0, &pBuf[0][0]);
 
-    glUniform1f(renderProgram.opacityUniformLocation, 0.1);
+    glUniform1f(model.renderProgram.opacityUniformLocation, 0.1);
 
-    return renderProgram; 
+    // Draw the vertex buffer
+    glDrawArrays(GL_TRIANGLES, 0, 36); // TOD0: get this length dynimically
+
 }
 
 typedef struct WindowState  {
@@ -114,6 +123,7 @@ typedef struct WindowState  {
     Uint32 id;
     bool should_close;
 } WindowState;
+
 
 
 
@@ -268,13 +278,13 @@ void initGeometry(RenderProgram renderProgram)
     
 }
 
-void redraw(WindowState window)
+void redraw(WindowState window, Camera camera, Model model)
 {
     // Clear screen
     glClear(GL_COLOR_BUFFER_BIT);
 
-    // Draw the vertex buffer
-    glDrawArrays(GL_TRIANGLES, 0, 36); // TOD0: get this length dynimically
+    drawModel(model, camera);
+   
 
     // Swap front/back framebuffers
     SDL_GL_SwapWindow(window.object);
@@ -310,16 +320,24 @@ void processEvents(WindowState window)
     }
 }
 
-typedef struct AppState {
+
+typedef struct AppState  {
     WindowState window;
     Uint64 last_frame_time;
+    Model model;
+    Camera camera;
 } AppState;
+
+void updateModel(Model* model, float dt) {
+    model->rotation.y += 1.2 * dt / 1000;
+}
 
 void mainLoop(void* mainLoopArg) 
 {   
    
     AppState* state = (AppState*)mainLoopArg;
 
+    // calculate deltaTime
     const Uint64 now = SDL_GetPerformanceCounter();
     const Uint64 last = state->last_frame_time;
 
@@ -331,26 +349,50 @@ void mainLoop(void* mainLoopArg)
     puts(error);
     SDL_ClearError();
    
+    updateModel(&state->model, deltaTime);
+
     processEvents(state->window);
-    redraw(state->window);
+     
+    redraw(state->window, state->camera, state->model);
+
 }
+
 
 int main(int argc, char** argv)
 {
 
     WindowState window = initWindow("Tom");
-    const Uint64 now = SDL_GetPerformanceCounter();
-    AppState state = {
-        .window = window,
-        .last_frame_time = now
-        };
+    Uint64 now = SDL_GetPerformanceCounter();
    
     // Initialize shader and geometry
     RenderProgram renderProgram = initShader();
     initGeometry(renderProgram);
 
+    // create a model
+    const Vec3 model_position = { 0.f, 0.f, 0.f };
+    const Vec3 model_rotation = { 0.f, 0.5f, 0.f };
+    Model model = {
+        .position = model_position,
+        .rotation = model_rotation,
+        .renderProgram = renderProgram
+    };
+
+    // create a camera
+    const Vec3 camera_up = { 0.f, 1.f, 0.f };
+    const Vec3 camera_position = { 0.f, 0.f, -5.f };
+    const Vec3 camera_rotation = { 0.f, 0.f, 0.f };
+    const Camera camera = createCamera(degreeToRad(60.f), 1.f, 1.f, 2000.f, camera_up, camera_position, camera_rotation);
+
+    AppState state = {
+        .window = window,
+        .last_frame_time = now,
+        .model = model,
+        .camera = camera
+    };
+
     // Start the main loop
-    void* mainLoopArg = &window;
+    void* mainLoopArg = &state;
+    
 
 
 #ifdef __EMSCRIPTEN__

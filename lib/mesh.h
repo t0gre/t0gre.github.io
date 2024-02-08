@@ -20,7 +20,8 @@ typedef struct Mesh {
 
 } Mesh;
 
-Mesh createMesh(Vec3 position,
+Mesh createMesh(
+  Vec3 position,
   Vec3 rotation,
   Vertex vertices[],
   GLuint shader_program,
