@@ -268,7 +268,7 @@ void initGeometry(RenderProgram renderProgram)
     
 }
 
-void redraw(WindowState* window)
+void redraw(WindowState window)
 {
     // Clear screen
     glClear(GL_COLOR_BUFFER_BIT);
@@ -277,10 +277,10 @@ void redraw(WindowState* window)
     glDrawArrays(GL_TRIANGLES, 0, 36); // TOD0: get this length dynimically
 
     // Swap front/back framebuffers
-    SDL_GL_SwapWindow(window->object);
+    SDL_GL_SwapWindow(window.object);
 }
 
-void processEvents(WindowState* window)
+void processEvents(WindowState window)
 {
     // Handle events
     SDL_Event event;
@@ -289,12 +289,12 @@ void processEvents(WindowState* window)
         switch (event.type)
         {
             case SDL_QUIT:
-                window->should_close = true;
+                window.should_close = true;
                 break;
 
             case SDL_WINDOWEVENT:
             {
-                if (event.window.windowID == window->id
+                if (event.window.windowID == window.id
                     && event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
                 {
                     int width = event.window.data1, height = event.window.data2;
@@ -310,24 +310,40 @@ void processEvents(WindowState* window)
     }
 }
 
+typedef struct AppState {
+    WindowState window;
+    Uint64 last_frame_time;
+} AppState;
+
 void mainLoop(void* mainLoopArg) 
 {   
    
-    WindowState* window = (WindowState*)mainLoopArg;
+    AppState* state = (AppState*)mainLoopArg;
+
+    const Uint64 now = SDL_GetPerformanceCounter();
+    const Uint64 last = state->last_frame_time;
+
+    const double deltaTime = ((now - last)*1000 / (double)SDL_GetPerformanceFrequency() );
+    state->last_frame_time = now;
 
     // log errors
     const char* error = SDL_GetError();
     puts(error);
     SDL_ClearError();
    
-    processEvents(window);
-    redraw(window);
+    processEvents(state->window);
+    redraw(state->window);
 }
 
 int main(int argc, char** argv)
 {
 
     WindowState window = initWindow("Tom");
+    const Uint64 now = SDL_GetPerformanceCounter();
+    AppState state = {
+        .window = window,
+        .last_frame_time = now
+        };
    
     // Initialize shader and geometry
     RenderProgram renderProgram = initShader();
