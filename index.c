@@ -139,10 +139,10 @@ WindowState initWindow(const char* title)
     // Create OpenGLES 2 context on SDL window
     
     const SDL_GLContext glc = SDL_GL_CreateContext(window_object); 
-    SDL_GL_MakeCurrent(window_object, glc);
+    // SDL_GL_MakeCurrent(window_object, glc);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-    SDL_GL_SetSwapInterval(1);
+    // SDL_GL_SetSwapInterval(1);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
@@ -345,9 +345,11 @@ void mainLoop(void* mainLoopArg)
     state->last_frame_time = now;
 
     // log errors
-    const char* error = SDL_GetError();
-    puts(error);
-    SDL_ClearError();
+    char* error = SDL_GetError();
+    if (error != "") {
+        puts(error);
+        SDL_ClearError();
+    }
    
     updateModel(&state->model, deltaTime);
 
