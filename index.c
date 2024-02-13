@@ -147,7 +147,7 @@ WindowState initWindow(const char* title)
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
     // Set clear color to black
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClearColor(1.0f, 0.9f, 1.0f, 1.0f);
     glEnable(GL_DEPTH_TEST);
     
 
@@ -345,8 +345,8 @@ void mainLoop(void* mainLoopArg)
     state->last_frame_time = now;
 
     // log errors
-    char* error = SDL_GetError();
-    if (error != "") {
+    const char* error = SDL_GetError();
+    if (error[0] != '\0') {
         puts(error);
         SDL_ClearError();
     }
