@@ -10,7 +10,25 @@
 #include "lib/math_utils.h"
 #include "lib/camera.h"
 
-// Vertex shader
+
+
+typedef struct RenderProgram  {
+    GLuint shaderProgram;
+    GLuint modelUniformLocation;
+    GLuint viewUniformLocation;
+    GLuint projectionUniformLocation;
+    GLuint opacityUniformLocation;
+} RenderProgram;
+
+typedef struct Model {
+    Vec3 position;
+    Vec3 rotation;
+    RenderProgram renderProgram;
+} Model;    
+
+RenderProgram initShader()
+{
+    // Vertex shader
 const GLchar* vertexSource =
     "attribute vec4 a_position;                    \n"
     "attribute vec3 a_normal;                      \n"
@@ -37,23 +55,6 @@ const GLchar* fragmentSource =
     "    float fakeLight = dot(lightDirection, normal) * .5 + .5;  \n"
     "    gl_FragColor = vec4(diffuse.rgb * fakeLight, diffuse.a);  \n"
     "}                                            \n";
-
-typedef struct RenderProgram  {
-    GLuint shaderProgram;
-    GLuint modelUniformLocation;
-    GLuint viewUniformLocation;
-    GLuint projectionUniformLocation;
-    GLuint opacityUniformLocation;
-} RenderProgram;
-
-typedef struct Model {
-    Vec3 position;
-    Vec3 rotation;
-    RenderProgram renderProgram;
-} Model;    
-
-RenderProgram initShader()
-{
     // Create and compile vertex shader
     const GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &vertexSource, NULL);
@@ -290,7 +291,7 @@ void redraw(WindowState window, Camera camera, Model model)
     SDL_GL_SwapWindow(window.object);
 }
 
-void processEvents(WindowState window)
+void processEvents(WindowState* window)
 {
     // Handle events
     SDL_Event event;
@@ -299,12 +300,12 @@ void processEvents(WindowState window)
         switch (event.type)
         {
             case SDL_QUIT:
-                window.should_close = true;
+                window->should_close = true;
                 break;
 
             case SDL_WINDOWEVENT:
             {
-                if (event.window.windowID == window.id
+                if (event.window.windowID == window->id
                     && event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
                 {
                     int width = event.window.data1, height = event.window.data2;
@@ -353,7 +354,7 @@ void mainLoop(void* mainLoopArg)
    
     updateModel(&state->model, deltaTime);
 
-    processEvents(state->window);
+    processEvents(&state->window);
      
     redraw(state->window, state->camera, state->model);
 
@@ -403,7 +404,7 @@ int main(int argc, char** argv)
     emscripten_set_main_loop_arg(mainLoop, mainLoopArg, fps, 1);
    
 #else
-    while(!window.should_close) 
+    while(!state.window.should_close) 
         
         mainLoop(mainLoopArg);
 
