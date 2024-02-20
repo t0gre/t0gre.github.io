@@ -100,15 +100,15 @@ void drawModel(Model model, Camera camera) {
     const Mat4 view = m4fromPositionAndEuler(camera.position, camera.rotation);
     const Mat4 model_m = m4fromPositionAndEuler(model.position, model.rotation);
 
-    float mBuf[4][4] = {};
+    float mBuf[4][4] = {0};
     m4toArray(model_m, mBuf);
     glUniformMatrix4fv(model.renderProgram.modelUniformLocation,1,0, &mBuf[0][0]);
 
-    float vBuf[4][4] = {};
+    float vBuf[4][4] = {0};
     m4toArray(view, vBuf);
     glUniformMatrix4fv(model.renderProgram.viewUniformLocation,1,0, &vBuf[0][0]);
 
-    float pBuf[4][4] = {};
+    float pBuf[4][4] = {0};
     m4toArray(projection, pBuf);
     glUniformMatrix4fv(model.renderProgram.projectionUniformLocation,1,0, &pBuf[0][0]);
 
