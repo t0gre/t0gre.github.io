@@ -12,7 +12,7 @@ const ROTATION_SPEED = 1.2;
 
 
 
-export async function main(canvas: HTMLCanvasElement): Promise<1 | undefined> {
+export async function main(canvas: HTMLCanvasElement): Promise<1> {
 
     
     let gl = canvas.getContext("webgl2");
@@ -75,6 +75,8 @@ export async function main(canvas: HTMLCanvasElement): Promise<1 | undefined> {
 
         }
     }
+
+    return 1
 }
 
 function updateShape(shape: Mesh, dt: number) {

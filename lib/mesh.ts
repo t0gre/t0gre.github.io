@@ -61,7 +61,7 @@ export function createMesh(
         material: Material,
         vertices: Vertices): Mesh | undefined {
     
-    const {positions, normals, texcoords, indices} = vertices;
+    const {positions, normals, texcoords: _, indices} = vertices;
 
     const vao = gl.createVertexArray()
     if (!vao) {

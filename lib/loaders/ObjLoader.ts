@@ -67,7 +67,7 @@ function parseOBJ(text: string): Vertices {
     if (!m) {
       continue;
     }
-    const [, keyword, unparsedArgs] = m;
+    const [, keyword, _] = m;
     const parts = line.split(/\s+/).slice(1);
     switch(keyword) {
       case 'v':
