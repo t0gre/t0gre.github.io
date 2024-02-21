@@ -1,11 +1,11 @@
-import { Vec3} from './src/vec'
+import { Vec3} from './lib/vec'
 
-import { degToRad } from './src/mathUtils'
-import { Mesh, createMesh } from './src/mesh'
-import { DirectionalLight, createDirectionalLight } from './src/light'
-import { Camera, createCamera } from './src/camera'
-import { createBasicMaterial } from './src/shaders/BasicMaterial'
-import { loadObj } from './src/loaders/ObjLoader'
+import { degToRad } from './lib/mathUtils'
+import { Mesh, createMesh } from './lib/mesh'
+import { DirectionalLight, createDirectionalLight } from './lib/light'
+import { Camera, createCamera } from './lib/camera'
+import { createBasicMaterial } from './lib/shaders/BasicMaterial'
+import { loadObj } from './lib/loaders/ObjLoader'
 
 
 const ROTATION_SPEED = 1.2;
