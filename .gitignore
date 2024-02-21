@@ -6,6 +6,7 @@ dist
 a.out.js
 a.out.wasm
 a.out.data
+a.out.wasm.map
 
 
 native

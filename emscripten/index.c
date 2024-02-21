@@ -24,7 +24,20 @@ typedef struct Model {
     Vec3 position;
     Vec3 rotation;
     RenderProgram renderProgram;
-} Model;    
+} Model;  
+
+typedef struct WindowState  {
+    SDL_Window* object;
+    Uint32 id;
+    bool should_close;
+} WindowState;
+
+typedef struct AppState  {
+    WindowState window;
+    Uint64 last_frame_time;
+    Model model;
+    Camera camera;
+} AppState;
 
 RenderProgram initShader()
 {
@@ -118,12 +131,6 @@ void drawModel(Model model, Camera camera) {
     glDrawArrays(GL_TRIANGLES, 0, 36); // TOD0: get this length dynimically
 
 }
-
-typedef struct WindowState  {
-    SDL_Window* object;
-    Uint32 id;
-    bool should_close;
-} WindowState;
 
 
 
@@ -291,7 +298,7 @@ void redraw(WindowState window, Camera camera, Model model)
     SDL_GL_SwapWindow(window.object);
 }
 
-void processEvents(WindowState* window)
+void processEvents(AppState* state)
 {
     // Handle events
     SDL_Event event;
@@ -300,16 +307,19 @@ void processEvents(WindowState* window)
         switch (event.type)
         {
             case SDL_QUIT:
-                window->should_close = true;
+                state->window.should_close = true;
                 break;
 
             case SDL_WINDOWEVENT:
             {
-                if (event.window.windowID == window->id
+                if (event.window.windowID == state->window.id
                     && event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
                 {
                     int width = event.window.data1, height = event.window.data2;
                     glViewport(0, 0, width, height);
+
+                    state->camera.aspect = (float)width / (float)height;; 
+                    
                 }
                 break;
             }
@@ -321,13 +331,6 @@ void processEvents(WindowState* window)
     }
 }
 
-
-typedef struct AppState  {
-    WindowState window;
-    Uint64 last_frame_time;
-    Model model;
-    Camera camera;
-} AppState;
 
 void updateModel(Model* model, float dt) {
     model->rotation.y += 1.2 * dt / 1000;
@@ -354,7 +357,7 @@ void mainLoop(void* mainLoopArg)
    
     updateModel(&state->model, deltaTime);
 
-    processEvents(&state->window);
+    processEvents(state);
      
     redraw(state->window, state->camera, state->model);
 
