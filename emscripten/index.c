@@ -5,11 +5,11 @@
 #include <SDL.h>
 #include <SDL_opengles2.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 #include "lib/mat4.h"
 #include "lib/math_utils.h"
 #include "lib/camera.h"
-#include <stdio.h>
 
 
 
@@ -189,7 +189,6 @@ FloatData readcsv(const char* filename) {
     
   number_of_floats++;
   size_t number = number_of_floats;
-  printf("%d\n", number_of_floats / 3);
   float* floats = malloc(sizeof(float)*number);
 
   size_t float_cursor = 0;
@@ -228,17 +227,14 @@ FloatData readcsv(const char* filename) {
 
 void initGeometry(RenderProgram renderProgram)
 {
+     // TODO do these need to be cleaned up?
+    FloatData normals = readcsv("normals.txt");
+    FloatData positions = readcsv("positions.txt");
+    
     // Create vertex buffer object and copy vertex data into it
     GLuint vbo;
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    
-   FloatData normals = readcsv("normals.txt");
-
-   FloatData positions = readcsv("positions.txt");
-   
-   
-
     glBufferData(GL_ARRAY_BUFFER, sizeof(float)*positions.count, positions.data, GL_STATIC_DRAW);
 
     // Specify the layout of the shader vertex data (positions only, 3 floats)
@@ -249,8 +245,6 @@ void initGeometry(RenderProgram renderProgram)
     GLuint vbo_norm;
     glGenBuffers(1, &vbo_norm);
     glBindBuffer(GL_ARRAY_BUFFER, vbo_norm);
-    
-
     glBufferData(GL_ARRAY_BUFFER, sizeof(float)*normals.count, normals.data, GL_STATIC_DRAW);
 
     // Specify the layout of the shader vertex data (normals only, 3 floats)
