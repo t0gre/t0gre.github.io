@@ -9,6 +9,7 @@
 #include "lib/mat4.h"
 #include "lib/math_utils.h"
 #include "lib/camera.h"
+#include <stdio.h>
 
 
 
@@ -38,6 +39,11 @@ typedef struct AppState  {
     Model model;
     Camera camera;
 } AppState;
+
+typedef struct FloatData {
+    float* data;
+    size_t count;
+} FloatData;
 
 RenderProgram initShader()
 {
@@ -128,7 +134,7 @@ void drawModel(Model model, Camera camera) {
     glUniform1f(model.renderProgram.opacityUniformLocation, 0.1);
 
     // Draw the vertex buffer
-    glDrawArrays(GL_TRIANGLES, 0, 36); // TOD0: get this length dynimically
+    glDrawArrays(GL_TRIANGLES, 0, 6678); // TOD0: get this length dynimically
 
 }
 
@@ -169,6 +175,57 @@ WindowState initWindow(const char* title)
     return window;
 }
 
+FloatData readcsv(const char* filename) {
+
+  FILE* fptr = fopen(filename, "r");
+
+  int read = 0;
+  int number_of_floats = 0;
+  while ((read = getc(fptr)) != EOF) {
+    if (read == ',') {
+      number_of_floats++;
+      }
+    }
+    
+  number_of_floats++;
+  size_t number = number_of_floats;
+  printf("%d\n", number_of_floats / 3);
+  float* floats = malloc(sizeof(float)*number);
+
+  size_t float_cursor = 0;
+  char number_string[10] = { 0 }; // it wont be longer than this
+  size_t cursor = 0;
+  FILE* fptr2 = fopen(filename, "r");
+
+  while ((read = getc(fptr2)) != EOF) {
+    
+    if (read != ',') {
+        char t = read; 
+        number_string[cursor] = t;
+        cursor++;
+    } else {
+        floats[float_cursor] = atof(number_string);
+        memset(number_string,0,strlen(number_string));
+        cursor = 0;
+        float_cursor++;
+      
+    }
+    
+    
+   
+   } 
+
+    floats[float_cursor] = atof(number_string);
+
+    FloatData result = {
+        .data = floats,
+        .count = number
+    };
+
+    return result;
+
+}
+
 void initGeometry(RenderProgram renderProgram)
 {
     // Create vertex buffer object and copy vertex data into it
@@ -176,52 +233,13 @@ void initGeometry(RenderProgram renderProgram)
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     
+   FloatData normals = readcsv("normals.txt");
 
-    const GLfloat vertices[] = 
-   {
-    -0.5f, -0.5f, -0.5f,  
-     0.5f, -0.5f, -0.5f,  
-     0.5f,  0.5f, -0.5f,  
-     0.5f,  0.5f, -0.5f,  
-    -0.5f,  0.5f, -0.5f,  
-    -0.5f, -0.5f, -0.5f,  
+   FloatData positions = readcsv("positions.txt");
+   
+   
 
-    -0.5f, -0.5f,  0.5f,  
-     0.5f, -0.5f,  0.5f,  
-     0.5f,  0.5f,  0.5f,  
-     0.5f,  0.5f,  0.5f,  
-    -0.5f,  0.5f,  0.5f,  
-    -0.5f, -0.5f,  0.5f,  
-
-    -0.5f,  0.5f,  0.5f,  
-    -0.5f,  0.5f, -0.5f,  
-    -0.5f, -0.5f, -0.5f,  
-    -0.5f, -0.5f, -0.5f,  
-    -0.5f, -0.5f,  0.5f,  
-    -0.5f,  0.5f,  0.5f,  
-
-     0.5f,  0.5f,  0.5f,  
-     0.5f,  0.5f, -0.5f,  
-     0.5f, -0.5f, -0.5f,  
-     0.5f, -0.5f, -0.5f,  
-     0.5f, -0.5f,  0.5f,  
-     0.5f,  0.5f,  0.5f,  
-
-    -0.5f, -0.5f, -0.5f,  
-     0.5f, -0.5f, -0.5f,  
-     0.5f, -0.5f,  0.5f,  
-     0.5f, -0.5f,  0.5f,  
-    -0.5f, -0.5f,  0.5f,  
-    -0.5f, -0.5f, -0.5f,  
-
-    -0.5f,  0.5f, -0.5f,  
-     0.5f,  0.5f, -0.5f,  
-     0.5f,  0.5f,  0.5f,  
-     0.5f,  0.5f,  0.5f,  
-    -0.5f,  0.5f,  0.5f,  
-    -0.5f,  0.5f, -0.5f, 
-};
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*positions.count, positions.data, GL_STATIC_DRAW);
 
     // Specify the layout of the shader vertex data (positions only, 3 floats)
     GLint posAttrib = glGetAttribLocation(renderProgram.shaderProgram, "a_position");
@@ -232,51 +250,8 @@ void initGeometry(RenderProgram renderProgram)
     glGenBuffers(1, &vbo_norm);
     glBindBuffer(GL_ARRAY_BUFFER, vbo_norm);
     
-    const GLfloat normals[] = 
-    {
-      0.0f,  0.0f, -1.0f,
-      0.0f,  0.0f, -1.0f, 
-      0.0f,  0.0f, -1.0f, 
-      0.0f,  0.0f, -1.0f, 
-      0.0f,  0.0f, -1.0f, 
-      0.0f,  0.0f, -1.0f, 
 
-      0.0f,  0.0f, 1.0f,
-      0.0f,  0.0f, 1.0f,
-      0.0f,  0.0f, 1.0f,
-      0.0f,  0.0f, 1.0f,
-      0.0f,  0.0f, 1.0f,
-      0.0f,  0.0f, 1.0f,
-
-     -1.0f,  0.0f,  0.0f,
-     -1.0f,  0.0f,  0.0f,
-     -1.0f,  0.0f,  0.0f,
-     -1.0f,  0.0f,  0.0f,
-     -1.0f,  0.0f,  0.0f,
-     -1.0f,  0.0f,  0.0f,
-
-      1.0f,  0.0f,  0.0f,
-      1.0f,  0.0f,  0.0f,
-      1.0f,  0.0f,  0.0f,
-      1.0f,  0.0f,  0.0f,
-      1.0f,  0.0f,  0.0f,
-      1.0f,  0.0f,  0.0f,
-
-      0.0f, -1.0f,  0.0f,
-      0.0f, -1.0f,  0.0f,
-      0.0f, -1.0f,  0.0f,
-      0.0f, -1.0f,  0.0f,
-      0.0f, -1.0f,  0.0f,
-      0.0f, -1.0f,  0.0f,
-
-      0.0f,  1.0f,  0.0f,
-      0.0f,  1.0f,  0.0f,
-      0.0f,  1.0f,  0.0f,
-      0.0f,  1.0f,  0.0f,
-      0.0f,  1.0f,  0.0f,
-      0.0f,  1.0f,  0.0f
-};
-    glBufferData(GL_ARRAY_BUFFER, sizeof(normals), normals, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*normals.count, normals.data, GL_STATIC_DRAW);
 
     // Specify the layout of the shader vertex data (normals only, 3 floats)
     GLint normAttrib = glGetAttribLocation(renderProgram.shaderProgram, "a_normal");
@@ -385,7 +360,7 @@ int main(int argc, char** argv)
 
     // create a camera
     const Vec3 camera_up = { 0.f, 1.f, 0.f };
-    const Vec3 camera_position = { 0.f, 0.f, -5.f };
+    const Vec3 camera_position = { 0.f, 0.f, -20.f };
     const Vec3 camera_rotation = { 0.f, 0.f, 0.f };
     const Camera camera = createCamera(degreeToRad(60.f), 1.f, 1.f, 2000.f, camera_up, camera_position, camera_rotation);
 

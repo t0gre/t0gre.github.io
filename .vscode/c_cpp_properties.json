@@ -22,6 +22,7 @@
             ],
             "defines": ["__EMSCRIPTEN__"],
             "compilerPath": "/usr/bin/gcc",
+            "compilerArgs": ["-Werror", "-Wall"],
             "cStandard": "c17",
             "cppStandard": "gnu++17",
             "intelliSenseMode": "linux-gcc-x64"
