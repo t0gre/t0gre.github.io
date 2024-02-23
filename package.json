@@ -9,7 +9,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build && cd emscripten && emcc -std=c11 index.c lib/camera.c lib/mat4.c lib/vec.c -s USE_SDL=2 -s FULL_ES2=1 -s WASM=1 && cd .. && cp -t ./dist/emscripten emscripten/a.out.js emscripten/a.out.wasm",
+    "build": "tsc && vite build && cd emscripten && emcc -std=c11 index.c lib/camera.c lib/mat4.c lib/vec.c lib/loader.c -s USE_SDL=2 -s FULL_ES3=1 -s WASM=1 --preload-file ../public/rainbowtree.obj@rainbowtree.obj --preload-file positions.txt --preload-file normals.txt && cd .. && cp -t ./dist/emscripten emscripten/a.out.js emscripten/a.out.wasm",
     "preview": "vite preview"
   },
   "devDependencies": {

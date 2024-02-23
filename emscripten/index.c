@@ -5,10 +5,12 @@
 #include <SDL.h>
 #include <SDL_opengles2.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 #include "lib/mat4.h"
 #include "lib/math_utils.h"
 #include "lib/camera.h"
+#include "lib/loader.h"
 
 
 
@@ -23,6 +25,8 @@ typedef struct RenderProgram  {
 typedef struct Model {
     Vec3 position;
     Vec3 rotation;
+    FloatData positions;
+    FloatData normals;
     RenderProgram renderProgram;
 } Model;  
 
@@ -38,6 +42,8 @@ typedef struct AppState  {
     Model model;
     Camera camera;
 } AppState;
+
+
 
 RenderProgram initShader()
 {
@@ -128,7 +134,7 @@ void drawModel(Model model, Camera camera) {
     glUniform1f(model.renderProgram.opacityUniformLocation, 0.1);
 
     // Draw the vertex buffer
-    glDrawArrays(GL_TRIANGLES, 0, 36); // TOD0: get this length dynimically
+    glDrawArrays(GL_TRIANGLES, 0, model.positions.count / 3);
 
 }
 
@@ -169,59 +175,18 @@ WindowState initWindow(const char* title)
     return window;
 }
 
-void initGeometry(RenderProgram renderProgram)
+
+
+void initGeometry(RenderProgram renderProgram, Model* model)
 {
+   
+
+    
     // Create vertex buffer object and copy vertex data into it
     GLuint vbo;
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    
-
-    const GLfloat vertices[] = 
-   {
-    -0.5f, -0.5f, -0.5f,  
-     0.5f, -0.5f, -0.5f,  
-     0.5f,  0.5f, -0.5f,  
-     0.5f,  0.5f, -0.5f,  
-    -0.5f,  0.5f, -0.5f,  
-    -0.5f, -0.5f, -0.5f,  
-
-    -0.5f, -0.5f,  0.5f,  
-     0.5f, -0.5f,  0.5f,  
-     0.5f,  0.5f,  0.5f,  
-     0.5f,  0.5f,  0.5f,  
-    -0.5f,  0.5f,  0.5f,  
-    -0.5f, -0.5f,  0.5f,  
-
-    -0.5f,  0.5f,  0.5f,  
-    -0.5f,  0.5f, -0.5f,  
-    -0.5f, -0.5f, -0.5f,  
-    -0.5f, -0.5f, -0.5f,  
-    -0.5f, -0.5f,  0.5f,  
-    -0.5f,  0.5f,  0.5f,  
-
-     0.5f,  0.5f,  0.5f,  
-     0.5f,  0.5f, -0.5f,  
-     0.5f, -0.5f, -0.5f,  
-     0.5f, -0.5f, -0.5f,  
-     0.5f, -0.5f,  0.5f,  
-     0.5f,  0.5f,  0.5f,  
-
-    -0.5f, -0.5f, -0.5f,  
-     0.5f, -0.5f, -0.5f,  
-     0.5f, -0.5f,  0.5f,  
-     0.5f, -0.5f,  0.5f,  
-    -0.5f, -0.5f,  0.5f,  
-    -0.5f, -0.5f, -0.5f,  
-
-    -0.5f,  0.5f, -0.5f,  
-     0.5f,  0.5f, -0.5f,  
-     0.5f,  0.5f,  0.5f,  
-     0.5f,  0.5f,  0.5f,  
-    -0.5f,  0.5f,  0.5f,  
-    -0.5f,  0.5f, -0.5f, 
-};
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*model->positions.count, model->positions.data, GL_STATIC_DRAW);
 
     // Specify the layout of the shader vertex data (positions only, 3 floats)
     GLint posAttrib = glGetAttribLocation(renderProgram.shaderProgram, "a_position");
@@ -231,52 +196,7 @@ void initGeometry(RenderProgram renderProgram)
     GLuint vbo_norm;
     glGenBuffers(1, &vbo_norm);
     glBindBuffer(GL_ARRAY_BUFFER, vbo_norm);
-    
-    const GLfloat normals[] = 
-    {
-      0.0f,  0.0f, -1.0f,
-      0.0f,  0.0f, -1.0f, 
-      0.0f,  0.0f, -1.0f, 
-      0.0f,  0.0f, -1.0f, 
-      0.0f,  0.0f, -1.0f, 
-      0.0f,  0.0f, -1.0f, 
-
-      0.0f,  0.0f, 1.0f,
-      0.0f,  0.0f, 1.0f,
-      0.0f,  0.0f, 1.0f,
-      0.0f,  0.0f, 1.0f,
-      0.0f,  0.0f, 1.0f,
-      0.0f,  0.0f, 1.0f,
-
-     -1.0f,  0.0f,  0.0f,
-     -1.0f,  0.0f,  0.0f,
-     -1.0f,  0.0f,  0.0f,
-     -1.0f,  0.0f,  0.0f,
-     -1.0f,  0.0f,  0.0f,
-     -1.0f,  0.0f,  0.0f,
-
-      1.0f,  0.0f,  0.0f,
-      1.0f,  0.0f,  0.0f,
-      1.0f,  0.0f,  0.0f,
-      1.0f,  0.0f,  0.0f,
-      1.0f,  0.0f,  0.0f,
-      1.0f,  0.0f,  0.0f,
-
-      0.0f, -1.0f,  0.0f,
-      0.0f, -1.0f,  0.0f,
-      0.0f, -1.0f,  0.0f,
-      0.0f, -1.0f,  0.0f,
-      0.0f, -1.0f,  0.0f,
-      0.0f, -1.0f,  0.0f,
-
-      0.0f,  1.0f,  0.0f,
-      0.0f,  1.0f,  0.0f,
-      0.0f,  1.0f,  0.0f,
-      0.0f,  1.0f,  0.0f,
-      0.0f,  1.0f,  0.0f,
-      0.0f,  1.0f,  0.0f
-};
-    glBufferData(GL_ARRAY_BUFFER, sizeof(normals), normals, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*model->normals.count, model->normals.data, GL_STATIC_DRAW);
 
     // Specify the layout of the shader vertex data (normals only, 3 floats)
     GLint normAttrib = glGetAttribLocation(renderProgram.shaderProgram, "a_normal");
@@ -372,20 +292,30 @@ int main(int argc, char** argv)
    
     // Initialize shader and geometry
     RenderProgram renderProgram = initShader();
-    initGeometry(renderProgram);
 
     // create a model
     const Vec3 model_position = { 0.f, 0.f, 0.f };
     const Vec3 model_rotation = { 0.f, 0.5f, 0.f };
+    // TODO do these need to be cleaned up?
+    FloatData normals = readcsv("normals.txt");
+    FloatData positions = readcsv("positions.txt");
+    
     Model model = {
         .position = model_position,
         .rotation = model_rotation,
+        .positions = positions,
+        .normals = normals,
         .renderProgram = renderProgram
     };
 
+    initGeometry(renderProgram, &model);
+
+    
+  
+
     // create a camera
     const Vec3 camera_up = { 0.f, 1.f, 0.f };
-    const Vec3 camera_position = { 0.f, 0.f, -5.f };
+    const Vec3 camera_position = { 0.f, 0.f, -20.f };
     const Vec3 camera_rotation = { 0.f, 0.f, 0.f };
     const Camera camera = createCamera(degreeToRad(60.f), 1.f, 1.f, 2000.f, camera_up, camera_position, camera_rotation);
 
