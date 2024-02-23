@@ -10,6 +10,7 @@
 #include "lib/mat4.h"
 #include "lib/math_utils.h"
 #include "lib/camera.h"
+#include "lib/loader.h"
 
 
 
@@ -40,10 +41,7 @@ typedef struct AppState  {
     Camera camera;
 } AppState;
 
-typedef struct FloatData {
-    float* data;
-    size_t count;
-} FloatData;
+
 
 RenderProgram initShader()
 {
@@ -175,55 +173,7 @@ WindowState initWindow(const char* title)
     return window;
 }
 
-FloatData readcsv(const char* filename) {
 
-  FILE* fptr = fopen(filename, "r");
-
-  int read = 0;
-  int number_of_floats = 0;
-  while ((read = getc(fptr)) != EOF) {
-    if (read == ',') {
-      number_of_floats++;
-      }
-    }
-    
-  number_of_floats++;
-  size_t number = number_of_floats;
-  float* floats = malloc(sizeof(float)*number);
-
-  size_t float_cursor = 0;
-  char number_string[10] = { 0 }; // it wont be longer than this
-  size_t cursor = 0;
-  FILE* fptr2 = fopen(filename, "r");
-
-  while ((read = getc(fptr2)) != EOF) {
-    
-    if (read != ',') {
-        char t = read; 
-        number_string[cursor] = t;
-        cursor++;
-    } else {
-        floats[float_cursor] = atof(number_string);
-        memset(number_string,0,strlen(number_string));
-        cursor = 0;
-        float_cursor++;
-      
-    }
-    
-    
-   
-   } 
-
-    floats[float_cursor] = atof(number_string);
-
-    FloatData result = {
-        .data = floats,
-        .count = number
-    };
-
-    return result;
-
-}
 
 void initGeometry(RenderProgram renderProgram)
 {
