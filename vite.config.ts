@@ -9,6 +9,7 @@ export default  defineConfig({
             input: {
                 main: resolve(__dirname, 'index.html'),
                 about: resolve(__dirname, 'about/index.html'),
+                links: resolve(__dirname, 'links/index.html'),
                 emscripten: resolve(__dirname, 'emscripten/index.html')
             }
         }
