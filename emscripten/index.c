@@ -315,7 +315,7 @@ int main(int argc, char** argv)
 
     // create a camera
     const Vec3 camera_up = { 0.f, 1.f, 0.f };
-    const Vec3 camera_position = { 0.f, 0.f, -20.f };
+    const Vec3 camera_position = { 0.f, -3.5f, -10.f };
     const Vec3 camera_rotation = { 0.f, 0.f, 0.f };
     const Camera camera = createCamera(degreeToRad(60.f), 1.f, 1.f, 2000.f, camera_up, camera_position, camera_rotation);
 

@@ -47,7 +47,7 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
             const near = 1;
             const far = 2000;
             const up: Vec3 = [0, 1, 0]; 
-            const position: Vec3 = [0, 0, -20];
+            const position: Vec3 = [0, -3.5, -10];
             const rotation: Vec3 = [0,0,0];
             
             const light = createDirectionalLight([0, 0, 0.5], [0.5, 0.5, 0.5])
