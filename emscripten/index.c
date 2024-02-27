@@ -116,7 +116,7 @@ void drawModel(Model model, Camera camera) {
 
   
     const Mat4 projection = m4perspective(camera.field_of_view_radians, camera.aspect, camera.near, camera.far);
-    const Mat4 view = m4fromPositionAndEuler(camera.position, camera.rotation);
+    const Mat4 view = m4inverse(m4fromPositionAndEuler(camera.position, camera.rotation));
     const Mat4 model_m = m4fromPositionAndEuler(model.position, model.rotation);
 
     float mBuf[4][4] = {0};
@@ -315,7 +315,7 @@ int main(int argc, char** argv)
 
     // create a camera
     const Vec3 camera_up = { 0.f, 1.f, 0.f };
-    const Vec3 camera_position = { 0.f, -3.5f, -10.f };
+    const Vec3 camera_position = { 0.f, 3.5f, 10.f };
     const Vec3 camera_rotation = { 0.f, 0.f, 0.f };
     const Camera camera = createCamera(degreeToRad(60.f), 1.f, 1.f, 2000.f, camera_up, camera_position, camera_rotation);
 

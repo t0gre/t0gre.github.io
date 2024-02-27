@@ -1,6 +1,6 @@
 import { createProgramFromRaw } from "./shaderUtils"
 import { DirectionalLight } from "../light";
-import { m4fromPositionAndEuler, m4perspective } from "../mat4";
+import { m4fromPositionAndEuler, m4inverse, m4perspective } from "../mat4";
 import { Mesh } from "../mesh";
 import { Camera } from "../camera";
 import { Vec4 } from "../vec";
@@ -80,7 +80,7 @@ class BasicMaterial {
         this.gl.uniformMatrix4fv(this.worldLocation, false, shapeWorld);
 
     
-        const viewMatrix = m4fromPositionAndEuler(camera.position, camera.rotation);
+        const viewMatrix = m4inverse(m4fromPositionAndEuler(camera.position, camera.rotation));
         this.gl.uniformMatrix4fv(this.viewLocation, false, viewMatrix);
 
         const projectionMatrix = m4perspective(camera.fieldOfViewRadians, camera.aspect, camera.near, camera.far)
