@@ -52,8 +52,30 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
             
             const light = createDirectionalLight([0, 0, 0.5], [0.5, 0.5, 0.5])
             const camera = createCamera(fieldOfViewRadians, aspect, near, far, up, position, rotation)
-            
+           
+            ///////////////// 
+            canvas.addEventListener('pointerdown', () => {
+                const handler = (e: PointerEvent) => {
+                    const rect = canvas.getBoundingClientRect();
+                    let x = e.clientX - rect.left;
+                    let y = e.clientY - rect.top;
+    
+                    // these are both 0-1
+                    x *= (canvas.width / canvas.clientWidth) / gl!.canvas.width;
+                    y *= (canvas.height / canvas.clientHeight) / gl!.canvas.height;
+    
+                    // convert to webgl coordinates
+                    x*= 2 - 1;
+                    y *= -2 + 1;
+    
+    
+                    console.log(x, y)
+                }
+                canvas.addEventListener('pointerup', () => canvas.removeEventListener('pointermove', handler))
+                canvas.addEventListener('pointermove', handler )
+            })
 
+            ///////////////////////////
             let lastTime = 0;
             function animate(time: DOMHighResTimeStamp) {
                 time *= 0.001 // convert from millis to seconds
