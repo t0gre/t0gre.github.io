@@ -2,6 +2,7 @@
 import { Camera } from "./camera";
 import { DirectionalLight } from "./light";
 import { Vec3 } from "./vec";
+import { InputState } from "./input";
 
 export type Vertices = {
     positions: Float32Array,
@@ -33,12 +34,12 @@ export class Mesh  {
         this.vao = vao;
     }  
     
-    render(light: DirectionalLight, camera: Camera) {
+    render(light: DirectionalLight, camera: Camera, input: InputState) {
     
         this.gl.useProgram(this.material.program);
         this.gl.bindVertexArray(this.vao);
 
-        this.material.updateUniforms(this, light, camera);
+        this.material.updateUniforms(this, light, camera, input);
 
         if (this.vertices.indices) {
             this.gl.drawElements(this.gl.TRIANGLES, this.vertices.indices.length, this.gl.UNSIGNED_SHORT,  0);
@@ -51,7 +52,7 @@ export class Mesh  {
 
 interface Material {
     program: WebGLProgram;
-    updateUniforms: (mesh: Mesh, light: DirectionalLight, camera: Camera) => void;
+    updateUniforms: (mesh: Mesh, light: DirectionalLight, camera: Camera, input: InputState) => void;
 }
 
 export function createMesh(

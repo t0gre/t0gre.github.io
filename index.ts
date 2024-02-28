@@ -1,4 +1,4 @@
-import { Vec3} from './lib/vec'
+import { Vec3 } from './lib/vec'
 
 import { degToRad } from './lib/mathUtils'
 import { Mesh, createMesh } from './lib/mesh'
@@ -6,11 +6,10 @@ import { DirectionalLight, createDirectionalLight } from './lib/light'
 import { Camera, createCamera } from './lib/camera'
 import { createBasicMaterial } from './lib/shaders/BasicMaterial'
 import { loadObj } from './lib/loaders/ObjLoader'
+import { InputState } from 'lib/input'
 
 
 const ROTATION_SPEED = 1.2;
-
-
 
 export async function main(canvas: HTMLCanvasElement): Promise<1> {
 
@@ -54,24 +53,32 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
             const camera = createCamera(fieldOfViewRadians, aspect, near, far, up, position, rotation)
            
             ///////////////// 
+            const input: InputState = {
+                pointerPosition: [0,0]
+            }
+
             canvas.addEventListener('pointerdown', () => {
                 const handler = (e: PointerEvent) => {
                     const rect = canvas.getBoundingClientRect();
+            
                     let x = e.clientX - rect.left;
                     let y = e.clientY - rect.top;
     
                     // these are both 0-1
-                    x *= (canvas.width / canvas.clientWidth) / gl!.canvas.width;
-                    y *= (canvas.height / canvas.clientHeight) / gl!.canvas.height;
+                    x = x * canvas.width / canvas.clientWidth
+                    y = y * canvas.height / canvas.clientHeight
     
-                    // convert to webgl coordinates
-                    x*= 2 - 1;
-                    y *= -2 + 1;
+                    x = x / gl!.canvas.width * 2 -1;
+                    y = y  / gl!.canvas.height * -2 + 1;
     
-    
-                    console.log(x, y)
+                    shape.rotation[1] += e.movementX / 100;
+
+                    input.pointerPosition = [x,y];
                 }
-                canvas.addEventListener('pointerup', () => canvas.removeEventListener('pointermove', handler))
+                canvas.addEventListener('pointerup', () => {
+                    canvas.removeEventListener('pointermove', handler)
+                    input.pointerPosition = [0,0]
+                })
                 canvas.addEventListener('pointermove', handler )
             })
 
@@ -84,7 +91,7 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
                 updateShape(shape!, dt)
                 resizeCanvasToDisplaySize(canvas);
                 camera.aspect = canvas.clientWidth / canvas.clientHeight;
-                const drawError = drawScene(gl!, [shape!], light, camera)
+                const drawError = drawScene(gl!, [shape!], light, camera, input)
                 if (drawError) {
                     console.log('draw error')
                 }
@@ -102,14 +109,14 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
 }
 
 function updateShape(shape: Mesh, dt: number) {
-    shape.rotation[1] += ROTATION_SPEED * dt;
+    // shape.rotation[1] += ROTATION_SPEED * dt;
     // shape.position = [Math.sin(1 * dt) * 100, Math.cos(1 * dt) * 100, 0]
 }
 
 type Scene = Mesh[]
 
 // Draw the scene.
-function drawScene(gl: WebGL2RenderingContext, scene: Scene, light: DirectionalLight, camera: Camera) {
+function drawScene(gl: WebGL2RenderingContext, scene: Scene, light: DirectionalLight, camera: Camera, input: InputState) {
 
 
     // Tell WebGL how to convert from clip space to pixels
@@ -125,7 +132,7 @@ function drawScene(gl: WebGL2RenderingContext, scene: Scene, light: DirectionalL
     // Enable the depth buffer
     gl.enable(gl.DEPTH_TEST);
 
-    scene.map(mesh => mesh.render(light, camera))
+    scene.map(mesh => mesh.render(light, camera, input))
      
 
     return 0
