@@ -30,6 +30,11 @@ typedef struct Model {
     RenderProgram renderProgram;
 } Model;  
 
+typedef struct InputState {
+    bool pointer_down;
+    Vec2 pointer_movement;
+} InputState;
+
 typedef struct WindowState  {
     SDL_Window* object;
     Uint32 id;
@@ -41,6 +46,8 @@ typedef struct AppState  {
     Uint64 last_frame_time;
     Model model;
     Camera camera;
+    InputState input;
+
 } AppState;
 
 
@@ -212,7 +219,6 @@ void redraw(WindowState window, Camera camera, Model model)
     glClear(GL_COLOR_BUFFER_BIT);
 
     drawModel(model, camera);
-   
 
     // Swap front/back framebuffers
     SDL_GL_SwapWindow(window.object);
@@ -244,7 +250,31 @@ void processEvents(AppState* state)
                 break;
             }
 
-         
+            case SDL_MOUSEBUTTONDOWN:
+            {
+                if (event.button.button == 1) {
+                    state->input.pointer_down = true;
+                }
+                 break;
+            }
+            case SDL_MOUSEMOTION:
+            {
+                SDL_MouseMotionEvent *e = (SDL_MouseMotionEvent*)&event;
+                if (state->input.pointer_down) {
+                    
+                   state->model.rotation.y += e->xrel / 100.f;
+    
+                }
+                break;
+            }
+
+            case SDL_MOUSEBUTTONUP:
+            {
+                if (event.button.button == 1) {
+                    state->input.pointer_down = false;
+                }
+                break;
+            }
         }
 
         
@@ -253,7 +283,7 @@ void processEvents(AppState* state)
 
 
 void updateModel(Model* model, float dt) {
-    model->rotation.y += 1.2 * dt / 1000;
+    // model->rotation.y += 1.2 * dt / 1000;
 }
 
 void mainLoop(void* mainLoopArg) 
@@ -287,6 +317,11 @@ void mainLoop(void* mainLoopArg)
 int main(int argc, char** argv)
 {
 
+    InputState input = {
+        .pointer_down = false,
+        .pointer_movement = { 0 }
+    };
+
     WindowState window = initWindow("Tom");
     Uint64 now = SDL_GetPerformanceCounter();
    
@@ -295,7 +330,7 @@ int main(int argc, char** argv)
 
     // create a model
     const Vec3 model_position = { 0.f, 0.f, 0.f };
-    const Vec3 model_rotation = { 0.f, 0.5f, 0.f };
+    const Vec3 model_rotation = { 0.f, PI / 2.f, 0.f };
     // TODO do these need to be cleaned up?
     FloatData normals = readcsv("normals.txt");
     FloatData positions = readcsv("positions.txt");
@@ -319,11 +354,13 @@ int main(int argc, char** argv)
     const Vec3 camera_rotation = { 0.f, 0.f, 0.f };
     const Camera camera = createCamera(degreeToRad(60.f), 1.f, 1.f, 2000.f, camera_up, camera_position, camera_rotation);
 
+    
     AppState state = {
         .window = window,
         .last_frame_time = now,
         .model = model,
-        .camera = camera
+        .camera = camera,
+        .input = input
     };
 
     // Start the main loop
