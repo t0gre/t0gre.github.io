@@ -9,7 +9,7 @@ import { loadObj } from './lib/loaders/ObjLoader'
 import { InputState } from 'lib/input'
 
 
-const ROTATION_SPEED = 1.2;
+// const ROTATION_SPEED = 1.2;
 
 export async function main(canvas: HTMLCanvasElement): Promise<1> {
 
@@ -84,12 +84,12 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
             })
 
             ///////////////////////////
-            let lastTime = 0;
+            // let lastTime = 0;
             function animate(time: DOMHighResTimeStamp) {
                 time *= 0.001 // convert from millis to seconds
-                const dt = time - lastTime;
-                lastTime = time;
-                updateShape(shape!, dt)
+                // const dt = time - lastTime;
+                // lastTime = time;
+                // updateShape(shape!, dt)
                 resizeCanvasToDisplaySize(canvas);
                 camera.aspect = canvas.clientWidth / canvas.clientHeight;
                 const drawError = drawScene(gl!, [shape!], light, camera, input)
@@ -109,10 +109,10 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
     return 1
 }
 
-function updateShape(shape: Mesh, dt: number) {
-    // shape.rotation[1] += ROTATION_SPEED * dt;
-    // shape.position = [Math.sin(1 * dt) * 100, Math.cos(1 * dt) * 100, 0]
-}
+// function updateShape(shape: Mesh, dt: number) {
+//     // shape.rotation[1] += ROTATION_SPEED * dt;
+//     // shape.position = [Math.sin(1 * dt) * 100, Math.cos(1 * dt) * 100, 0]
+// }
 
 type Scene = Mesh[]
 
