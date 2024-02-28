@@ -30,7 +30,7 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
             const vertices = await loadObj('rainbowtree.obj');
             const shape = createMesh(gl, 
                 [0,0,0], 
-                [0, 0, 0],  
+                [0, Math.PI /2, 0],  
                 material, 
                 vertices);
 
@@ -68,6 +68,7 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
                     x = x * canvas.width / canvas.clientWidth
                     y = y * canvas.height / canvas.clientHeight
     
+                    // convert to webgl clip space
                     x = x / gl!.canvas.width * 2 -1;
                     y = y  / gl!.canvas.height * -2 + 1;
     
