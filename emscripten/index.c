@@ -19,6 +19,8 @@ typedef struct RenderProgram  {
     GLuint modelUniformLocation;
     GLuint viewUniformLocation;
     GLuint projectionUniformLocation;
+    GLuint pointerUniformLocation;
+    GLuint canvasUniformLocation;
 } RenderProgram;
 
 typedef struct Model {
@@ -26,7 +28,6 @@ typedef struct Model {
     Vec3 rotation;
     FloatData positions;
     FloatData normals;
-    RenderProgram renderProgram;
 } Model;  
 
 typedef struct InputState {
@@ -46,6 +47,7 @@ typedef struct AppState  {
     Model model;
     Camera camera;
     InputState input;
+    RenderProgram render_program;
 
 } AppState;
 
@@ -72,18 +74,32 @@ const GLchar* vertexSource =
 
 // Fragment/pixel shader
 const GLchar* fragmentSource =
-    "precision mediump float;                     \n"
+    "precision mediump float;                       \n"
+    "uniform vec2 u_pointer;                        \n"
+    "uniform vec2 u_canvas;                         \n"
     "                                               \n"
-    "varying vec3 v_normal;                       \n"
+    "varying vec3 v_normal;                         \n"
     "                                               \n"
+    "float RADIUS = 100.0;                           \n"
+    "float AMBIENT_LIGHT = 0.5;                     \n"
+    "float TORCH_STRENGTH = 0.7;                   \n"
+    "vec3 lightDirection = vec3(0.0, 0.5, 0.5);    \n"
+    "vec4 diffuse = vec4(0.5, 0.8, 0.5, 0.5);      \n"
     "void main()                                  \n"
     "{                                            \n"
-    "    vec3 lightDirection = vec3(0.0, 0.0, 0.5);               \n"
-    "    vec4 diffuse = vec4(0.5, 0.8, 0.5, 0.5); \n"
-    "    vec3 normal = normalize(v_normal);       \n"
-    "    float fakeLight = dot(lightDirection, normal) * .5 + .5;  \n"
-    "    gl_FragColor = vec4(diffuse.rgb * fakeLight, diffuse.a);  \n"
-    "}                                            \n";
+    "    vec3 normal = normalize(v_normal);                                 \n"
+    "    float light = dot(lightDirection, normal) * .5 + AMBIENT_LIGHT;    \n"
+    "                                                                       \n"
+    "    // get the normalised pointer position into gl_FragCoord space     \n"
+    "    vec2 offsetFromPointer = vec2(gl_FragCoord.x - (u_pointer.x + 1.0) * (u_canvas.x / 2.0),gl_FragCoord.y - (-u_pointer.y - 1.0) * (u_canvas.y / -2.0));\n"
+    "    float distanceFromPointer = sqrt(dot(offsetFromPointer, offsetFromPointer));\n"
+    "    bool pointerIsActive = !((u_pointer.x == 0.0) && (u_pointer.y == 0.0));\n"
+    "    if (pointerIsActive && distanceFromPointer < RADIUS) {                 \n"
+    "      float normalizedTorchLight = (RADIUS - distanceFromPointer )  / RADIUS;\n"
+    "      light += TORCH_STRENGTH * normalizedTorchLight;                  \n"
+    "    }                                                                  \n"
+    "    gl_FragColor = vec4(diffuse.rgb * light, diffuse.a);               \n"
+    "}                                                                      \n";
     // Create and compile vertex shader
     const GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &vertexSource, NULL);
@@ -105,25 +121,25 @@ const GLchar* fragmentSource =
     const GLuint modelUniformLocation = glGetUniformLocation(shaderProgram, "u_model");
     const GLuint viewUniformLocation = glGetUniformLocation(shaderProgram, "u_view");
     const GLuint projectionUniformLocation = glGetUniformLocation(shaderProgram, "u_projection");
-    
-
-   
-
+    const GLuint pointerUniformLocation = glGetUniformLocation(shaderProgram, "u_pointer");
+    const GLuint canvasUniformLocation = glGetUniformLocation(shaderProgram, "u_canvas");
 
     RenderProgram renderProgram = {
         .shaderProgram = shaderProgram,
         .modelUniformLocation = modelUniformLocation,
         .viewUniformLocation = viewUniformLocation,
         .projectionUniformLocation = projectionUniformLocation,
+        .pointerUniformLocation = pointerUniformLocation,
+        .canvasUniformLocation = canvasUniformLocation
     };
 
 
     return renderProgram; 
 }
 
-void drawModel(Model model, Camera camera) {
+void drawModel(Model model, Camera camera, RenderProgram renderProgram) {
 
-    glUseProgram(model.renderProgram.shaderProgram);
+    glUseProgram(renderProgram.shaderProgram);
 
   
     const Mat4 projection = m4perspective(camera.field_of_view_radians, camera.aspect, camera.near, camera.far);
@@ -132,15 +148,15 @@ void drawModel(Model model, Camera camera) {
 
     float mBuf[4][4] = {0};
     m4toArray(model_m, mBuf);
-    glUniformMatrix4fv(model.renderProgram.modelUniformLocation,1,0, &mBuf[0][0]);
+    glUniformMatrix4fv(renderProgram.modelUniformLocation,1,0, &mBuf[0][0]);
 
     float vBuf[4][4] = {0};
     m4toArray(view, vBuf);
-    glUniformMatrix4fv(model.renderProgram.viewUniformLocation,1,0, &vBuf[0][0]);
+    glUniformMatrix4fv(renderProgram.viewUniformLocation,1,0, &vBuf[0][0]);
 
     float pBuf[4][4] = {0};
     m4toArray(projection, pBuf);
-    glUniformMatrix4fv(model.renderProgram.projectionUniformLocation,1,0, &pBuf[0][0]);
+    glUniformMatrix4fv(renderProgram.projectionUniformLocation,1,0, &pBuf[0][0]);
 
 
     // Draw the vertex buffer
@@ -187,7 +203,7 @@ WindowState initWindow(const char* title)
 
 
 
-void initGeometry(RenderProgram renderProgram, Model* model)
+void initGeometry(RenderProgram render_program, Model* model)
 {
    
 
@@ -199,7 +215,7 @@ void initGeometry(RenderProgram renderProgram, Model* model)
     glBufferData(GL_ARRAY_BUFFER, sizeof(float)*model->positions.count, model->positions.data, GL_STATIC_DRAW);
 
     // Specify the layout of the shader vertex data (positions only, 3 floats)
-    GLint posAttrib = glGetAttribLocation(renderProgram.shaderProgram, "a_position");
+    GLint posAttrib = glGetAttribLocation(render_program.shaderProgram, "a_position");
     glEnableVertexAttribArray(posAttrib);
     glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
@@ -209,22 +225,35 @@ void initGeometry(RenderProgram renderProgram, Model* model)
     glBufferData(GL_ARRAY_BUFFER, sizeof(float)*model->normals.count, model->normals.data, GL_STATIC_DRAW);
 
     // Specify the layout of the shader vertex data (normals only, 3 floats)
-    GLint normAttrib = glGetAttribLocation(renderProgram.shaderProgram, "a_normal");
+    GLint normAttrib = glGetAttribLocation(render_program.shaderProgram, "a_normal");
     glEnableVertexAttribArray(normAttrib);
     glVertexAttribPointer(normAttrib, 3, GL_FLOAT, GL_TRUE, 0, 0);
     
     
 }
 
-void redraw(WindowState window, Camera camera, Model model)
+void redraw(WindowState window, Camera camera, Model model, RenderProgram render_program)
 {
     // Clear screen
     glClear(GL_COLOR_BUFFER_BIT);
 
-    drawModel(model, camera);
+    drawModel(model, camera, render_program);
 
     // Swap front/back framebuffers
     SDL_GL_SwapWindow(window.object);
+}
+
+Vec2 normalizeMousePosition(Vec2 mouse_position, Vec2 canvas_dims)
+{
+  float x_norm = mouse_position.x / canvas_dims.x * 2.0 - 1.0;
+  float y_norm = mouse_position.y / canvas_dims.y * -2.0 + 1.0;
+
+  Vec2 position_norm = {
+    .x = x_norm,
+    .y = y_norm,
+  };
+
+  return position_norm;
 }
 
 void processEvents(AppState* state)
@@ -247,7 +276,10 @@ void processEvents(AppState* state)
                     int width = event.window.data1, height = event.window.data2;
                     glViewport(0, 0, width, height);
 
-                    state->camera.aspect = (float)width / (float)height;; 
+                    state->camera.aspect = (float)width / (float)height;
+       
+                    float dims[2] = {width, height};
+                    glUniform2fv(state->render_program.canvasUniformLocation,1, dims);
                     
                 }
                 break;
@@ -262,7 +294,17 @@ void processEvents(AppState* state)
                     .x = e->x,
                     .y = e->y
                     };
+                    
                     state->input.pointer_position = pointer_position;
+
+                    //////////////
+
+                    GLint vp [4]; 
+                    glGetIntegerv(GL_VIEWPORT, vp);
+                    Vec2 dims = {vp[2], vp[3]};
+                    Vec2 pointer_norm = normalizeMousePosition(pointer_position, dims );
+                    float pointer[2] = { pointer_norm.x, pointer_norm.y };
+                    glUniform2fv(state->render_program.pointerUniformLocation,1, pointer);
                 }
                 break;
             }
@@ -276,7 +318,17 @@ void processEvents(AppState* state)
                     .x = e->x,
                     .y = e->y
                     };
+                    
                     state->input.pointer_position = pointer_position;
+
+                    ////////////////////
+                    
+                    GLint vp [4]; 
+                    glGetIntegerv(GL_VIEWPORT, vp);
+                    Vec2 dims = {vp[2], vp[3]};
+                    Vec2 pointer_norm = normalizeMousePosition(pointer_position, dims );
+                    float pointer[2] = { pointer_norm.x, pointer_norm.y };
+                    glUniform2fv(state->render_program.pointerUniformLocation,1, pointer);
     
                 }
                 break;
@@ -325,7 +377,7 @@ void mainLoop(void* mainLoopArg)
 
     processEvents(state);
      
-    redraw(state->window, state->camera, state->model);
+    redraw(state->window, state->camera, state->model, state->render_program);
 
 }
 
@@ -342,7 +394,7 @@ int main(int argc, char** argv)
     Uint64 now = SDL_GetPerformanceCounter();
    
     // Initialize shader and geometry
-    RenderProgram renderProgram = initShader();
+    RenderProgram render_program = initShader();
 
     // create a model
     const Vec3 model_position = { 0.f, 0.f, 0.f };
@@ -355,11 +407,10 @@ int main(int argc, char** argv)
         .position = model_position,
         .rotation = model_rotation,
         .positions = positions,
-        .normals = normals,
-        .renderProgram = renderProgram
+        .normals = normals
     };
 
-    initGeometry(renderProgram, &model);
+    initGeometry(render_program, &model);
 
     
   
@@ -376,7 +427,8 @@ int main(int argc, char** argv)
         .last_frame_time = now,
         .model = model,
         .camera = camera,
-        .input = input
+        .input = input,
+        .render_program = render_program
     };
 
     // Start the main loop

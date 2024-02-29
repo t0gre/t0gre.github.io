@@ -44,7 +44,6 @@ const fragmentShaderSource = `#version 300 es
     float light = dot(u_lightDirection, normal) * .5 + AMBIENT_LIGHT;
     // get the normalised pointer position into gl_FragCoord space
     vec2 offsetFromPointer = vec2(gl_FragCoord.x - (u_pointer.x + 1.0) * (u_canvas.x / 2.0),gl_FragCoord.y - (-u_pointer.y - 1.0) * (u_canvas.y / -2.0));
-
     float distanceFromPointer = sqrt(dot(offsetFromPointer, offsetFromPointer));
     bool pointerIsActive = !((u_pointer.x == 0.0) && (u_pointer.y == 0.0));
     if (pointerIsActive && distanceFromPointer < RADIUS) {
