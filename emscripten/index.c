@@ -32,7 +32,7 @@ typedef struct Model {
 
 typedef struct InputState {
     bool pointer_down;
-    Vec2 pointer_movement;
+    Vec2 pointer_position;
 } InputState;
 
 typedef struct WindowState  {
@@ -75,7 +75,7 @@ const GLchar* fragmentSource =
     "varying vec3 v_normal;                       \n"
     "void main()                                  \n"
     "{                                            \n"
-    "    vec3 lightDirection = vec3(-0.5, 0.0, 0.0);               \n"
+    "    vec3 lightDirection = vec3(0.0, 0.0, 0.5);               \n"
     "    vec4 diffuse = vec4(0.5, 0.5, 0.5, 0.5); \n"
     "    vec3 normal = normalize(v_normal);       \n"
     "    float fakeLight = dot(lightDirection, normal) * .5 + .5;  \n"
@@ -252,17 +252,28 @@ void processEvents(AppState* state)
 
             case SDL_MOUSEBUTTONDOWN:
             {
+                SDL_MouseButtonEvent* e = (SDL_MouseButtonEvent*)&event;
                 if (event.button.button == 1) {
                     state->input.pointer_down = true;
+                    Vec2 pointer_position = {
+                    .x = e->x,
+                    .y = e->y
+                    };
+                    state->input.pointer_position = pointer_position;
                 }
-                 break;
+                break;
             }
             case SDL_MOUSEMOTION:
             {
                 SDL_MouseMotionEvent *e = (SDL_MouseMotionEvent*)&event;
                 if (state->input.pointer_down) {
                     
-                   state->model.rotation.y += e->xrel / 100.f;
+                    state->model.rotation.y += e->xrel / 100.f;
+                    Vec2 pointer_position = {
+                    .x = e->x,
+                    .y = e->y
+                    };
+                    state->input.pointer_position = pointer_position;
     
                 }
                 break;
@@ -319,7 +330,7 @@ int main(int argc, char** argv)
 
     InputState input = {
         .pointer_down = false,
-        .pointer_movement = { 0 }
+        .pointer_position = { 0 }
     };
 
     WindowState window = initWindow("Tom");
