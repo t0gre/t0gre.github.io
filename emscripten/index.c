@@ -79,7 +79,7 @@ const GLchar* fragmentSource =
     "void main()                                  \n"
     "{                                            \n"
     "    vec3 lightDirection = vec3(0.0, 0.0, 0.5);               \n"
-    "    vec4 diffuse = vec4(0.5, 0.5, 0.5, 0.5); \n"
+    "    vec4 diffuse = vec4(0.5, 0.8, 0.5, 0.5); \n"
     "    vec3 normal = normalize(v_normal);       \n"
     "    float fakeLight = dot(lightDirection, normal) * .5 + .5;  \n"
     "    gl_FragColor = vec4(diffuse.rgb * fakeLight, diffuse.a);  \n"

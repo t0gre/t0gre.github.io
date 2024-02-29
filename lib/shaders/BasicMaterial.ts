@@ -36,20 +36,24 @@ const fragmentShaderSource = `#version 300 es
     out vec4 outColor;
 
     float RADIUS = 100.0;
+    float AMBIENT_LIGHT = 0.5;
+    float TORCH_STRENGTH = 0.3;
 
     void main () {
     vec3 normal = normalize(v_normal);
-    float fakeLight = dot(u_lightDirection, normal) * .5 + .5;
-    outColor = vec4(u_diffuse.rgb * fakeLight, u_diffuse.a);
-
+    float light = dot(u_lightDirection, normal) * .5 + AMBIENT_LIGHT;
     // get the normalised pointer position into gl_FragCoord space
     vec2 offsetFromPointer = vec2(gl_FragCoord.x - (u_pointer.x + 1.0) * (u_canvas.x / 2.0),gl_FragCoord.y - (-u_pointer.y - 1.0) * (u_canvas.y / -2.0));
 
     float distanceFromPointer = sqrt(dot(offsetFromPointer, offsetFromPointer));
     bool pointerIsActive = !((u_pointer.x == 0.0) && (u_pointer.y == 0.0));
     if (pointerIsActive && distanceFromPointer < RADIUS) {
-      outColor *= distanceFromPointer / RADIUS;
+      float normalizedTorchLight = (RADIUS - distanceFromPointer )  / RADIUS;
+      light += TORCH_STRENGTH * normalizedTorchLight;
     }
+    outColor = vec4(u_diffuse.rgb * light, u_diffuse.a);
+
+   
 
     }
     `
