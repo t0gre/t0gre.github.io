@@ -19,7 +19,6 @@ typedef struct RenderProgram  {
     GLuint modelUniformLocation;
     GLuint viewUniformLocation;
     GLuint projectionUniformLocation;
-    GLuint opacityUniformLocation;
 } RenderProgram;
 
 typedef struct Model {
@@ -58,21 +57,25 @@ RenderProgram initShader()
 const GLchar* vertexSource =
     "attribute vec4 a_position;                    \n"
     "attribute vec3 a_normal;                      \n"
-    "uniform mat4 model;                           \n"
-    "uniform mat4 view;                            \n"
-    "uniform mat4 projection;                      \n"
+    "                                               \n"
+    "uniform mat4 u_model;                           \n"
+    "uniform mat4 u_view;                            \n"
+    "uniform mat4 u_projection;                      \n"
+    "                                               \n"
     "varying vec3 v_normal;                        \n"
+    "                                               \n"
     "void main()                                   \n"
     "{                                             \n"
-    "    gl_Position = projection * view * model * a_position;    \n"
-    "    v_normal = mat3(model) * a_normal;        \n"
+    "    gl_Position = u_projection * u_view * u_model * a_position;    \n"
+    "    v_normal = mat3(u_model) * a_normal;        \n"
     "}                                             \n";
 
 // Fragment/pixel shader
 const GLchar* fragmentSource =
     "precision mediump float;                     \n"
-    "uniform float opacity;                       \n"
+    "                                               \n"
     "varying vec3 v_normal;                       \n"
+    "                                               \n"
     "void main()                                  \n"
     "{                                            \n"
     "    vec3 lightDirection = vec3(0.0, 0.0, 0.5);               \n"
@@ -99,18 +102,19 @@ const GLchar* fragmentSource =
     glUseProgram(shaderProgram);
 
     // Get shader uniforms and initialize them
-    const GLuint modelUniformLocation = glGetUniformLocation(shaderProgram, "model");
-    const GLuint viewUniformLocation = glGetUniformLocation(shaderProgram, "view");
-    const GLuint projectionUniformLocation = glGetUniformLocation(shaderProgram, "projection");
+    const GLuint modelUniformLocation = glGetUniformLocation(shaderProgram, "u_model");
+    const GLuint viewUniformLocation = glGetUniformLocation(shaderProgram, "u_view");
+    const GLuint projectionUniformLocation = glGetUniformLocation(shaderProgram, "u_projection");
     
-    const GLuint opacityUniformLocation = glGetUniformLocation(shaderProgram, "opacity");
+
+   
+
 
     RenderProgram renderProgram = {
         .shaderProgram = shaderProgram,
         .modelUniformLocation = modelUniformLocation,
         .viewUniformLocation = viewUniformLocation,
         .projectionUniformLocation = projectionUniformLocation,
-        .opacityUniformLocation = opacityUniformLocation,
     };
 
 
@@ -138,7 +142,6 @@ void drawModel(Model model, Camera camera) {
     m4toArray(projection, pBuf);
     glUniformMatrix4fv(model.renderProgram.projectionUniformLocation,1,0, &pBuf[0][0]);
 
-    glUniform1f(model.renderProgram.opacityUniformLocation, 0.1);
 
     // Draw the vertex buffer
     glDrawArrays(GL_TRIANGLES, 0, model.positions.count / 3);
@@ -283,6 +286,8 @@ void processEvents(AppState* state)
             {
                 if (event.button.button == 1) {
                     state->input.pointer_down = false;
+                    Vec2 pointer_position ={ 0 } ;
+                    state->input.pointer_position = pointer_position;
                 }
                 break;
             }
