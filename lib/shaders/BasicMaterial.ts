@@ -37,7 +37,7 @@ const fragmentShaderSource = `#version 300 es
 
     float RADIUS = 100.0;
     float AMBIENT_LIGHT = 0.5;
-    float TORCH_STRENGTH = 0.3;
+    float TORCH_STRENGTH = 0.4;
 
     void main () {
     vec3 normal = normalize(v_normal);

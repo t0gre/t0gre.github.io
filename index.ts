@@ -78,7 +78,7 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
                 }
                 canvas.addEventListener('pointerup', () => {
                     canvas.removeEventListener('pointermove', handler)
-                    input.pointerPosition = [0,0]
+                    // input.pointerPosition = [0,0] N.B this is also omitted in  the C version
                 })
                 canvas.addEventListener('pointermove', handler )
             })
