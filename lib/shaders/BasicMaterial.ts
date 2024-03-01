@@ -1,9 +1,10 @@
 import { createProgramFromRaw } from "./shaderUtils"
 import { DirectionalLight } from "../light";
-import { m4fromPositionAndEuler, m4perspective } from "../mat4";
+import { m4fromPositionAndEuler, m4inverse, m4perspective } from "../mat4";
 import { Mesh } from "../mesh";
 import { Camera } from "../camera";
 import { Vec4 } from "../vec";
+import { InputState } from "lib/input";
 
 const vertexShaderSource = `#version 300 es
     in vec4 a_position;
@@ -25,16 +26,34 @@ const fragmentShaderSource = `#version 300 es
     precision highp float;
 
     in vec3 v_normal;
+   
 
     uniform vec4 u_diffuse;
     uniform vec3 u_lightDirection;
+    uniform vec2 u_pointer;
+    uniform vec2 u_canvas;
 
     out vec4 outColor;
 
+    float RADIUS = 100.0;
+    float AMBIENT_LIGHT = 0.5;
+    float TORCH_STRENGTH = 0.4;
+
     void main () {
     vec3 normal = normalize(v_normal);
-    float fakeLight = dot(u_lightDirection, normal) * .5 + .5;
-    outColor = vec4(u_diffuse.rgb * fakeLight, u_diffuse.a);
+    float light = dot(u_lightDirection, normal) * .5 + AMBIENT_LIGHT;
+    // get the normalised pointer position into gl_FragCoord space
+    vec2 offsetFromPointer = vec2(gl_FragCoord.x - (u_pointer.x + 1.0) * (u_canvas.x / 2.0),gl_FragCoord.y - (-u_pointer.y - 1.0) * (u_canvas.y / -2.0));
+    float distanceFromPointer = sqrt(dot(offsetFromPointer, offsetFromPointer));
+    bool pointerIsActive = !((u_pointer.x == 0.0) && (u_pointer.y == 0.0));
+    if (pointerIsActive && distanceFromPointer < RADIUS) {
+      float normalizedTorchLight = (RADIUS - distanceFromPointer )  / RADIUS;
+      light += TORCH_STRENGTH * normalizedTorchLight;
+    }
+    outColor = vec4(u_diffuse.rgb * light, u_diffuse.a);
+
+   
+
     }
     `
 
@@ -48,6 +67,8 @@ class BasicMaterial {
     private    projectionLocation:WebGLUniformLocation;
     private    diffuseLocation:WebGLUniformLocation;
     private    lightDirectionLocation: WebGLUniformLocation;
+    private    pointerLocation: WebGLUniformLocation;
+    private     canvasLocation: WebGLUniformLocation;
     constructor(
         gl: WebGL2RenderingContext,
         color: Vec4,
@@ -57,6 +78,8 @@ class BasicMaterial {
         projectionLocation:WebGLUniformLocation,
         diffuseLocation:WebGLUniformLocation,
         lightDirectionLocation: WebGLUniformLocation,
+        pointerLocation: WebGLUniformLocation,
+        canvasLocation: WebGLUniformLocation
         ) {
 
         this.gl = gl
@@ -66,6 +89,8 @@ class BasicMaterial {
         this.projectionLocation = projectionLocation
         this.diffuseLocation = diffuseLocation
         this.lightDirectionLocation = lightDirectionLocation
+        this.pointerLocation = pointerLocation
+        this.canvasLocation = canvasLocation
 
         this.gl.useProgram(this.program)
         this.gl.uniform4fv(this.diffuseLocation, color); 
@@ -73,20 +98,24 @@ class BasicMaterial {
 
     }
 
-    updateUniforms(mesh: Mesh, light: DirectionalLight, camera: Camera) {
+    updateUniforms(mesh: Mesh, light: DirectionalLight, camera: Camera, input: InputState) {
 
         this.gl.useProgram(this.program)
         const shapeWorld = m4fromPositionAndEuler(mesh.position, mesh.rotation);
         this.gl.uniformMatrix4fv(this.worldLocation, false, shapeWorld);
 
     
-        const viewMatrix = m4fromPositionAndEuler(camera.position, camera.rotation);
+        const viewMatrix = m4inverse(m4fromPositionAndEuler(camera.position, camera.rotation));
         this.gl.uniformMatrix4fv(this.viewLocation, false, viewMatrix);
 
         const projectionMatrix = m4perspective(camera.fieldOfViewRadians, camera.aspect, camera.near, camera.far)
         this.gl.uniformMatrix4fv(this.projectionLocation, false, projectionMatrix);
         
         this.gl.uniform3fv(this.lightDirectionLocation, light.rotation);
+
+        this.gl.uniform2fv(this.pointerLocation, input.pointerPosition!)
+
+        this.gl.uniform2fv(this.canvasLocation, [this.gl.canvas.width, this.gl.canvas.height])
     }
 
    
@@ -134,7 +163,19 @@ export function createBasicMaterial(gl: WebGL2RenderingContext, color: Vec4)  {
         return undefined
     } 
 
-    return new BasicMaterial(gl, color, program, worldLocation, viewLocation, projectionLocation, diffuseLocation, lightDirectionLocation)
+    const pointerLocation = gl.getUniformLocation(program, "u_pointer");
+    if (!pointerLocation) {
+        console.log('failed to create uniform "u_pointer", are you sure the shader uses it?')
+        return undefined
+    } 
+
+    const canvasLocation = gl.getUniformLocation(program, "u_canvas");
+    if (!canvasLocation) {
+        console.log('failed to create uniform "u_canvas", are you sure the shader uses it?')
+        return undefined
+    } 
+
+    return new BasicMaterial(gl, color, program, worldLocation, viewLocation, projectionLocation, diffuseLocation, lightDirectionLocation, pointerLocation, canvasLocation)
         
     } 
         

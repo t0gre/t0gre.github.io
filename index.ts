@@ -1,4 +1,4 @@
-import { Vec3} from './lib/vec'
+import { Vec3 } from './lib/vec'
 
 import { degToRad } from './lib/mathUtils'
 import { Mesh, createMesh } from './lib/mesh'
@@ -6,11 +6,10 @@ import { DirectionalLight, createDirectionalLight } from './lib/light'
 import { Camera, createCamera } from './lib/camera'
 import { createBasicMaterial } from './lib/shaders/BasicMaterial'
 import { loadObj } from './lib/loaders/ObjLoader'
+import { InputState } from 'lib/input'
 
 
-const ROTATION_SPEED = 1.2;
-
-
+// const ROTATION_SPEED = 1.2;
 
 export async function main(canvas: HTMLCanvasElement): Promise<1> {
 
@@ -31,7 +30,7 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
             const vertices = await loadObj('rainbowtree.obj');
             const shape = createMesh(gl, 
                 [0,0,0], 
-                [0, 0, 0],  
+                [0, Math.PI /2, 0],  
                 material, 
                 vertices);
 
@@ -46,23 +45,54 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
             const aspect = canvas.clientWidth / canvas.clientHeight;
             const near = 1;
             const far = 2000;
-            const up: Vec3 = [0, 1, 0]; 
-            const position: Vec3 = [0, -3.5, -10];
+            const up: Vec3 = [1, 0, 0]; 
+            const position: Vec3 = [0, 3.5, 10];
             const rotation: Vec3 = [0,0,0];
             
-            const light = createDirectionalLight([0, 0, 0.5], [0.5, 0.5, 0.5])
+            const light = createDirectionalLight([0, 0.5, 0.5], [0.5, 0.5, 0.5])
             const camera = createCamera(fieldOfViewRadians, aspect, near, far, up, position, rotation)
-            
+           
+            ///////////////// 
+            const input: InputState = {
+                pointerPosition: [0,0]
+            }
 
-            let lastTime = 0;
+            canvas.addEventListener('pointerdown', () => {
+                const handler = (e: PointerEvent) => {
+                    const rect = canvas.getBoundingClientRect();
+            
+                    let x = e.clientX - rect.left;
+                    let y = e.clientY - rect.top;
+    
+                    // these are both 0-1
+                    x = x * canvas.width / canvas.clientWidth
+                    y = y * canvas.height / canvas.clientHeight
+    
+                    // convert to webgl clip space
+                    x = x / gl!.canvas.width * 2 -1;
+                    y = y  / gl!.canvas.height * -2 + 1;
+    
+                    shape.rotation[1] += e.movementX / 100;
+
+                    input.pointerPosition = [x,y];
+                }
+                canvas.addEventListener('pointerup', () => {
+                    canvas.removeEventListener('pointermove', handler)
+                    // input.pointerPosition = [0,0] N.B this is also omitted in  the C version
+                })
+                canvas.addEventListener('pointermove', handler )
+            })
+
+            ///////////////////////////
+            // let lastTime = 0;
             function animate(time: DOMHighResTimeStamp) {
                 time *= 0.001 // convert from millis to seconds
-                const dt = time - lastTime;
-                lastTime = time;
-                updateShape(shape!, dt)
+                // const dt = time - lastTime;
+                // lastTime = time;
+                // updateShape(shape!, dt)
                 resizeCanvasToDisplaySize(canvas);
                 camera.aspect = canvas.clientWidth / canvas.clientHeight;
-                const drawError = drawScene(gl!, [shape!], light, camera)
+                const drawError = drawScene(gl!, [shape!], light, camera, input)
                 if (drawError) {
                     console.log('draw error')
                 }
@@ -79,15 +109,15 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
     return 1
 }
 
-function updateShape(shape: Mesh, dt: number) {
-    shape.rotation[1] += ROTATION_SPEED * dt;
-    // shape.position = [Math.sin(1 * dt) * 100, Math.cos(1 * dt) * 100, 0]
-}
+// function updateShape(shape: Mesh, dt: number) {
+//     // shape.rotation[1] += ROTATION_SPEED * dt;
+//     // shape.position = [Math.sin(1 * dt) * 100, Math.cos(1 * dt) * 100, 0]
+// }
 
 type Scene = Mesh[]
 
 // Draw the scene.
-function drawScene(gl: WebGL2RenderingContext, scene: Scene, light: DirectionalLight, camera: Camera) {
+function drawScene(gl: WebGL2RenderingContext, scene: Scene, light: DirectionalLight, camera: Camera, input: InputState) {
 
 
     // Tell WebGL how to convert from clip space to pixels
@@ -103,7 +133,7 @@ function drawScene(gl: WebGL2RenderingContext, scene: Scene, light: DirectionalL
     // Enable the depth buffer
     gl.enable(gl.DEPTH_TEST);
 
-    scene.map(mesh => mesh.render(light, camera))
+    scene.map(mesh => mesh.render(light, camera, input))
      
 
     return 0
