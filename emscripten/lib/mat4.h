@@ -2,11 +2,14 @@
 #include "vec.h"
 
 
-typedef struct Mat4 {
-    float m00, m01, m02, m03;
-    float m10, m11, m12, m13;
-    float m20, m21, m22, m23;
-    float m30, m31, m32, m33;
+typedef union Mat4 { 
+    struct {
+        float m00, m01, m02, m03;
+        float m10, m11, m12, m13;
+        float m20, m21, m22, m23;
+        float m30, m31, m32, m33;
+    };
+    float data[4][4];
 } Mat4;
 
 
@@ -45,5 +48,3 @@ Mat4 m4inverse(Mat4 m);
 Mat4 m4vectorMultiply(Vec4 v, Mat4 m);
 
 Mat4 m4fromPositionAndEuler(Vec3 position, Vec3 euler);
-
-void m4toArray(Mat4 m, float out_buf[4][4]);

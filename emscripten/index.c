@@ -145,18 +145,14 @@ void drawModel(Model model, Camera camera, RenderProgram renderProgram) {
     const Mat4 projection = m4perspective(camera.field_of_view_radians, camera.aspect, camera.near, camera.far);
     const Mat4 view = m4inverse(m4fromPositionAndEuler(camera.position, camera.rotation));
     const Mat4 model_m = m4fromPositionAndEuler(model.position, model.rotation);
+    
+    glUniformMatrix4fv(renderProgram.modelUniformLocation,1,0, &model_m.data[0][0])
+    ;
 
-    float mBuf[4][4] = {0};
-    m4toArray(model_m, mBuf);
-    glUniformMatrix4fv(renderProgram.modelUniformLocation,1,0, &mBuf[0][0]);
+    glUniformMatrix4fv(renderProgram.viewUniformLocation,1,0, &view.data[0][0]);
 
-    float vBuf[4][4] = {0};
-    m4toArray(view, vBuf);
-    glUniformMatrix4fv(renderProgram.viewUniformLocation,1,0, &vBuf[0][0]);
-
-    float pBuf[4][4] = {0};
-    m4toArray(projection, pBuf);
-    glUniformMatrix4fv(renderProgram.projectionUniformLocation,1,0, &pBuf[0][0]);
+    
+    glUniformMatrix4fv(renderProgram.projectionUniformLocation,1,0, &projection.data[0][0]);
 
 
     // Draw the vertex buffer
@@ -303,8 +299,7 @@ void processEvents(AppState* state)
                     glGetIntegerv(GL_VIEWPORT, vp);
                     Vec2 dims = {vp[2], vp[3]};
                     Vec2 pointer_norm = normalizeMousePosition(pointer_position, dims );
-                    float pointer[2] = { pointer_norm.x, pointer_norm.y };
-                    glUniform2fv(state->render_program.pointerUniformLocation,1, pointer);
+                    glUniform2fv(state->render_program.pointerUniformLocation,1, pointer_norm.data);
                 }
                 break;
             }
@@ -327,8 +322,7 @@ void processEvents(AppState* state)
                     glGetIntegerv(GL_VIEWPORT, vp);
                     Vec2 dims = {vp[2], vp[3]};
                     Vec2 pointer_norm = normalizeMousePosition(pointer_position, dims );
-                    float pointer[2] = { pointer_norm.x, pointer_norm.y };
-                    glUniform2fv(state->render_program.pointerUniformLocation,1, pointer);
+                    glUniform2fv(state->render_program.pointerUniformLocation,1, pointer_norm.data);
     
                 }
                 break;
