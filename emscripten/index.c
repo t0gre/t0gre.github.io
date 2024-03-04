@@ -299,8 +299,7 @@ void processEvents(AppState* state)
                     glGetIntegerv(GL_VIEWPORT, vp);
                     Vec2 dims = {vp[2], vp[3]};
                     Vec2 pointer_norm = normalizeMousePosition(pointer_position, dims );
-                    float pointer[2] = { pointer_norm.x, pointer_norm.y };
-                    glUniform2fv(state->render_program.pointerUniformLocation,1, pointer);
+                    glUniform2fv(state->render_program.pointerUniformLocation,1, pointer_norm.data);
                 }
                 break;
             }
@@ -323,8 +322,7 @@ void processEvents(AppState* state)
                     glGetIntegerv(GL_VIEWPORT, vp);
                     Vec2 dims = {vp[2], vp[3]};
                     Vec2 pointer_norm = normalizeMousePosition(pointer_position, dims );
-                    float pointer[2] = { pointer_norm.x, pointer_norm.y };
-                    glUniform2fv(state->render_program.pointerUniformLocation,1, pointer);
+                    glUniform2fv(state->render_program.pointerUniformLocation,1, pointer_norm.data);
     
                 }
                 break;

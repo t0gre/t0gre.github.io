@@ -2,23 +2,35 @@
 #define VEC_H
 #include <math.h>
 
-typedef struct Vec2 {
-  float x;
-  float y;
+typedef union Vec2 { 
+  struct {
+    float x;
+    float y;
+  };
+
+  float data [2];
 } Vec2;
 
-typedef struct Vec3 {
-  float x;
-  float y;
-  float z;
+typedef union Vec3 {
+  struct { 
+    float x;
+    float y;
+    float z;
+  };
+
+  float data[3];
 
 } Vec3;
 
-typedef struct Vec4 {
-  float x;
-  float y;
-  float z;
-  float w;
+typedef union Vec4 {
+  struct {
+    float x;
+    float y;
+    float z;
+    float w;
+  };
+
+  float data[4];
 
 } Vec4;
 
