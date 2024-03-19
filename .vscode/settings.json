@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "sdl.h": "c"
+        "sdl.h": "c",
+        "html5.h": "c"
     }
 }

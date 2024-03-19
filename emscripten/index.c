@@ -1,5 +1,6 @@
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
+#include <emscripten/html5.h>
 #endif
 
 #include <SDL.h>
@@ -173,9 +174,15 @@ WindowState initWindow(const char* title)
     const Uint32 window_id = SDL_GetWindowID(window_object);
 
     // Create OpenGLES 2 context on SDL window
-    
-    const SDL_GLContext glc = SDL_GL_CreateContext(window_object); 
-    // SDL_GL_MakeCurrent(window_object, glc);
+    #ifdef __EMSCRIPTEN__
+    EMSCRIPTEN_WEBGL_CONTEXT_HANDLE context = emscripten_webgl_create_context("canvas", &(EmscriptenWebGLContextAttributes){
+        .depth = 1,
+        .stencil = 1,
+        .antialias = 1,
+    });
+    #endif
+
+    emscripten_webgl_make_context_current(context);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
     // SDL_GL_SetSwapInterval(1);
