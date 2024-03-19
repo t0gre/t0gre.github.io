@@ -1,5 +1,6 @@
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
+#include <emscripten/html5.h>
 #endif
 
 #include <SDL.h>
@@ -124,17 +125,14 @@ const GLchar* fragmentSource =
     const GLuint pointerUniformLocation = glGetUniformLocation(shaderProgram, "u_pointer");
     const GLuint canvasUniformLocation = glGetUniformLocation(shaderProgram, "u_canvas");
 
-    RenderProgram renderProgram = {
+    return (RenderProgram){
         .shaderProgram = shaderProgram,
         .modelUniformLocation = modelUniformLocation,
         .viewUniformLocation = viewUniformLocation,
         .projectionUniformLocation = projectionUniformLocation,
         .pointerUniformLocation = pointerUniformLocation,
         .canvasUniformLocation = canvasUniformLocation
-    };
-
-
-    return renderProgram; 
+    }; 
 }
 
 void drawModel(Model model, Camera camera, RenderProgram renderProgram) {
@@ -146,8 +144,7 @@ void drawModel(Model model, Camera camera, RenderProgram renderProgram) {
     const Mat4 view = m4inverse(m4fromPositionAndEuler(camera.position, camera.rotation));
     const Mat4 model_m = m4fromPositionAndEuler(model.position, model.rotation);
     
-    glUniformMatrix4fv(renderProgram.modelUniformLocation,1,0, &model_m.data[0][0])
-    ;
+    glUniformMatrix4fv(renderProgram.modelUniformLocation,1,0, &model_m.data[0][0]);
 
     glUniformMatrix4fv(renderProgram.viewUniformLocation,1,0, &view.data[0][0]);
 
@@ -173,9 +170,15 @@ WindowState initWindow(const char* title)
     const Uint32 window_id = SDL_GetWindowID(window_object);
 
     // Create OpenGLES 2 context on SDL window
-    
-    const SDL_GLContext glc = SDL_GL_CreateContext(window_object); 
-    // SDL_GL_MakeCurrent(window_object, glc);
+    #ifdef __EMSCRIPTEN__
+    EMSCRIPTEN_WEBGL_CONTEXT_HANDLE context = emscripten_webgl_create_context("canvas", &(EmscriptenWebGLContextAttributes){
+        .depth = 1,
+        .stencil = 1,
+        .antialias = 1,
+    });
+    #endif
+
+    emscripten_webgl_make_context_current(context);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
     // SDL_GL_SetSwapInterval(1);
@@ -202,8 +205,6 @@ WindowState initWindow(const char* title)
 void initGeometry(RenderProgram render_program, Model* model)
 {
    
-
-    
     // Create vertex buffer object and copy vertex data into it
     GLuint vbo;
     glGenBuffers(1, &vbo);
@@ -244,12 +245,10 @@ Vec2 normalizeMousePosition(Vec2 mouse_position, Vec2 canvas_dims)
   float x_norm = mouse_position.x / canvas_dims.x * 2.0 - 1.0;
   float y_norm = mouse_position.y / canvas_dims.y * -2.0 + 1.0;
 
-  Vec2 position_norm = {
+  return (Vec2){
     .x = x_norm,
     .y = y_norm,
   };
-
-  return position_norm;
 }
 
 void processEvents(AppState* state)
@@ -273,9 +272,8 @@ void processEvents(AppState* state)
                     glViewport(0, 0, width, height);
 
                     state->camera.aspect = (float)width / (float)height;
-       
-                    float dims[2] = {width, height};
-                    glUniform2fv(state->render_program.canvasUniformLocation,1, dims);
+
+                    glUniform2fv(state->render_program.canvasUniformLocation,1, (float[2]){width, height});
                     
                 }
                 break;
@@ -293,9 +291,7 @@ void processEvents(AppState* state)
                     
                     state->input.pointer_position = pointer_position;
 
-                    //////////////
-
-                    GLint vp [4]; 
+                    GLint vp[4]; 
                     glGetIntegerv(GL_VIEWPORT, vp);
                     Vec2 dims = {vp[2], vp[3]};
                     Vec2 pointer_norm = normalizeMousePosition(pointer_position, dims );
@@ -315,8 +311,6 @@ void processEvents(AppState* state)
                     };
                     
                     state->input.pointer_position = pointer_position;
-
-                    ////////////////////
                     
                     GLint vp [4]; 
                     glGetIntegerv(GL_VIEWPORT, vp);

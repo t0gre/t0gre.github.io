@@ -9,7 +9,7 @@ Camera createCamera(
   Vec3 position,
   Vec3 rotation) {
     
-  Camera camera = { 
+  return (Camera){ 
         .field_of_view_radians = field_of_view_radians,
         .aspect = aspect,
         .near = near,
@@ -19,5 +19,4 @@ Camera createCamera(
         .rotation = rotation,
         };
 
-    return camera;
 }
