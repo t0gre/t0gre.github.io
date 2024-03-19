@@ -4,7 +4,7 @@
 #endif
 
 #include <SDL.h>
-#include <SDL_opengles2.h>
+#include <GLES3/gl3.h>
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -175,15 +175,20 @@ WindowState initWindow(const char* title)
         .depth = 1,
         .stencil = 1,
         .antialias = 1,
+        .majorVersion = 2,
+        .minorVersion = 0
     });
+    emscripten_webgl_make_context_current(context);
     #endif
 
-    emscripten_webgl_make_context_current(context);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+   
+    
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-    // SDL_GL_SetSwapInterval(1);
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+    
+    SDL_GLContext mainContext = SDL_GL_CreateContext(window_object);
+    SDL_GL_MakeCurrent(window_object, (SDL_GLContext)context );
+    
 
     // Set clear color to black
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -205,6 +210,12 @@ WindowState initWindow(const char* title)
 void initGeometry(RenderProgram render_program, Model* model)
 {
    
+    // setup vao
+    GLuint vao;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
+
     // Create vertex buffer object and copy vertex data into it
     GLuint vbo;
     glGenBuffers(1, &vbo);
@@ -225,6 +236,9 @@ void initGeometry(RenderProgram render_program, Model* model)
     GLint normAttrib = glGetAttribLocation(render_program.shaderProgram, "a_normal");
     glEnableVertexAttribArray(normAttrib);
     glVertexAttribPointer(normAttrib, 3, GL_FLOAT, GL_TRUE, 0, 0);
+
+    glBindVertexArray(vao);
+   
     
     
 }
