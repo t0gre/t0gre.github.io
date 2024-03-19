@@ -9,7 +9,7 @@ Mat4 m4lookAt(Vec3 camera_position, Vec3 target, Vec3 up) {
         Vec3 x_axis = normalize(cross(up, z_axis));
         Vec3 y_axis = normalize(cross(z_axis, x_axis));
 
-        Mat4 matrix = {
+        return (Mat4){
             x_axis.x, x_axis.y, x_axis.z, 0,
             y_axis.x, y_axis.y, y_axis.z, 0,
             z_axis.x, z_axis.y, z_axis.z, 0,
@@ -18,35 +18,33 @@ Mat4 m4lookAt(Vec3 camera_position, Vec3 target, Vec3 up) {
             camera_position.z,
             1,
         };
-        return matrix;
     }
 
 Mat4 m4perspective(float field_of_view_in_radians, float aspect, float near, float far) {
         float f = tan(PI * 0.5 - 0.5 * field_of_view_in_radians);
         float range_inv = 1.0 / (near - far);
 
-        Mat4 matrix = {
+        return (Mat4){
             f / aspect, 0.f, 0.f, 0.f,
             0.f, f, 0.f, 0.f,
             0.f, 0.f, (near + far) * range_inv, -1.f,
             0.f, 0.f, near * far * range_inv * 2.f, 0.f
         };
-        return matrix;
     }
 
 Mat4 m4projection(float width, float height, float depth) {
         // Note: This matrix flips the Y axis so 0 is at the top.
-        Mat4 matrix = {
+        return (Mat4){
             2.f / width, 0.f, 0.f, 0.f,
             0.f, -2.f / height, 0.f, 0.f,
             0.f, 0.f, 2.f / depth, 0.f,
             -1.f, 1.f, 0.f, 1.f,
         };
-        return matrix;
     }
 
 Mat4 m4multiply(Mat4 a, Mat4 b) {
-        Mat4 matrix = {
+        
+        return (Mat4){
             b.m00 * a.m00 + b.m01 * a.m10 + b.m02 * a.m20 + b.m03 * a.m30,
             b.m00 * a.m01 + b.m01 * a.m11 + b.m02 * a.m21 + b.m03 * a.m31,
             b.m00 * a.m02 + b.m01 * a.m12 + b.m02 * a.m22 + b.m03 * a.m32,
@@ -64,66 +62,65 @@ Mat4 m4multiply(Mat4 a, Mat4 b) {
             b.m30 * a.m02 + b.m31 * a.m12 + b.m32 * a.m22 + b.m33 * a.m32,
             b.m30 * a.m03 + b.m31 * a.m13 + b.m32 * a.m23 + b.m33 * a.m33,
         };
-        return matrix;
     }
 
 Mat4 m4translation(float tx, float ty, float tz) {
-        Mat4 matrix = {
+       
+        return  (Mat4){
             1.f, 0.f, 0.f, 0.f,
             0.f, 1.f, 0.f, 0.f,
             0.f, 0.f, 1.f, 0.f,
             tx, ty, tz, 1.f,
         };
-        return matrix;
     }
 
 Mat4 m4xRotation(float angle_in_radians) {
         float c = cos(angle_in_radians);
         float s = sin(angle_in_radians);
 
-        Mat4 matrix = {
+        
+        return (Mat4){
             1.f, 0.f, 0.f, 0.f,
             0.f, c, s, 0.f,
             0.f, -s, c, 0.f,
             0.f, 0.f, 0.f, 1,
         };
-        return matrix;
     }
 
 Mat4 m4yRotation(float angle_in_radians) {
         float c = cos(angle_in_radians);
         float s = sin(angle_in_radians);
 
-        Mat4 matrix = {
+        
+        return (Mat4){
             c, 0.f, -s, 0.f,
             0.f, 1.f, 0.f, 0.f,
             s, 0.f, c, 0.f,
             0.f, 0.f, 0.f, 1.f,
         };
-        return matrix;
     }
 
 Mat4 m4zRotation(float angle_in_radians) {
         float c = cos(angle_in_radians);
         float s = sin(angle_in_radians);
 
-        Mat4 matrix = {
+        
+        return (Mat4){
             c, s, 0.f, 0.f,
             -s, c, 0.f, 0.f,
             0.f, 0.f, 1.f, 0.f,
             0.f, 0.f, 0.f, 1.f,
         };
-        return matrix;
     }
 
 Mat4 m4scaling(float sx, float sy, float sz) {
-        Mat4 matrix = {
+        
+        return (Mat4){
             sx, 0.f, 0.f, 0.f,
             0.f, sy, 0.f, 0.f,
             0.f, 0.f, sz, 0.f,
             0.f, 0.f, 0.f, 1.f,
         };
-        return matrix;
     }
 
 Mat4 m4translate(Mat4 m, float tx, float ty, float tz) {
@@ -155,26 +152,25 @@ Mat4 m4scale(Mat4 m, float sx, float sy, float sz) {
    * @memberOf module:webgl-3d-math
    */
 Mat4 m4transpose(Mat4 m) {
-    Mat4 dst;
-
-    dst.m00 = m.m00;
-    dst.m01 = m.m10;
-    dst.m02 = m.m20;
-    dst.m03 = m.m30;
-    dst.m10 = m.m01;
-    dst.m11 = m.m11;
-    dst.m12 = m.m21;
-    dst.m13 = m.m31;
-    dst.m20 = m.m02;
-    dst.m21 = m.m12;
-    dst.m22 = m.m22;
-    dst.m23 = m.m32;
-    dst.m30 = m.m03;
-    dst.m31 = m.m13;
-    dst.m32 = m.m23;
-    dst.m33 = m.m33;
-
-    return dst;
+   
+    return (Mat4){
+        .m00 = m.m00,
+        .m01 = m.m10,
+        .m02 = m.m20,
+        .m03 = m.m30,
+        .m10 = m.m01,
+        .m11 = m.m11,
+        .m12 = m.m21,
+        .m13 = m.m31,
+        .m20 = m.m02,
+        .m21 = m.m12,
+        .m22 = m.m22,
+        .m23 = m.m32,
+        .m30 = m.m03,
+        .m31 = m.m13,
+        .m32 = m.m23,
+        .m33 = m.m33
+    };
   }
 
 Mat4 m4inverse(Mat4 m) {
@@ -216,7 +212,7 @@ Mat4 m4inverse(Mat4 m) {
 
         float d = 1.0 / (m.m00 * t0 + m.m10 * t1 + m.m20 * t2 + m.m30 * t3);
 
-        Mat4 matrix = {
+        return (Mat4){
             d * t0,
             d * t1,
             d * t2,
@@ -246,17 +242,15 @@ Mat4 m4inverse(Mat4 m) {
             d * ((tmp_22 * m.m22 + tmp_16 * m.m02 + tmp_21 * m.m12) -
                 (tmp_20 * m.m12 + tmp_23 * m.m22 + tmp_17 * m.m02))
         };
-        return matrix;
     }
 
 Mat4 m4vectorMultiply(Vec4 v, Mat4 m) {
-       Mat4 matrix = {
+       return (Mat4){
            m.m00 * v.x + m.m01 * v.y + m.m02 * v.z + m.m03 * v.w,
            m.m10 * v.x + m.m11 * v.y + m.m12 * v.z + m.m13 * v.w,
            m.m20 * v.x + m.m21 * v.y + m.m22 * v.z + m.m23 * v.w,
            m.m30 * v.x + m.m31 * v.y + m.m32 * v.z + m.m33 * v.w
         };
-        return matrix;
     }
 
 Mat4 m4fromPositionAndEuler(Vec3 position, Vec3 euler) {

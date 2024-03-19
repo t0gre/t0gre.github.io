@@ -46,11 +46,9 @@ FloatData readcsv(const char* filename) {
     // at EOF add the last float in
     floats[float_cursor] = atof(number_string);
 
-    FloatData result = {
+    return (FloatData){
         .data = floats,
         .count = number
     };
-
-    return result;
 
 }
