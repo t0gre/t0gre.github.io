@@ -4,7 +4,7 @@
 #include "vec.h"
 #include "SDL.h" 
 #include "camera.h"
-#include "mesh.h"
+#include "model.h"
 #include "render_program.h"
 
 typedef struct InputState {
@@ -18,13 +18,18 @@ typedef struct WindowState  {
     bool should_close;
 } WindowState;
 
+typedef struct Scene {
+    size_t model_count;
+    Model models[2];
+} Scene;
+
 typedef struct AppState  {
     WindowState window;
     Uint64 last_frame_time;
-    Mesh mesh;
     Camera camera;
     InputState input;
     RenderProgram render_program;
+    Scene scene;
 
 } AppState;
 

@@ -70,7 +70,7 @@ void processEvents(AppState* state)
                 SDL_MouseMotionEvent *e = (SDL_MouseMotionEvent*)&event;
                 if (state->input.pointer_down) {
                     
-                    state->mesh.model->rotation.y += e->xrel / 100.f;
+                    state->scene.models[0].rotation.y += e->xrel / 100.f;
                     Vec2 pointer_position = {
                     .x = e->x,
                     .y = e->y

@@ -6,17 +6,17 @@
 #include "camera.h"
 #include "light.h"
 #include "vec.h"
-#include "model.h"
+#include "render_program.h"
+#include "data_structures.h"
 
 typedef struct Mesh {
-  Model* model;
+  size_t vertex_count;
   RenderProgram* render_program;
   GLuint vao;
 } Mesh;
 
 
-Mesh createMesh(Model* model, RenderProgram* render_program);
+Mesh createMesh(FloatData positions, FloatData normals, RenderProgram* render_program);
 
-void drawMesh(Mesh mesh, Camera camera);
 
 #endif //MESH_H

@@ -12,7 +12,7 @@
 #include "app_state.h"
 #include "model.h"
 #include "events.h"
-#include "mesh.h"
+
 
 
 WindowState initWindow(const char* title)
@@ -60,12 +60,14 @@ WindowState initWindow(const char* title)
 
 
 
-void redraw(WindowState window, Camera camera, Mesh mesh, RenderProgram render_program)
+void draw(WindowState window, Camera camera, Scene scene, RenderProgram render_program)
 {
     // Clear screen
     glClear(GL_COLOR_BUFFER_BIT);
 
-    drawMesh(mesh, camera);
+    for (uint8_t i = 0; i < scene.model_count; i++) {
+        drawModel(scene.models[i], camera, render_program);
+    } 
 
     // Swap front/back framebuffers
     SDL_GL_SwapWindow(window.object);
@@ -95,11 +97,11 @@ void mainLoop(void* mainLoopArg)
         SDL_ClearError();
     }
    
-    updateModel(state->mesh.model, deltaTime);
+    updateModel(&state->scene.models[0], deltaTime);
 
     processEvents(state);
      
-    redraw(state->window, state->camera, state->mesh, state->render_program);
+    draw(state->window, state->camera, state->scene, state->render_program);
 
 }
 
@@ -119,20 +121,35 @@ int main(int argc, char** argv)
     RenderProgram render_program = initShader();
 
     // create a model
-    const Vec3 model_position = { 0.f, 0.f, 0.f };
-    const Vec3 model_rotation = { 0.f, PI / 2.f, 0.f };
+   
     // TODO do these need to be cleaned up?
     FloatData normals = readcsv("normals.txt");
     FloatData positions = readcsv("positions.txt");
+
+    Mesh mesh = createMesh(positions, normals, &render_program);
+
+    const Vec3 model1_position = { 0.f, 0.f, 0.f };
+    const Vec3 model1_rotation = { 0.f, PI / 2.f, 0.f };
+
+    const Vec3 model2_position = { 2.f, 0.f, 0.f };
+    const Vec3 model2_rotation = { 0.f, PI / 2.f, 0.f };
     
-    Model model = {
-        .position = model_position,
-        .rotation = model_rotation,
-        .positions = positions,
-        .normals = normals
+    Model model1 = {
+        .mesh = mesh,
+        .position = model1_position,
+        .rotation = model1_rotation
     };
 
-    Mesh mesh = createMesh(&model, &render_program);
+     Model model2 = {
+        .mesh = mesh,
+        .position = model2_position,
+        .rotation = model2_rotation
+    };
+
+    Scene scene =  { 
+        .model_count = 2,
+        .models = { model1, model2 }
+        };
 
     // create a camera
     const Vec3 camera_up = { 0.f, 1.f, 0.f };
@@ -144,7 +161,7 @@ int main(int argc, char** argv)
     AppState state = {
         .window = window,
         .last_frame_time = now,
-        .mesh = mesh,
+        .scene = scene,
         .camera = camera,
         .input = input,
         .render_program = render_program

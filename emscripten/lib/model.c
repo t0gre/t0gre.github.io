@@ -14,7 +14,8 @@ void drawModel(Model model, Camera camera, RenderProgram renderProgram) {
     glUniformMatrix4fv(renderProgram.viewUniformLocation,1,0, &view.data[0][0]);    
     glUniformMatrix4fv(renderProgram.projectionUniformLocation,1,0, &projection.data[0][0]);
 
+    glBindVertexArray(model.mesh.vao);
     // Draw the vertex buffer
-    glDrawArrays(GL_TRIANGLES, 0, model.positions.count / 3);
+    glDrawArrays(GL_TRIANGLES, 0, model.mesh.vertex_count);
 
 }
