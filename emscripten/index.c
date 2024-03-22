@@ -3,10 +3,7 @@
 #include <emscripten/html5.h>
 #endif
 
-#include <SDL.h>
-#include <GLES3/gl3.h>
-#include <stdbool.h>
-#include <stdio.h>
+#include "std_imports.h"
 
 #include "mat4.h"
 #include "math_utils.h"
@@ -15,6 +12,7 @@
 #include "app_state.h"
 #include "model.h"
 #include "events.h"
+#include "mesh.h"
 
 
 WindowState initWindow(const char* title)
@@ -26,8 +24,9 @@ WindowState initWindow(const char* title)
                          SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE| SDL_WINDOW_SHOWN);
     const Uint32 window_id = SDL_GetWindowID(window_object);
 
-    // Create OpenGLES 2 context on SDL window
+    
     #ifdef __EMSCRIPTEN__
+    // This emscripten call fixes an antialiasing bug in sdl context creation for webgl2
     EMSCRIPTEN_WEBGL_CONTEXT_HANDLE context = emscripten_webgl_create_context("canvas", &(EmscriptenWebGLContextAttributes){
         .depth = 1,
         .stencil = 1,
@@ -59,46 +58,14 @@ WindowState initWindow(const char* title)
     return window;
 }
 
-void initGeometry(RenderProgram render_program, Model* model)
-{
-   
-    // setup vao
-    GLuint vao;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
 
 
-    // Create vertex buffer object and copy vertex data into it
-    GLuint vbo;
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*model->positions.count, model->positions.data, GL_STATIC_DRAW);
-
-    // Specify the layout of the shader vertex data (positions only, 3 floats)
-    GLint posAttrib = glGetAttribLocation(render_program.shaderProgram, "a_position");
-    glEnableVertexAttribArray(posAttrib);
-    glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-    GLuint vbo_norm;
-    glGenBuffers(1, &vbo_norm);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo_norm);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*model->normals.count, model->normals.data, GL_STATIC_DRAW);
-
-    // Specify the layout of the shader vertex data (normals only, 3 floats)
-    GLint normAttrib = glGetAttribLocation(render_program.shaderProgram, "a_normal");
-    glEnableVertexAttribArray(normAttrib);
-    glVertexAttribPointer(normAttrib, 3, GL_FLOAT, GL_TRUE, 0, 0);
-
-    glBindVertexArray(vao);
-   
-}
-
-void redraw(WindowState window, Camera camera, Model model, RenderProgram render_program)
+void redraw(WindowState window, Camera camera, Mesh mesh, RenderProgram render_program)
 {
     // Clear screen
     glClear(GL_COLOR_BUFFER_BIT);
 
-    drawModel(model, camera, render_program);
+    drawMesh(mesh, camera);
 
     // Swap front/back framebuffers
     SDL_GL_SwapWindow(window.object);
@@ -128,11 +95,11 @@ void mainLoop(void* mainLoopArg)
         SDL_ClearError();
     }
    
-    updateModel(&state->model, deltaTime);
+    updateModel(state->mesh.model, deltaTime);
 
     processEvents(state);
      
-    redraw(state->window, state->camera, state->model, state->render_program);
+    redraw(state->window, state->camera, state->mesh, state->render_program);
 
 }
 
@@ -165,7 +132,7 @@ int main(int argc, char** argv)
         .normals = normals
     };
 
-    initGeometry(render_program, &model);
+    Mesh mesh = createMesh(&model, &render_program);
 
     // create a camera
     const Vec3 camera_up = { 0.f, 1.f, 0.f };
@@ -177,7 +144,7 @@ int main(int argc, char** argv)
     AppState state = {
         .window = window,
         .last_frame_time = now,
-        .model = model,
+        .mesh = mesh,
         .camera = camera,
         .input = input,
         .render_program = render_program
