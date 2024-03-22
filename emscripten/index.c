@@ -8,156 +8,13 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#include "lib/mat4.h"
-#include "lib/math_utils.h"
-#include "lib/camera.h"
-#include "lib/loader.h"
-
-
-
-typedef struct RenderProgram  {
-    GLuint shaderProgram;
-    GLuint modelUniformLocation;
-    GLuint viewUniformLocation;
-    GLuint projectionUniformLocation;
-    GLuint pointerUniformLocation;
-    GLuint canvasUniformLocation;
-} RenderProgram;
-
-typedef struct Model {
-    Vec3 position;
-    Vec3 rotation;
-    FloatData positions;
-    FloatData normals;
-} Model;  
-
-typedef struct InputState {
-    bool pointer_down;
-    Vec2 pointer_position;
-} InputState;
-
-typedef struct WindowState  {
-    SDL_Window* object;
-    Uint32 id;
-    bool should_close;
-} WindowState;
-
-typedef struct AppState  {
-    WindowState window;
-    Uint64 last_frame_time;
-    Model model;
-    Camera camera;
-    InputState input;
-    RenderProgram render_program;
-
-} AppState;
-
-
-
-RenderProgram initShader()
-{
-    // Vertex shader
-const GLchar* vertexSource =
-    "attribute vec4 a_position;                    \n"
-    "attribute vec3 a_normal;                      \n"
-    "                                               \n"
-    "uniform mat4 u_model;                           \n"
-    "uniform mat4 u_view;                            \n"
-    "uniform mat4 u_projection;                      \n"
-    "                                               \n"
-    "varying vec3 v_normal;                        \n"
-    "                                               \n"
-    "void main()                                   \n"
-    "{                                             \n"
-    "    gl_Position = u_projection * u_view * u_model * a_position;    \n"
-    "    v_normal = mat3(u_model) * a_normal;        \n"
-    "}                                             \n";
-
-// Fragment/pixel shader
-const GLchar* fragmentSource =
-    "precision mediump float;                       \n"
-    "uniform vec2 u_pointer;                        \n"
-    "uniform vec2 u_canvas;                         \n"
-    "                                               \n"
-    "varying vec3 v_normal;                         \n"
-    "                                               \n"
-    "float RADIUS = 100.0;                           \n"
-    "float AMBIENT_LIGHT = 0.5;                     \n"
-    "float TORCH_STRENGTH = 0.7;                   \n"
-    "vec3 lightDirection = vec3(0.0, 0.5, 0.5);    \n"
-    "vec4 diffuse = vec4(0.5, 0.8, 0.5, 0.5);      \n"
-    "void main()                                  \n"
-    "{                                            \n"
-    "    vec3 normal = normalize(v_normal);                                 \n"
-    "    float light = dot(lightDirection, normal) * .5 + AMBIENT_LIGHT;    \n"
-    "                                                                       \n"
-    "    // get the normalised pointer position into gl_FragCoord space     \n"
-    "    vec2 offsetFromPointer = vec2(gl_FragCoord.x - (u_pointer.x + 1.0) * (u_canvas.x / 2.0),gl_FragCoord.y - (-u_pointer.y - 1.0) * (u_canvas.y / -2.0));\n"
-    "    float distanceFromPointer = sqrt(dot(offsetFromPointer, offsetFromPointer));\n"
-    "    bool pointerIsActive = !((u_pointer.x == 0.0) && (u_pointer.y == 0.0));\n"
-    "    if (pointerIsActive && distanceFromPointer < RADIUS) {                 \n"
-    "      float normalizedTorchLight = (RADIUS - distanceFromPointer )  / RADIUS;\n"
-    "      light += TORCH_STRENGTH * normalizedTorchLight;                  \n"
-    "    }                                                                  \n"
-    "    gl_FragColor = vec4(diffuse.rgb * light, diffuse.a);               \n"
-    "}                                                                      \n";
-    // Create and compile vertex shader
-    const GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexSource, NULL);
-    glCompileShader(vertexShader);
-
-    // Create and compile fragment shader
-    const GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
-    glCompileShader(fragmentShader);
-
-    // Link vertex and fragment shader into shader program and use it
-    const GLuint shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-    glUseProgram(shaderProgram);
-
-    // Get shader uniforms and initialize them
-    const GLuint modelUniformLocation = glGetUniformLocation(shaderProgram, "u_model");
-    const GLuint viewUniformLocation = glGetUniformLocation(shaderProgram, "u_view");
-    const GLuint projectionUniformLocation = glGetUniformLocation(shaderProgram, "u_projection");
-    const GLuint pointerUniformLocation = glGetUniformLocation(shaderProgram, "u_pointer");
-    const GLuint canvasUniformLocation = glGetUniformLocation(shaderProgram, "u_canvas");
-
-    return (RenderProgram){
-        .shaderProgram = shaderProgram,
-        .modelUniformLocation = modelUniformLocation,
-        .viewUniformLocation = viewUniformLocation,
-        .projectionUniformLocation = projectionUniformLocation,
-        .pointerUniformLocation = pointerUniformLocation,
-        .canvasUniformLocation = canvasUniformLocation
-    }; 
-}
-
-void drawModel(Model model, Camera camera, RenderProgram renderProgram) {
-
-    glUseProgram(renderProgram.shaderProgram);
-
-  
-    const Mat4 projection = m4perspective(camera.field_of_view_radians, camera.aspect, camera.near, camera.far);
-    const Mat4 view = m4inverse(m4fromPositionAndEuler(camera.position, camera.rotation));
-    const Mat4 model_m = m4fromPositionAndEuler(model.position, model.rotation);
-    
-    glUniformMatrix4fv(renderProgram.modelUniformLocation,1,0, &model_m.data[0][0]);
-
-    glUniformMatrix4fv(renderProgram.viewUniformLocation,1,0, &view.data[0][0]);
-
-    
-    glUniformMatrix4fv(renderProgram.projectionUniformLocation,1,0, &projection.data[0][0]);
-
-
-    // Draw the vertex buffer
-    glDrawArrays(GL_TRIANGLES, 0, model.positions.count / 3);
-
-}
-
-
+#include "mat4.h"
+#include "math_utils.h"
+#include "camera.h"
+#include "loader.h"
+#include "app_state.h"
+#include "model.h"
+#include "events.h"
 
 
 WindowState initWindow(const char* title)
@@ -178,17 +35,14 @@ WindowState initWindow(const char* title)
         .majorVersion = 2,
         .minorVersion = 0
     });
-    emscripten_webgl_make_context_current(context);
+    // emscripten_webgl_make_context_current(context);
     #endif
 
-   
-    
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
     
     SDL_GLContext mainContext = SDL_GL_CreateContext(window_object);
-    SDL_GL_MakeCurrent(window_object, (SDL_GLContext)context );
-    
+    // SDL_GL_MakeCurrent(window_object, (SDL_GLContext)context );
 
     // Set clear color to black
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -204,8 +58,6 @@ WindowState initWindow(const char* title)
         
     return window;
 }
-
-
 
 void initGeometry(RenderProgram render_program, Model* model)
 {
@@ -239,8 +91,6 @@ void initGeometry(RenderProgram render_program, Model* model)
 
     glBindVertexArray(vao);
    
-    
-    
 }
 
 void redraw(WindowState window, Camera camera, Model model, RenderProgram render_program)
@@ -252,103 +102,6 @@ void redraw(WindowState window, Camera camera, Model model, RenderProgram render
 
     // Swap front/back framebuffers
     SDL_GL_SwapWindow(window.object);
-}
-
-Vec2 normalizeMousePosition(Vec2 mouse_position, Vec2 canvas_dims)
-{
-  float x_norm = mouse_position.x / canvas_dims.x * 2.0 - 1.0;
-  float y_norm = mouse_position.y / canvas_dims.y * -2.0 + 1.0;
-
-  return (Vec2){
-    .x = x_norm,
-    .y = y_norm,
-  };
-}
-
-void processEvents(AppState* state)
-{
-    // Handle events
-    SDL_Event event;
-    while (SDL_PollEvent(&event))
-    {
-        switch (event.type)
-        {
-            case SDL_QUIT:
-                state->window.should_close = true;
-                break;
-
-            case SDL_WINDOWEVENT:
-            {
-                if (event.window.windowID == state->window.id
-                    && event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
-                {
-                    int width = event.window.data1, height = event.window.data2;
-                    glViewport(0, 0, width, height);
-
-                    state->camera.aspect = (float)width / (float)height;
-
-                    glUniform2fv(state->render_program.canvasUniformLocation,1, (float[2]){width, height});
-                    
-                }
-                break;
-            }
-
-            case SDL_MOUSEBUTTONDOWN:
-            {
-                SDL_MouseButtonEvent* e = (SDL_MouseButtonEvent*)&event;
-                if (event.button.button == 1) {
-                    state->input.pointer_down = true;
-                    Vec2 pointer_position = {
-                    .x = e->x,
-                    .y = e->y
-                    };
-                    
-                    state->input.pointer_position = pointer_position;
-
-                    GLint vp[4]; 
-                    glGetIntegerv(GL_VIEWPORT, vp);
-                    Vec2 dims = {vp[2], vp[3]};
-                    Vec2 pointer_norm = normalizeMousePosition(pointer_position, dims );
-                    glUniform2fv(state->render_program.pointerUniformLocation,1, pointer_norm.data);
-                }
-                break;
-            }
-            case SDL_MOUSEMOTION:
-            {
-                SDL_MouseMotionEvent *e = (SDL_MouseMotionEvent*)&event;
-                if (state->input.pointer_down) {
-                    
-                    state->model.rotation.y += e->xrel / 100.f;
-                    Vec2 pointer_position = {
-                    .x = e->x,
-                    .y = e->y
-                    };
-                    
-                    state->input.pointer_position = pointer_position;
-                    
-                    GLint vp [4]; 
-                    glGetIntegerv(GL_VIEWPORT, vp);
-                    Vec2 dims = {vp[2], vp[3]};
-                    Vec2 pointer_norm = normalizeMousePosition(pointer_position, dims );
-                    glUniform2fv(state->render_program.pointerUniformLocation,1, pointer_norm.data);
-    
-                }
-                break;
-            }
-
-            case SDL_MOUSEBUTTONUP:
-            {
-                if (event.button.button == 1) {
-                    state->input.pointer_down = false;
-                    Vec2 pointer_position ={ 0 } ;
-                    state->input.pointer_position = pointer_position;
-                }
-                break;
-            }
-        }
-
-        
-    }
 }
 
 
@@ -413,9 +166,6 @@ int main(int argc, char** argv)
     };
 
     initGeometry(render_program, &model);
-
-    
-  
 
     // create a camera
     const Vec3 camera_up = { 0.f, 1.f, 0.f };

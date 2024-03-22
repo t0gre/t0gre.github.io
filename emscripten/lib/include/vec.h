@@ -42,4 +42,4 @@ Vec3 normalize(Vec3 v);
 
 Vec3 cross(Vec3 a, Vec3 b);
 
-#endif /* VEC_H */
+#endif //VEC_H 

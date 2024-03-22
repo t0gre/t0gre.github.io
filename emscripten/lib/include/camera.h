@@ -1,3 +1,6 @@
+#ifndef CAMERA_H
+#define CAMERA_H
+
 #include "vec.h"
 
 typedef struct Camera {
@@ -20,3 +23,5 @@ Camera createCamera(
   Vec3 up,
   Vec3 position,
   Vec3 rotation);
+
+#endif //CAMERA_H

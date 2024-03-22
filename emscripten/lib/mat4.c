@@ -1,4 +1,3 @@
-#define PI 3.14159f
 #include "vec.h"
 #include "mat4.h"
 

@@ -1,17 +1,22 @@
 ### to dev
 
-vite dev
-make build
+yarn dev
+yarn build
 
 
 ### if you want 
 make clean
 
 ### to generate debug symbols for the browser
--O0 -g
+-O0 -g -gsource-map
 
 
 ## activate emscripen
 cd emsdk
 ./emsdk activate latest --permanent
 source emsdk_env.sh
+
+## assets
+
+from [McGuire Computer Graphics Archive](https://casual-effects.com/data/)
+Citation "Morgan McGuire, Computer Graphics Archive, July 2017 (https://casual-effects.com/data)"

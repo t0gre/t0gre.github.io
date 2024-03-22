@@ -1,0 +1,104 @@
+
+#include <SDL.h>
+#include <GLES3/gl3.h>
+#include <stdbool.h>
+
+#include "events.h"
+
+
+Vec2 normalizeMousePosition(Vec2 mouse_position, Vec2 canvas_dims)
+{
+  float x_norm = mouse_position.x / canvas_dims.x * 2.0 - 1.0;
+  float y_norm = mouse_position.y / canvas_dims.y * -2.0 + 1.0;
+
+  return (Vec2){
+    .x = x_norm,
+    .y = y_norm,
+  };
+}
+
+void processEvents(AppState* state)
+{
+    // Handle events
+    SDL_Event event;
+    while (SDL_PollEvent(&event))
+    {
+        switch (event.type)
+        {
+            case SDL_QUIT:
+                state->window.should_close = true;
+                break;
+
+            case SDL_WINDOWEVENT:
+            {
+                if (event.window.windowID == state->window.id
+                    && event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
+                {
+                    int width = event.window.data1, height = event.window.data2;
+                    glViewport(0, 0, width, height);
+
+                    state->camera.aspect = (float)width / (float)height;
+
+                    glUniform2fv(state->render_program.canvasUniformLocation,1, (float[2]){width, height});
+                    
+                }
+                break;
+            }
+
+            case SDL_MOUSEBUTTONDOWN:
+            {
+                SDL_MouseButtonEvent* e = (SDL_MouseButtonEvent*)&event;
+                if (event.button.button == 1) {
+                    state->input.pointer_down = true;
+                    Vec2 pointer_position = {
+                    .x = e->x,
+                    .y = e->y
+                    };
+                    
+                    state->input.pointer_position = pointer_position;
+
+                    GLint vp[4]; 
+                    glGetIntegerv(GL_VIEWPORT, vp);
+                    Vec2 dims = {vp[2], vp[3]};
+                    Vec2 pointer_norm = normalizeMousePosition(pointer_position, dims );
+                    glUniform2fv(state->render_program.pointerUniformLocation,1, pointer_norm.data);
+                }
+                break;
+            }
+            case SDL_MOUSEMOTION:
+            {
+                SDL_MouseMotionEvent *e = (SDL_MouseMotionEvent*)&event;
+                if (state->input.pointer_down) {
+                    
+                    state->model.rotation.y += e->xrel / 100.f;
+                    Vec2 pointer_position = {
+                    .x = e->x,
+                    .y = e->y
+                    };
+                    
+                    state->input.pointer_position = pointer_position;
+                    
+                    GLint vp [4]; 
+                    glGetIntegerv(GL_VIEWPORT, vp);
+                    Vec2 dims = {vp[2], vp[3]};
+                    Vec2 pointer_norm = normalizeMousePosition(pointer_position, dims );
+                    glUniform2fv(state->render_program.pointerUniformLocation,1, pointer_norm.data);
+    
+                }
+                break;
+            }
+
+            case SDL_MOUSEBUTTONUP:
+            {
+                if (event.button.button == 1) {
+                    state->input.pointer_down = false;
+                    Vec2 pointer_position ={ 0 } ;
+                    state->input.pointer_position = pointer_position;
+                }
+                break;
+            }
+        }
+
+        
+    }
+}
