@@ -126,29 +126,53 @@ int main(int argc, char** argv)
     FloatData normals = readcsv("normals.txt");
     FloatData positions = readcsv("positions.txt");
 
-    Mesh mesh = createMesh(positions, normals, &render_program);
-
-    const Vec3 model1_position = { 0.f, 0.f, 0.f };
-    const Vec3 model1_rotation = { 0.f, PI / 2.f, 0.f };
-
-    const Vec3 model2_position = { 2.f, 0.f, 0.f };
-    const Vec3 model2_rotation = { 0.f, PI / 2.f, 0.f };
+    Mesh tree_mesh = createMesh(positions, normals, &render_program);
     
-    Model model1 = {
-        .mesh = mesh,
-        .position = model1_position,
-        .rotation = model1_rotation
+    Model tree_model = {
+        .mesh = tree_mesh,
+        .position = { 0.f, 0.f, 0.f },
+        .rotation = { 0.f, PI / 2.f, 0.f }
     };
 
-     Model model2 = {
-        .mesh = mesh,
-        .position = model2_position,
-        .rotation = model2_rotation
+    float floor_positions_data[18] = {
+            -1000.f ,0.f, -1000.f, // back left
+            -1000.f ,0.f, 1000.f, // front left
+            1000.f ,0.f, -1000.f, // back right
+            1000.f ,0.f, -1000.f, // back right
+            1000.f ,0.f, 1000.f, // front right
+            -1000.f ,0.f, 1000.f // front left
+        };
+
+    FloatData floor_positions = {
+        .count = 18,
+        .data = floor_positions_data
+    };
+
+    float floor_normals_data[18] = {
+            0.f ,1.f, 0.f,
+            0.f ,1.f, 0.f,
+            0.f ,1.f, 0.f,
+            0.f ,1.f, 0.f,
+            0.f ,1.f, 0.f,
+            0.f ,1.f, 0.f,
+        };
+
+    FloatData floor_normals = {
+        .count = 18,
+        .data = floor_normals_data
+    };
+
+    Mesh floor_mesh = createMesh(floor_positions, floor_normals, &render_program);
+
+    Model floor_model = {
+        .mesh = floor_mesh,
+        .position = { 0.f, 0.1f, 0.f },
+        .rotation = { 0.f, 0.f, 0.f }
     };
 
     Scene scene =  { 
         .model_count = 2,
-        .models = { model1, model2 }
+        .models = { tree_model, floor_model }
         };
 
     // create a camera
