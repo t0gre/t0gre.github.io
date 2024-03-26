@@ -136,12 +136,12 @@ int main(int argc, char** argv)
     };
 
     float floor_positions_data[18] = {
-            -1000.f ,0.f, -1000.f, // back left
-            -1000.f ,0.f, 1000.f, // front left
-            1000.f ,0.f, -1000.f, // back right
-            1000.f ,0.f, -1000.f, // back right
-            1000.f ,0.f, 1000.f, // front right
-            -1000.f ,0.f, 1000.f // front left
+            -10.f ,0.f, -10.f, // back left
+            -10.f ,0.f, 10.f, // front left
+            10.f ,0.f, -10.f, // back right
+            10.f ,0.f, -10.f, // back right
+            10.f ,0.f, 10.f, // front right
+            -10.f ,0.f, 10.f // front left
         };
 
     FloatData floor_positions = {
