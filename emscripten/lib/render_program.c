@@ -28,6 +28,7 @@ const GLchar* fragmentSource =
     "precision highp float;                       \n"
     "uniform vec2 u_pointer;                        \n"
     "uniform vec2 u_canvas;                         \n"
+    "uniform vec4 u_color;                         \n"
     "                                               \n"
     "in vec3 v_normal;                         \n"
     "out vec4 outColor;                        \n"
@@ -35,8 +36,7 @@ const GLchar* fragmentSource =
     "float RADIUS = 100.0;                           \n"
     "float AMBIENT_LIGHT = 0.5;                     \n"
     "float TORCH_STRENGTH = 0.7;                   \n"
-    "vec3 lightDirection = vec3(0.0, 0.5, 0.5);    \n"
-    "vec4 diffuse = vec4(0.5, 0.8, 0.5, 0.5);      \n"
+    "vec3 lightDirection = vec3(0.0, 0.8, 0.3);    \n"
     "void main()                                  \n"
     "{                                            \n"
     "    vec3 normal = normalize(v_normal);                                 \n"
@@ -50,7 +50,7 @@ const GLchar* fragmentSource =
     "      float normalizedTorchLight = (RADIUS - distanceFromPointer )  / RADIUS;\n"
     "      light += TORCH_STRENGTH * normalizedTorchLight;                  \n"
     "    }                                                                  \n"
-    "    outColor = vec4(diffuse.rgb * light, diffuse.a);               \n"
+    "    outColor = vec4(u_color.rgb * light, u_color.a);               \n"
     "}                                                                      \n";
     // Create and compile vertex shader
     const GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -75,6 +75,7 @@ const GLchar* fragmentSource =
     const GLuint projectionUniformLocation = glGetUniformLocation(shaderProgram, "u_projection");
     const GLuint pointerUniformLocation = glGetUniformLocation(shaderProgram, "u_pointer");
     const GLuint canvasUniformLocation = glGetUniformLocation(shaderProgram, "u_canvas");
+    const GLuint colorUniformLocation = glGetUniformLocation(shaderProgram, "u_color");
 
     return (RenderProgram){
         .shaderProgram = shaderProgram,
@@ -82,7 +83,8 @@ const GLchar* fragmentSource =
         .viewUniformLocation = viewUniformLocation,
         .projectionUniformLocation = projectionUniformLocation,
         .pointerUniformLocation = pointerUniformLocation,
-        .canvasUniformLocation = canvasUniformLocation
+        .canvasUniformLocation = canvasUniformLocation,
+        .colorUniformLocation = colorUniformLocation
     }; 
 }
 

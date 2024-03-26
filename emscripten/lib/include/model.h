@@ -10,6 +10,7 @@
 typedef struct Model {
     Vec3 position;
     Vec3 rotation;
+    Vec4 color;
     Mesh mesh;
 } Model;  
 

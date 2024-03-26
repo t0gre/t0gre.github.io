@@ -130,6 +130,7 @@ int main(int argc, char** argv)
     
     Model tree_model = {
         .mesh = tree_mesh,
+        .color= (Vec4){0.1, 0.7, 0.1, 1.0},
         .position = { 0.f, 0.f, 0.f },
         .rotation = { 0.f, PI / 2.f, 0.f }
     };
@@ -166,6 +167,7 @@ int main(int argc, char** argv)
 
     Model floor_model = {
         .mesh = floor_mesh,
+        .color = (Vec4){0.1, 0.7, 0.4, 1.0},
         .position = { 0.f, 0.1f, 0.f },
         .rotation = { 0.f, 0.f, 0.f }
     };

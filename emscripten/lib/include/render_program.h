@@ -10,6 +10,7 @@ typedef struct RenderProgram  {
     GLuint projectionUniformLocation;
     GLuint pointerUniformLocation;
     GLuint canvasUniformLocation;
+    GLuint colorUniformLocation;
 } RenderProgram;
 
 RenderProgram initShader(void);

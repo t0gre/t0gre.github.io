@@ -34,6 +34,8 @@ Mesh createMesh(FloatData positions, FloatData normals, RenderProgram* render_pr
     glVertexAttribPointer(normAttrib, 3, GL_FLOAT, GL_TRUE, 0, 0);
 
     glBindVertexArray(vao);
+
+    
   
 
   return (Mesh){

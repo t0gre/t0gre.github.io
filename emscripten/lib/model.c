@@ -13,6 +13,7 @@ void drawModel(Model model, Camera camera, RenderProgram renderProgram) {
     glUniformMatrix4fv(renderProgram.modelUniformLocation,1,0, &model_m.data[0][0]);
     glUniformMatrix4fv(renderProgram.viewUniformLocation,1,0, &view.data[0][0]);    
     glUniformMatrix4fv(renderProgram.projectionUniformLocation,1,0, &projection.data[0][0]);
+    glUniform4fv(renderProgram.colorUniformLocation,1, model.color.data);
 
     glBindVertexArray(model.mesh.vao);
     // Draw the vertex buffer
