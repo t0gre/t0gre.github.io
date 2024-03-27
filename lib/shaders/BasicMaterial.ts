@@ -7,6 +7,9 @@ import { Vec4 } from "../vec";
 import { InputState } from "lib/input";
 
 const vertexShaderSource = `#version 300 es
+
+    #pragma vscode_glsllint_stage : vert //pragma to set STAGE to 'vert' 
+
     in vec4 a_position;
     in vec3 a_normal;
 
@@ -23,6 +26,9 @@ const vertexShaderSource = `#version 300 es
     `
 
 const fragmentShaderSource = `#version 300 es
+
+    #pragma vscode_glsllint_stage : frag //pragma to set STAGE to 'frag'
+
     precision highp float;
 
     in vec3 v_normal;

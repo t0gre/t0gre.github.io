@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "sdl.h": "c",
-        "html5.h": "c"
+        "html5.h": "c",
+        "loaders.h": "c"
     }
 }

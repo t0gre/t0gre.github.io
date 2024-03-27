@@ -1,9 +1,36 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "loader.h"
+#include "loaders.h"
 
-FloatData readcsv(const char* filename) {
+
+// Loads the content of a GLSL Shader file into a char* variable
+char* get_shader_content(const char* fileName)
+{
+    FILE *fp;
+    long size = 0;
+    char* shaderContent;
+    
+    /* Read File to get size */
+    fp = fopen(fileName, "rb");
+    if(fp == NULL) {
+        return "";
+    }
+    fseek(fp, 0L, SEEK_END);
+    size = ftell(fp)+1;
+    fclose(fp);
+
+    /* Read File for Content */
+    fp = fopen(fileName, "r");
+    shaderContent = memset(malloc(size), '\0', size);
+    fread(shaderContent, 1, size-1, fp);
+    fclose(fp);
+
+    return shaderContent;
+}
+
+// reads something that is not really a csv, because it has no line endings
+FloatData read_csv(const char* filename) {
 
   FILE* fptr = fopen(filename, "r");
 

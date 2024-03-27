@@ -8,7 +8,7 @@
 #include "mat4.h"
 #include "math_utils.h"
 #include "camera.h"
-#include "loader.h"
+#include "loaders.h"
 #include "app_state.h"
 #include "model.h"
 #include "events.h"
@@ -123,8 +123,8 @@ int main(int argc, char** argv)
     // create a model
    
     // TODO do these need to be cleaned up?
-    FloatData normals = readcsv("normals.txt");
-    FloatData positions = readcsv("positions.txt");
+    FloatData normals = read_csv("normals.txt");
+    FloatData positions = read_csv("positions.txt");
 
     Mesh tree_mesh = createMesh(positions, normals, &render_program);
     

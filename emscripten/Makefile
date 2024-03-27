@@ -12,9 +12,9 @@ build-en:
 	-s WASM=1 \
 	--preload-file ../public/rainbowtree.obj@rainbowtree.obj \
 	--preload-file positions.txt \
-	--preload-file normals.txt 
-	
-
+	--preload-file normals.txt \
+	--preload-file ./lib/shaders/basic.vert@basic.vert \
+	--preload-file ./lib/shaders/basic.frag@basic.frag
 
 clean:
 	rm a.out.data a.out.js a.out.wasm
