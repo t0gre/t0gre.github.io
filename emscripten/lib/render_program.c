@@ -21,33 +21,29 @@ RenderProgram initShader(void)
     glCompileShader(fragmentShader);
 
     // Link vertex and fragment shader into shader program and use it
-    const GLuint shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-    glUseProgram(shaderProgram);
+    const GLuint shader_program = glCreateProgram();
+    glAttachShader(shader_program, vertexShader);
+    glAttachShader(shader_program, fragmentShader);
+    glLinkProgram(shader_program);
+    glUseProgram(shader_program);
 
     // Get shader uniforms and initialize them
-    const GLuint modelUniformLocation = glGetUniformLocation(shaderProgram, "u_model");
-    const GLuint viewUniformLocation = glGetUniformLocation(shaderProgram, "u_view");
-    const GLuint projectionUniformLocation = glGetUniformLocation(shaderProgram, "u_projection");
-    const GLuint pointerUniformLocation = glGetUniformLocation(shaderProgram, "u_pointer");
-    const GLuint canvasUniformLocation = glGetUniformLocation(shaderProgram, "u_canvas");
-    const GLuint colorUniformLocation = glGetUniformLocation(shaderProgram, "u_color");
+    const GLuint model_uniform_location = glGetUniformLocation(shader_program, "u_model");
+    const GLuint view_uniform_location = glGetUniformLocation(shader_program, "u_view");
+    const GLuint projection_uniform_location = glGetUniformLocation(shader_program, "u_projection");
+    const GLuint color_uniform_location = glGetUniformLocation(shader_program, "u_color");
+    const GLuint view_position_uniform_location = glGetUniformLocation(shader_program, "u_view_position");
 
     // should I ?
     // free(vertexSource);
     // free(fragmentSource);
 
     return (RenderProgram){
-        .shaderProgram = shaderProgram,
-        .modelUniformLocation = modelUniformLocation,
-        .viewUniformLocation = viewUniformLocation,
-        .projectionUniformLocation = projectionUniformLocation,
-        .pointerUniformLocation = pointerUniformLocation,
-        .canvasUniformLocation = canvasUniformLocation,
-        .colorUniformLocation = colorUniformLocation
+        .shader_program = shader_program,
+        .model_uniform_location = model_uniform_location,
+        .view_uniform_location = view_uniform_location,
+        .projection_uniform_location = projection_uniform_location,
+        .color_uniform_location = color_uniform_location,
+        .view_position_uniform_location = view_position_uniform_location
     }; 
 }
-
-

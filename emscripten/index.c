@@ -120,6 +120,23 @@ int main(int argc, char** argv)
     // Initialize shader and geometry
     RenderProgram render_program = initShader();
 
+    // create lights
+    AmbientLight ambient_light = {
+        .color = { .r = 0.5f, .g = 0.5f, .b = 0.5f }
+    };
+
+    DirectionalLight DirectionalLight = {
+        .rotation = { .x = 0.0f, .y = 0.8f, .z = 0.3f},
+        .color = { .r = 0.5f, .g = 0.5f, .b = 0.5f}
+    };
+
+    PointLight PointLight = {
+        .position = { 0.f, 3.5f, 10.f },
+        .rotation = { .x = 0.0f, .y = 0.8f, .z = 0.3f},
+        .color = { .r = 0.5f, .g = 0.5f, .b = 0.5f},
+        .specular_color = { .r = 0.9f, .g = 0.5f, .b = 0.1f}
+    };
+
     // create a model
    
     // TODO do these need to be cleaned up?
@@ -130,7 +147,7 @@ int main(int argc, char** argv)
     
     Model tree_model = {
         .mesh = tree_mesh,
-        .color= (Vec4){0.1, 0.7, 0.1, 1.0},
+        .color = {0.1, 0.7, 0.1, 1.0},
         .position = { 0.f, 0.f, 0.f },
         .rotation = { 0.f, PI / 2.f, 0.f }
     };
@@ -177,11 +194,13 @@ int main(int argc, char** argv)
         .models = { tree_model, floor_model }
         };
 
+
     // create a camera
     const Vec3 camera_up = { 0.f, 1.f, 0.f };
     const Vec3 camera_position = { 0.f, 3.5f, 10.f };
     const Vec3 camera_rotation = { 0.f, 0.f, 0.f };
     const Camera camera = createCamera(degreeToRad(60.f), 1.f, 1.f, 2000.f, camera_up, camera_position, camera_rotation);
+
 
     
     AppState state = {

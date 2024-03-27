@@ -3,17 +3,18 @@
 
 void drawModel(Model model, Camera camera, RenderProgram renderProgram) {
 
-    glUseProgram(renderProgram.shaderProgram);
+    glUseProgram(renderProgram.shader_program);
 
   
     const Mat4 projection = m4perspective(camera.field_of_view_radians, camera.aspect, camera.near, camera.far);
     const Mat4 view = m4inverse(m4fromPositionAndEuler(camera.position, camera.rotation));
     const Mat4 model_m = m4fromPositionAndEuler(model.position, model.rotation);
     
-    glUniformMatrix4fv(renderProgram.modelUniformLocation,1,0, &model_m.data[0][0]);
-    glUniformMatrix4fv(renderProgram.viewUniformLocation,1,0, &view.data[0][0]);    
-    glUniformMatrix4fv(renderProgram.projectionUniformLocation,1,0, &projection.data[0][0]);
-    glUniform4fv(renderProgram.colorUniformLocation,1, model.color.data);
+    glUniformMatrix4fv(renderProgram.model_uniform_location,1,0, &model_m.data[0][0]);
+    glUniformMatrix4fv(renderProgram.view_uniform_location,1,0, &view.data[0][0]);  
+    glUniformMatrix4fv(renderProgram.view_position_uniform_location,1,0, camera.position.data); 
+    glUniformMatrix4fv(renderProgram.projection_uniform_location,1,0, &projection.data[0][0]);
+    glUniform4fv(renderProgram.color_uniform_location,1, model.color.data);
 
     glBindVertexArray(model.mesh.vao);
     // Draw the vertex buffer

@@ -38,8 +38,6 @@ void processEvents(AppState* state)
                     glViewport(0, 0, width, height);
 
                     state->camera.aspect = (float)width / (float)height;
-
-                    glUniform2fv(state->render_program.canvasUniformLocation,1, (float[2]){width, height});
                     
                 }
                 break;
@@ -61,7 +59,6 @@ void processEvents(AppState* state)
                     glGetIntegerv(GL_VIEWPORT, vp);
                     Vec2 dims = {vp[2], vp[3]};
                     Vec2 pointer_norm = normalizeMousePosition(pointer_position, dims );
-                    glUniform2fv(state->render_program.pointerUniformLocation,1, pointer_norm.data);
                 }
                 break;
             }
@@ -82,7 +79,6 @@ void processEvents(AppState* state)
                     glGetIntegerv(GL_VIEWPORT, vp);
                     Vec2 dims = {vp[2], vp[3]};
                     Vec2 pointer_norm = normalizeMousePosition(pointer_position, dims );
-                    glUniform2fv(state->render_program.pointerUniformLocation,1, pointer_norm.data);
     
                 }
                 break;

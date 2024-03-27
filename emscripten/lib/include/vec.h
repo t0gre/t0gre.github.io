@@ -17,6 +17,11 @@ typedef union Vec3 {
     float y;
     float z;
   };
+  struct { 
+    float r;
+    float g;
+    float b;
+  };
 
   float data[3];
 

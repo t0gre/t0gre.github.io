@@ -10,13 +10,14 @@ typedef struct PointLight {
   Vec3 rotation;
 } PointLight;
 
-PointLight createPointLight(Vec3 postition, Vec3 rotation, Vec3 color, Vec3 specular_color);
-
 typedef struct DirectionalLight {
   Vec3 color;
   Vec3 rotation;
 } DirectionalLight;
 
-DirectionalLight createDirectionalLight(Vec3 rotation, Vec3 color);
+typedef struct AmbientLight {
+  Vec3 color;
+} AmbientLight;
+
 
 #endif //LIGHT_H

@@ -15,7 +15,7 @@ Mesh createMesh(FloatData positions, FloatData normals, RenderProgram* render_pr
     glBufferData(GL_ARRAY_BUFFER, sizeof(float)*positions.count, positions.data, GL_STATIC_DRAW);
 
     // Specify the layout of the shader vertex data (positions only, 3 floats)
-    GLint posAttrib = glGetAttribLocation(render_program->shaderProgram, "a_position");
+    GLint posAttrib = glGetAttribLocation(render_program->shader_program, "a_position");
     assert(posAttrib != -1); // fail on error
 
     glEnableVertexAttribArray(posAttrib);
@@ -27,7 +27,7 @@ Mesh createMesh(FloatData positions, FloatData normals, RenderProgram* render_pr
     glBufferData(GL_ARRAY_BUFFER, sizeof(float)*normals.count, normals.data, GL_STATIC_DRAW);
 
     // Specify the layout of the shader vertex data (normals only, 3 floats)
-    GLint normAttrib = glGetAttribLocation(render_program->shaderProgram, "a_normal");
+    GLint normAttrib = glGetAttribLocation(render_program->shader_program, "a_normal");
     assert(posAttrib != -1); // fail on error
 
     glEnableVertexAttribArray(normAttrib);
