@@ -1,7 +1,14 @@
 #include "render_program.h"
 #include "loaders.h"
 #include <stddef.h>
+#include <assert.h>
+#include <stdio.h>
 
+GLuint guaranteeUniformLocation(GLuint program, const GLchar *name) {
+    const GLuint location = glGetUniformLocation(program, name);
+    assert(location != -1);
+    return location;
+}
 
 RenderProgram initShader(void)
 {
@@ -28,12 +35,19 @@ RenderProgram initShader(void)
     glUseProgram(shader_program);
 
     // Get shader uniforms and initialize them
-    const GLuint model_uniform_location = glGetUniformLocation(shader_program, "u_model");
-    const GLuint view_uniform_location = glGetUniformLocation(shader_program, "u_view");
-    const GLuint projection_uniform_location = glGetUniformLocation(shader_program, "u_projection");
-    const GLuint color_uniform_location = glGetUniformLocation(shader_program, "u_color");
-    const GLuint view_position_uniform_location = glGetUniformLocation(shader_program, "u_view_position");
+    const GLuint model_uniform_location = guaranteeUniformLocation(shader_program, "u_model");
+    
+    const GLuint view_uniform_location = guaranteeUniformLocation(shader_program, "u_view");
+    const GLuint projection_uniform_location = guaranteeUniformLocation(shader_program, "u_projection");
+    const GLuint color_uniform_location = guaranteeUniformLocation(shader_program, "u_color");
+    const GLuint view_position_uniform_location = guaranteeUniformLocation(shader_program, "u_view_position");
 
+    const GLuint ambient_light_color_uniform_location = guaranteeUniformLocation(shader_program, "u_ambient_light.color");
+
+    const GLuint directional_light_color_uniform_location = guaranteeUniformLocation(shader_program, "u_directional_light.color");
+    const GLuint directional_light_rotation_uniform_location = guaranteeUniformLocation(shader_program, "u_directional_light.rotation");
+    const GLuint directional_light_specular_color_uniform_location = guaranteeUniformLocation(shader_program, "u_directional_light.specular_color");
+    
     // should I ?
     // free(vertexSource);
     // free(fragmentSource);
@@ -44,6 +58,14 @@ RenderProgram initShader(void)
         .view_uniform_location = view_uniform_location,
         .projection_uniform_location = projection_uniform_location,
         .color_uniform_location = color_uniform_location,
-        .view_position_uniform_location = view_position_uniform_location
+        .view_position_uniform_location = view_position_uniform_location,
+        .ambient_light_uniform = {
+            .color_location = ambient_light_color_uniform_location 
+        },
+        .directional_light_uniform = {
+            .color_location = directional_light_color_uniform_location,
+            .rotation_location = directional_light_rotation_uniform_location,
+            .specular_color_location = directional_light_specular_color_uniform_location
+        }
     }; 
 }

@@ -122,20 +122,29 @@ int main(int argc, char** argv)
 
     // create lights
     AmbientLight ambient_light = {
-        .color = { .r = 0.5f, .g = 0.5f, .b = 0.5f }
+        .color = { .r = 0.5f, .g = 0.3f, .b = 0.3f }
     };
 
-    DirectionalLight DirectionalLight = {
-        .rotation = { .x = 0.0f, .y = 0.8f, .z = 0.3f},
-        .color = { .r = 0.5f, .g = 0.5f, .b = 0.5f}
+    DirectionalLight directional_light = {
+        .rotation = { .x = 0.0f, .y = -0.8f, .z = -0.5f},
+        .color = { .r = 0.8f, .g = 0.8f, .b = 0.5f},
+        .specular_color = { .r = 0.9f, .g = 0.1f, .b = 0.1f}
     };
 
-    PointLight PointLight = {
+    PointLight point_light = {
         .position = { 0.f, 3.5f, 10.f },
         .rotation = { .x = 0.0f, .y = 0.8f, .z = 0.3f},
         .color = { .r = 0.5f, .g = 0.5f, .b = 0.5f},
         .specular_color = { .r = 0.9f, .g = 0.5f, .b = 0.1f}
     };
+
+    glUseProgram(render_program.shader_program);
+    glUniform3fv(render_program.ambient_light_uniform.color_location,1,&ambient_light.color.data[0]);
+
+    glUniform3fv(render_program.directional_light_uniform.color_location,1,&directional_light.color.data[0]);
+    glUniform3fv(render_program.directional_light_uniform.rotation_location,1,&directional_light.rotation.data[0]);
+    glUniform3fv(render_program.directional_light_uniform.specular_color_location,1,&directional_light.specular_color.data[0]);
+
 
     // create a model
    
