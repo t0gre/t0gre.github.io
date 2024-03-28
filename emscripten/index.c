@@ -133,17 +133,30 @@ int main(int argc, char** argv)
 
     PointLight point_light = {
         .position = { 0.f, 3.5f, 10.f },
-        .rotation = { .x = 0.0f, .y = 0.8f, .z = 0.3f},
         .color = { .r = 0.5f, .g = 0.5f, .b = 0.5f},
-        .specular_color = { .r = 0.9f, .g = 0.5f, .b = 0.1f}
+        .specular_color = { .r = 0.9f, .g = 0.5f, .b = 0.1f},
+        .constant = 1.0f,
+        .linear = 0.09f,
+        .quadratic = 0.032f
     };
 
     glUseProgram(render_program.shader_program);
+
+    // set ambient light
     glUniform3fv(render_program.ambient_light_uniform.color_location,1,&ambient_light.color.data[0]);
 
+    // set directional light
     glUniform3fv(render_program.directional_light_uniform.color_location,1,&directional_light.color.data[0]);
     glUniform3fv(render_program.directional_light_uniform.rotation_location,1,&directional_light.rotation.data[0]);
     glUniform3fv(render_program.directional_light_uniform.specular_color_location,1,&directional_light.specular_color.data[0]);
+
+    // set point light
+    glUniform3fv(render_program.point_light_uniform.color_location,1,&point_light.color.data[0]);
+    glUniform3fv(render_program.point_light_uniform.position_location,1,&point_light.position.data[0]);
+    glUniform3fv(render_program.point_light_uniform.specular_color_location,1,&point_light.specular_color.data[0]);
+    glUniform1f(render_program.point_light_uniform.constant_location,point_light.constant);
+    glUniform1f(render_program.point_light_uniform.linear_location,point_light.linear);
+    glUniform1f(render_program.point_light_uniform.quadratic_location,point_light.quadratic); 
 
 
     // create a model

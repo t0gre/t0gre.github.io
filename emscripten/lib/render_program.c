@@ -48,6 +48,13 @@ RenderProgram initShader(void)
     const GLuint directional_light_rotation_uniform_location = guaranteeUniformLocation(shader_program, "u_directional_light.rotation");
     const GLuint directional_light_specular_color_uniform_location = guaranteeUniformLocation(shader_program, "u_directional_light.specular_color");
     
+    const GLuint point_light_color_uniform_location = guaranteeUniformLocation(shader_program, "u_point_light.color");
+    const GLuint point_light_position_uniform_location = guaranteeUniformLocation(shader_program, "u_point_light.position");
+    const GLuint point_light_specular_color_uniform_location = guaranteeUniformLocation(shader_program, "u_point_light.specular_color");
+    const GLuint point_light_constant_uniform_location = guaranteeUniformLocation(shader_program, "u_point_light.constant");
+    const GLuint point_light_linear_uniform_location = guaranteeUniformLocation(shader_program, "u_point_light.linear");
+    const GLuint point_light_quadratic_uniform_location = guaranteeUniformLocation(shader_program, "u_point_light.quadratic");
+    
     // should I ?
     // free(vertexSource);
     // free(fragmentSource);
@@ -66,6 +73,14 @@ RenderProgram initShader(void)
             .color_location = directional_light_color_uniform_location,
             .rotation_location = directional_light_rotation_uniform_location,
             .specular_color_location = directional_light_specular_color_uniform_location
+        },
+        .point_light_uniform = {
+            .color_location = point_light_color_uniform_location,
+            .position_location = point_light_position_uniform_location,
+            .specular_color_location = point_light_specular_color_uniform_location,
+            .constant_location = point_light_constant_uniform_location,
+            .linear_location = point_light_linear_uniform_location,
+            .quadratic_location = point_light_linear_uniform_location
         }
     }; 
 }

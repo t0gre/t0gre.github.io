@@ -7,7 +7,9 @@ typedef struct PointLight {
   Vec3 color;
   Vec3 specular_color;
   Vec3 position;
-  Vec3 rotation;
+  float constant;
+  float linear;
+  float quadratic;
 } PointLight;
 
 typedef struct DirectionalLight {
