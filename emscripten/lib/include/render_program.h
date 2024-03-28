@@ -28,6 +28,7 @@ typedef struct RenderProgram  {
     GLuint view_uniform_location;
     GLuint projection_uniform_location;
     GLuint color_uniform_location;
+    GLuint shininess_uniform_location;
     GLuint view_position_uniform_location;
     AmbientLightUniform ambient_light_uniform;
     DirectionalLightUniform directional_light_uniform;

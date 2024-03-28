@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #include "events.h"
+#include "mat4.h"
 
 
 Vec2 normalizeMousePosition(Vec2 mouse_position, Vec2 canvas_dims)
@@ -79,6 +80,7 @@ void processEvents(AppState* state)
                     glGetIntegerv(GL_VIEWPORT, vp);
                     Vec2 dims = {vp[2], vp[3]};
                     Vec2 pointer_norm = normalizeMousePosition(pointer_position, dims );
+
     
                 }
                 break;

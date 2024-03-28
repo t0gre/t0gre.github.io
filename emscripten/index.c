@@ -133,7 +133,7 @@ int main(int argc, char** argv)
 
     PointLight point_light = {
         .position = { 0.f, 3.5f, 10.f },
-        .color = { .r = 0.5f, .g = 0.5f, .b = 0.5f},
+        .color = { .r = 0.9f, .g = 0.5f, .b = 0.5f},
         .specular_color = { .r = 0.9f, .g = 0.5f, .b = 0.1f},
         .constant = 1.0f,
         .linear = 0.09f,
@@ -171,7 +171,8 @@ int main(int argc, char** argv)
         .mesh = tree_mesh,
         .color = {0.1, 0.7, 0.1, 1.0},
         .position = { 0.f, 0.f, 0.f },
-        .rotation = { 0.f, PI / 2.f, 0.f }
+        .rotation = { 0.f, PI / 2.f, 0.f },
+        .shininess = 10.f
     };
 
     float floor_positions_data[18] = {
@@ -208,7 +209,8 @@ int main(int argc, char** argv)
         .mesh = floor_mesh,
         .color = (Vec4){0.1, 0.7, 0.4, 1.0},
         .position = { 0.f, 0.1f, 0.f },
-        .rotation = { 0.f, 0.f, 0.f }
+        .rotation = { 0.f, 0.f, 0.f },
+        .shininess = 0.01f
     };
 
     Scene scene =  { 
@@ -218,10 +220,15 @@ int main(int argc, char** argv)
 
 
     // create a camera
-    const Vec3 camera_up = { 0.f, 1.f, 0.f };
-    const Vec3 camera_position = { 0.f, 3.5f, 10.f };
-    const Vec3 camera_rotation = { 0.f, 0.f, 0.f };
-    const Camera camera = createCamera(degreeToRad(60.f), 1.f, 1.f, 2000.f, camera_up, camera_position, camera_rotation);
+    const Camera camera = {
+        .aspect = degreeToRad(60.f), 
+        .near = 1.f,
+        .field_of_view_radians = 1.f,
+        .far = 2000.f, 
+        .up = { 0.f, 1.f, 0.f }, 
+        .position = { 0.f, 3.5f, 10.f },
+        .rotation = { 0.f, 0.f, 0.f }
+        };
 
 
     

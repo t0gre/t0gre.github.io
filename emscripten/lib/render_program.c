@@ -39,15 +39,22 @@ RenderProgram initShader(void)
     
     const GLuint view_uniform_location = guaranteeUniformLocation(shader_program, "u_view");
     const GLuint projection_uniform_location = guaranteeUniformLocation(shader_program, "u_projection");
-    const GLuint color_uniform_location = guaranteeUniformLocation(shader_program, "u_color");
     const GLuint view_position_uniform_location = guaranteeUniformLocation(shader_program, "u_view_position");
 
+    // material properties
+    const GLuint color_uniform_location = guaranteeUniformLocation(shader_program, "u_color");
+    const GLuint shininess_uniform_location = guaranteeUniformLocation(shader_program, "u_shininess");
+    
+    // lights
+    // ambient light
     const GLuint ambient_light_color_uniform_location = guaranteeUniformLocation(shader_program, "u_ambient_light.color");
 
+    // directional light
     const GLuint directional_light_color_uniform_location = guaranteeUniformLocation(shader_program, "u_directional_light.color");
     const GLuint directional_light_rotation_uniform_location = guaranteeUniformLocation(shader_program, "u_directional_light.rotation");
     const GLuint directional_light_specular_color_uniform_location = guaranteeUniformLocation(shader_program, "u_directional_light.specular_color");
     
+    // spot light
     const GLuint point_light_color_uniform_location = guaranteeUniformLocation(shader_program, "u_point_light.color");
     const GLuint point_light_position_uniform_location = guaranteeUniformLocation(shader_program, "u_point_light.position");
     const GLuint point_light_specular_color_uniform_location = guaranteeUniformLocation(shader_program, "u_point_light.specular_color");
@@ -65,6 +72,7 @@ RenderProgram initShader(void)
         .view_uniform_location = view_uniform_location,
         .projection_uniform_location = projection_uniform_location,
         .color_uniform_location = color_uniform_location,
+        .shininess_uniform_location = shininess_uniform_location,
         .view_position_uniform_location = view_position_uniform_location,
         .ambient_light_uniform = {
             .color_location = ambient_light_color_uniform_location 
