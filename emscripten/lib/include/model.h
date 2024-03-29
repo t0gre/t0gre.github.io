@@ -15,6 +15,6 @@ typedef struct Model {
     Mesh mesh;
 } Model;  
 
-void drawModel(Model model, Camera camera, RenderProgram renderProgram);
+void drawModel(Model model, RenderProgram renderProgram);
 
 #endif // MODEL_H

@@ -60,13 +60,35 @@ WindowState initWindow(const char* title)
 
 
 
-void draw(WindowState window, Camera camera, Scene scene, RenderProgram render_program)
+void draw(WindowState window, Camera camera, Scene* scene, RenderProgram render_program)
 {
     // Clear screen
     glClear(GL_COLOR_BUFFER_BIT);
 
-    for (uint8_t i = 0; i < scene.model_count; i++) {
-        drawModel(scene.models[i], camera, render_program);
+    // update camera uniforms
+    const Mat4 projection = getProjectionMatrix(camera);
+    const Mat4 view = getViewMatrix(camera);
+    glUniformMatrix4fv(render_program.view_uniform_location,1,0, &view.data[0][0]);  
+    glUniform3fv(render_program.view_position_uniform_location,1, &camera.position.data[0]); 
+    glUniformMatrix4fv(render_program.projection_uniform_location,1,0, &projection.data[0][0]);
+
+    // update light uniforms
+    // set ambient light
+    glUniform3fv(render_program.ambient_light_uniform.color_location,1,scene->ambient_light.color.data);
+
+    // set directional light
+    glUniform3fv(render_program.directional_light_uniform.color_location,1,scene->directional_light.color.data);
+    glUniform3fv(render_program.directional_light_uniform.rotation_location,1,scene->directional_light.rotation.data);
+
+    // set point light
+    glUniform3fv(render_program.point_light_uniform.color_location,1,scene->point_light.color.data);
+    glUniform3fv(render_program.point_light_uniform.position_location,1,scene->point_light.position.data);
+    glUniform1f(render_program.point_light_uniform.constant_location,scene->point_light.constant);
+    glUniform1f(render_program.point_light_uniform.linear_location,scene->point_light.linear);
+    glUniform1f(render_program.point_light_uniform.quadratic_location,scene->point_light.quadratic); 
+
+    for (uint8_t i = 0; i < scene->model_count; i++) {
+        drawModel(scene->models[i], render_program);
     } 
 
     // Swap front/back framebuffers
@@ -74,8 +96,21 @@ void draw(WindowState window, Camera camera, Scene scene, RenderProgram render_p
 }
 
 
-void updateModel(Model* model, float dt) {
-    // model->rotation.y += 1.2 * dt / 1000;
+void updateScene(Scene* scene, float dt) {
+    Mat4 rotator = m4yRotation(PI / (dt * 10));
+    Vec4 old = { 
+        scene->point_light.position.x,
+        scene->point_light.position.y,
+        scene->point_light.position.z,
+        0.0
+    };
+    Vec4 new = m4vectorMultiply(old, rotator);
+    scene->point_light.position = (Vec3){
+        new.x,
+        new.y,
+        new.z
+    };
+    
 }
 
 void mainLoop(void* mainLoopArg) 
@@ -97,11 +132,11 @@ void mainLoop(void* mainLoopArg)
         SDL_ClearError();
     }
    
-    updateModel(&state->scene.models[0], deltaTime);
+    updateScene(&state->scene, deltaTime);
 
     processEvents(state);
      
-    draw(state->window, state->camera, state->scene, state->render_program);
+    draw(state->window, state->camera, &state->scene, state->render_program);
 
 }
 
@@ -127,32 +162,18 @@ int main(int argc, char** argv)
 
     DirectionalLight directional_light = {
         .rotation = { .x = 0.0f, .y = -0.8f, .z = -0.5f},
-        .color = { .r = 0.8f, .g = 0.8f, .b = 0.5f},
+        .color = { .r = 0.5f, .g = 0.5f, .b = 0.5f},
     };
 
     PointLight point_light = {
-        .position = { 0.f, 3.5f, 1.f },
-        .color = { .r = 0.1f, .g = 0.1f, .b = 0.1f},
+        .position = { 0.f, 5.0f, 5.f },
+        .color = { .r = 0.2f, .g = 0.2f, .b = 0.2f},
         .constant = 1.0f,
-        .linear = 0.09f,
+        .linear = 0.009f,
         .quadratic = 0.032f
     };
 
-    glUseProgram(render_program.shader_program);
-
-    // set ambient light
-    glUniform3fv(render_program.ambient_light_uniform.color_location,1,&ambient_light.color.data[0]);
-
-    // set directional light
-    glUniform3fv(render_program.directional_light_uniform.color_location,1,&directional_light.color.data[0]);
-    glUniform3fv(render_program.directional_light_uniform.rotation_location,1,&directional_light.rotation.data[0]);
-
-    // set point light
-    glUniform3fv(render_program.point_light_uniform.color_location,1,&point_light.color.data[0]);
-    glUniform3fv(render_program.point_light_uniform.position_location,1,&point_light.position.data[0]);
-    glUniform1f(render_program.point_light_uniform.constant_location,point_light.constant);
-    glUniform1f(render_program.point_light_uniform.linear_location,point_light.linear);
-    glUniform1f(render_program.point_light_uniform.quadratic_location,point_light.quadratic); 
+    
 
 
     // create a model
@@ -217,7 +238,10 @@ int main(int argc, char** argv)
 
     Scene scene =  { 
         .model_count = 2,
-        .models = { tree_model, floor_model }
+        .models = { tree_model, floor_model },
+        .ambient_light = ambient_light,
+        .point_light = point_light,
+        .directional_light = directional_light
         };
 
 

@@ -1,16 +1,12 @@
 #ifndef APP_STATE_H
 #define APP_STATE_H
 
-#include "vec.h"
+
 #include "SDL.h" 
 #include "camera.h"
-#include "model.h"
 #include "render_program.h"
-
-typedef struct InputState {
-    bool pointer_down;
-    Vec2 pointer_position;
-} InputState;
+#include "scene.h"
+#include "input.h"
 
 typedef struct WindowState  {
     SDL_Window* object;
@@ -18,10 +14,6 @@ typedef struct WindowState  {
     bool should_close;
 } WindowState;
 
-typedef struct Scene {
-    size_t model_count;
-    Model models[2];
-} Scene;
 
 typedef struct AppState  {
     WindowState window;
