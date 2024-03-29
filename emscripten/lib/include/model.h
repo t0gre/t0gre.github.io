@@ -6,12 +6,12 @@
 #include "camera.h"
 #include "render_program.h"
 #include "mesh.h"
+#include "material.h"
 
 typedef struct Model {
     Vec3 position;
     Vec3 rotation;
-    Vec4 color;
-    float shininess;
+    Material material;
     Mesh mesh;
 } Model;  
 

@@ -3,6 +3,12 @@
 
 #include <GLES3/gl3.h>
 
+typedef struct MaterialUniform {
+      GLuint color_location;
+      GLuint specular_color_location;
+      GLuint shininess_location;
+} MaterialUniform;
+
 typedef struct AmbientLightUniform {
       GLuint color_location;
 } AmbientLightUniform;
@@ -10,13 +16,11 @@ typedef struct AmbientLightUniform {
 typedef struct DirectionalLightUniform {
       GLuint color_location;
       GLuint rotation_location;
-      GLuint specular_color_location;
 } DirectionalLightUniform;
 
 typedef struct PointLightUniform {
       GLuint color_location;
       GLuint position_location;
-      GLuint specular_color_location;
       GLuint constant_location;
       GLuint linear_location;
       GLuint quadratic_location;
@@ -27,9 +31,8 @@ typedef struct RenderProgram  {
     GLuint model_uniform_location;
     GLuint view_uniform_location;
     GLuint projection_uniform_location;
-    GLuint color_uniform_location;
-    GLuint shininess_uniform_location;
     GLuint view_position_uniform_location;
+    MaterialUniform material_uniform;
     AmbientLightUniform ambient_light_uniform;
     DirectionalLightUniform directional_light_uniform;
     PointLightUniform point_light_uniform;

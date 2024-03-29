@@ -122,19 +122,17 @@ int main(int argc, char** argv)
 
     // create lights
     AmbientLight ambient_light = {
-        .color = { .r = 0.5f, .g = 0.3f, .b = 0.3f }
+        .color = { .r = 0.1f, .g = 0.1f, .b = 0.1f }
     };
 
     DirectionalLight directional_light = {
         .rotation = { .x = 0.0f, .y = -0.8f, .z = -0.5f},
         .color = { .r = 0.8f, .g = 0.8f, .b = 0.5f},
-        .specular_color = { .r = 0.9f, .g = 0.1f, .b = 0.1f}
     };
 
     PointLight point_light = {
-        .position = { 0.f, 3.5f, 10.f },
-        .color = { .r = 0.9f, .g = 0.5f, .b = 0.5f},
-        .specular_color = { .r = 0.9f, .g = 0.5f, .b = 0.1f},
+        .position = { 0.f, 3.5f, 1.f },
+        .color = { .r = 0.1f, .g = 0.1f, .b = 0.1f},
         .constant = 1.0f,
         .linear = 0.09f,
         .quadratic = 0.032f
@@ -148,12 +146,10 @@ int main(int argc, char** argv)
     // set directional light
     glUniform3fv(render_program.directional_light_uniform.color_location,1,&directional_light.color.data[0]);
     glUniform3fv(render_program.directional_light_uniform.rotation_location,1,&directional_light.rotation.data[0]);
-    glUniform3fv(render_program.directional_light_uniform.specular_color_location,1,&directional_light.specular_color.data[0]);
 
     // set point light
     glUniform3fv(render_program.point_light_uniform.color_location,1,&point_light.color.data[0]);
     glUniform3fv(render_program.point_light_uniform.position_location,1,&point_light.position.data[0]);
-    glUniform3fv(render_program.point_light_uniform.specular_color_location,1,&point_light.specular_color.data[0]);
     glUniform1f(render_program.point_light_uniform.constant_location,point_light.constant);
     glUniform1f(render_program.point_light_uniform.linear_location,point_light.linear);
     glUniform1f(render_program.point_light_uniform.quadratic_location,point_light.quadratic); 
@@ -169,10 +165,13 @@ int main(int argc, char** argv)
     
     Model tree_model = {
         .mesh = tree_mesh,
-        .color = {0.1, 0.7, 0.1, 1.0},
+        .material = {
+            .color = {0.1, 0.7, 0.1},
+            .specular_color = {0.9,0.9,0.9},
+            .shininess = 3.f
+        },
         .position = { 0.f, 0.f, 0.f },
         .rotation = { 0.f, PI / 2.f, 0.f },
-        .shininess = 10.f
     };
 
     float floor_positions_data[18] = {
@@ -207,10 +206,13 @@ int main(int argc, char** argv)
 
     Model floor_model = {
         .mesh = floor_mesh,
-        .color = (Vec4){0.1, 0.7, 0.4, 1.0},
+        .material = {
+            .color = {0.9, 0.7, 0.1},
+            .specular_color = {0.9,0.9,0.9},
+            .shininess = 10.f
+        },
         .position = { 0.f, 0.1f, 0.f },
         .rotation = { 0.f, 0.f, 0.f },
-        .shininess = 0.01f
     };
 
     Scene scene =  { 

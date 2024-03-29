@@ -15,8 +15,11 @@ void drawModel(Model model, Camera camera, RenderProgram renderProgram) {
     glUniformMatrix4fv(renderProgram.view_uniform_location,1,0, &view.data[0][0]);  
     glUniform3fv(renderProgram.view_position_uniform_location,1, &camera.position.data[0]); 
     glUniformMatrix4fv(renderProgram.projection_uniform_location,1,0, &projection.data[0][0]);
-    glUniform3fv(renderProgram.color_uniform_location,1, &model.color.data[0]);
-    glUniform1f(renderProgram.shininess_uniform_location, model.shininess);
+    
+    glUniform3fv(renderProgram.material_uniform.color_location,1, model.material.color.data);
+    glUniform3fv(renderProgram.material_uniform.specular_color_location,1, model.material.specular_color.data);
+    glUniform1f(renderProgram.material_uniform.shininess_location, model.material.shininess);
+
 
     glBindVertexArray(model.mesh.vao);
     // Draw the vertex buffer

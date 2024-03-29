@@ -42,8 +42,10 @@ RenderProgram initShader(void)
     const GLuint view_position_uniform_location = guaranteeUniformLocation(shader_program, "u_view_position");
 
     // material properties
-    const GLuint color_uniform_location = guaranteeUniformLocation(shader_program, "u_color");
-    const GLuint shininess_uniform_location = guaranteeUniformLocation(shader_program, "u_shininess");
+    const GLuint material_color_uniform_location = guaranteeUniformLocation(shader_program, "u_material.color");
+    const GLuint material_specular_color_uniform_location = guaranteeUniformLocation(shader_program, "u_material.specular_color");
+    const GLuint material_shininess_uniform_location = guaranteeUniformLocation(shader_program, "u_material.shininess");
+    
     
     // lights
     // ambient light
@@ -52,12 +54,10 @@ RenderProgram initShader(void)
     // directional light
     const GLuint directional_light_color_uniform_location = guaranteeUniformLocation(shader_program, "u_directional_light.color");
     const GLuint directional_light_rotation_uniform_location = guaranteeUniformLocation(shader_program, "u_directional_light.rotation");
-    const GLuint directional_light_specular_color_uniform_location = guaranteeUniformLocation(shader_program, "u_directional_light.specular_color");
     
     // spot light
     const GLuint point_light_color_uniform_location = guaranteeUniformLocation(shader_program, "u_point_light.color");
     const GLuint point_light_position_uniform_location = guaranteeUniformLocation(shader_program, "u_point_light.position");
-    const GLuint point_light_specular_color_uniform_location = guaranteeUniformLocation(shader_program, "u_point_light.specular_color");
     const GLuint point_light_constant_uniform_location = guaranteeUniformLocation(shader_program, "u_point_light.constant");
     const GLuint point_light_linear_uniform_location = guaranteeUniformLocation(shader_program, "u_point_light.linear");
     const GLuint point_light_quadratic_uniform_location = guaranteeUniformLocation(shader_program, "u_point_light.quadratic");
@@ -71,21 +71,22 @@ RenderProgram initShader(void)
         .model_uniform_location = model_uniform_location,
         .view_uniform_location = view_uniform_location,
         .projection_uniform_location = projection_uniform_location,
-        .color_uniform_location = color_uniform_location,
-        .shininess_uniform_location = shininess_uniform_location,
         .view_position_uniform_location = view_position_uniform_location,
+        .material_uniform = {
+            .color_location = material_color_uniform_location,
+            .specular_color_location = material_specular_color_uniform_location,
+            .shininess_location = material_shininess_uniform_location,
+        },
         .ambient_light_uniform = {
             .color_location = ambient_light_color_uniform_location 
         },
         .directional_light_uniform = {
             .color_location = directional_light_color_uniform_location,
             .rotation_location = directional_light_rotation_uniform_location,
-            .specular_color_location = directional_light_specular_color_uniform_location
         },
         .point_light_uniform = {
             .color_location = point_light_color_uniform_location,
             .position_location = point_light_position_uniform_location,
-            .specular_color_location = point_light_specular_color_uniform_location,
             .constant_location = point_light_constant_uniform_location,
             .linear_location = point_light_linear_uniform_location,
             .quadratic_location = point_light_linear_uniform_location
