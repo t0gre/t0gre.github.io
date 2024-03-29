@@ -168,7 +168,7 @@ int main(int argc, char** argv)
         .material = {
             .color = {0.1, 0.7, 0.1},
             .specular_color = {0.2,0.2,0.2},
-            .shininess = 10.5f
+            .shininess = 0.5f
         },
         .position = { 0.f, 0.f, 0.f },
         .rotation = { 0.f, PI / 2.f, 0.f },
