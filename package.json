@@ -9,7 +9,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build && cd emscripten && make build-en && cd .. && cp -t ./dist/emscripten emscripten/a.out.js emscripten/a.out.wasm emscripten/a.out.data",
+    "build": "tsc && vite build && cd demo-02-c-opengl && make build-en && cd .. && cp -t ./dist/demo-02-c-opengl demo-02-c-opengl/a.out.js demo-02-c-opengl/a.out.wasm demo-02-c-opengl/a.out.data",
     "preview": "vite preview"
   },
   "devDependencies": {

@@ -4,7 +4,7 @@ import { m4fromPositionAndEuler, m4inverse, m4perspective } from "../mat4";
 import { Mesh } from "../mesh";
 import { Camera } from "../camera";
 import { Vec4 } from "../vec";
-import { InputState } from "lib/input";
+import { InputState } from "../input";
 
 const vertexShaderSource = `#version 300 es
 
