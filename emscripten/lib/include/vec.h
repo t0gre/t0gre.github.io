@@ -17,6 +17,11 @@ typedef union Vec3 {
     float y;
     float z;
   };
+  struct { 
+    float r;
+    float g;
+    float b;
+  };
 
   float data[3];
 
@@ -42,4 +47,4 @@ Vec3 normalize(Vec3 v);
 
 Vec3 cross(Vec3 a, Vec3 b);
 
-#endif /* VEC_H */
+#endif //VEC_H 

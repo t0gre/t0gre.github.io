@@ -1,4 +1,7 @@
-#define PI 3.14159f
+#ifndef MAT_4_H
+#define MAT_4_H
+
+#include "math_utils.h"
 #include "vec.h"
 
 
@@ -45,6 +48,8 @@ Mat4 m4transpose(Mat4 m);
 
 Mat4 m4inverse(Mat4 m);
 
-Mat4 m4vectorMultiply(Vec4 v, Mat4 m);
+Vec4 m4vectorMultiply(Vec4 v, Mat4 m);
 
 Mat4 m4fromPositionAndEuler(Vec3 position, Vec3 euler);
+
+#endif //MAT_4_H

@@ -1,22 +1,10 @@
 #include "camera.h"
 
-Camera createCamera(
-  float field_of_view_radians,
-  float aspect,
-  float near,
-  float far,
-  Vec3 up,
-  Vec3 position,
-  Vec3 rotation) {
-    
-  return (Camera){ 
-        .field_of_view_radians = field_of_view_radians,
-        .aspect = aspect,
-        .near = near,
-        .far = far,
-        .up = up, 
-        .position = position,
-        .rotation = rotation,
-        };
-
+Mat4 getProjectionMatrix(Camera camera) {
+  return m4perspective(camera.field_of_view_radians, camera.aspect, camera.near, camera.far);
 }
+
+Mat4 getViewMatrix(Camera camera) {
+  return m4inverse(m4fromPositionAndEuler(camera.position, camera.rotation));
+}
+
