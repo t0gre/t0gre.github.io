@@ -6,7 +6,7 @@ import { DirectionalLight, createDirectionalLight } from './lib/light'
 import { Camera, createCamera } from './lib/camera'
 import { createBasicMaterial } from './lib/shaders/BasicMaterial'
 import { loadObj } from './lib/loaders/ObjLoader'
-import { InputState } from 'lib/input'
+import { InputState } from './lib/input'
 
 
 // const ROTATION_SPEED = 1.2;
@@ -27,7 +27,7 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
 
         if (material) {
 
-            const vertices = await loadObj('rainbowtree.obj');
+            const vertices = await loadObj('/rainbowtree.obj');
             const shape = createMesh(gl, 
                 [0,0,0], 
                 [0, Math.PI /2, 0],  

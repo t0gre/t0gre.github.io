@@ -3,33 +3,41 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Tom </title>
+    <title>6pence.xyz | home</title>
     <link rel="icon" type="image/x-icon" href ="/favicon.ico">
     <link rel="stylesheet" href="index.css">
 </head>
 
 <body>
-    <div>
-        <a class="active" href="/about/">About</a>
-        <div style="float: right;">
-            <a id="diamond" href="/emscripten/">
-                Emscripten
-            </a>
+    <p >
+        <h3 style="text-align: center;">Welcome to the website of Tom Greenwood</h3>
+        <br>
+        <p style="text-align: center; margin-left: 50px; margin-right: 50px;">
+            This is my personal website. There's more information in the  <b><a href="/about/">about</a></b> section, but it is mainly for 
+            the demos, which are below
+        </p>
+        <br>
+        <div style="text-align: center;">
+            <ul style="display: inline-block; text-align: left;">
+                <li>
+                    <a href="/demo-01-ts-webgl/">a <b>pure webgl2</b> typescript demo</a>
+                </li>
+                <li>
+                    <a href="/demo-02-c-opengl/">a <b>c, emscripten, opengl</b> demo</a>
+                </li>
+                <li>
+                    <a href="/demo-03-three-js/">a typescript, <b>three.js</b> demo</a>
+                </li>
+                <li>
+                    <a href="/about/">about me</a>
+                </li>
+                <li>
+                    <a href="/links/">my social links</a>
+                </li>
+            </ul>
         </div>
-    </div>
-    
-    <canvas style="border-style: dashed; width: 100%; height: 700px; margin-top: 40px; touch-action: none;" id="canvas"></canvas>
-    <p style="margin-top: 40px;">
-        This is a demo of raw webgl and Typescript, zero runtime libraries. It uses
-        Vite for bundling but that is all.
+        
     </p>
-    <script type="module" >
-        
-        import { main } from './index.ts'
-        const canvas = document.querySelector("#canvas");
-        main(canvas);
-        
-    </script>
 </body>
 
 </html>
