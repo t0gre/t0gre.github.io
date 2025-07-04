@@ -8,7 +8,7 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/native",
+            "program": "${workspaceFolder}/demo-02-c-opengl/native",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",

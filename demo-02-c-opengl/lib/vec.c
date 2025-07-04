@@ -3,25 +3,31 @@
 
 
 Vec3 subtractVectors(Vec3 a, Vec3 b) {
-    return (Vec3){a.x - b.x, a.y - b.y, a.z - b.z};
+    return (Vec3){
+        .x = a.x - b.x, 
+        .y = a.y - b.y, 
+        .z = a.z - b.z};
 }
 
 Vec3 normalize(Vec3 v) {
     float length = sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
     // make sure we don't divide by 0.
     if (length > 0.00001) {
-        return (Vec3){v.x / length, v.y / length, v.z / length};
+        return (Vec3){
+            .x = v.x / length, 
+            .y = v.y / length, 
+            .z = v.z / length};
     } else {
-        return (Vec3){0.f, 0.f, 0.f};
+        return (Vec3){ .x = 0.f, .y = 0.f, .z = 0.f};
     }
 }
 
 Vec3 cross(Vec3 a, Vec3 b) {
     
     return (Vec3){
-        a.y * b.z - a.z * b.y,
-        a.z * b.x - a.x * b.z,
-        a.x * b.y - a.y * b.x
+        .x = a.y * b.z - a.z * b.y,
+        .y = a.z * b.x - a.x * b.z,
+        .z = a.x * b.y - a.y * b.x
         };
 }
 

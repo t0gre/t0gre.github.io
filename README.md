@@ -12,9 +12,7 @@ make clean
 
 
 ## activate emscripen
-cd emsdk
-./emsdk activate latest --permanent
-source emsdk_env.sh
+look in the makefile in the opengl example folder
 
 ## assets
 

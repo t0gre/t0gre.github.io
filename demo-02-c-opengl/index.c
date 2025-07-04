@@ -20,7 +20,7 @@ WindowState initWindow(const char* title)
     // Create SDL window
     SDL_Window* window_object = SDL_CreateWindow(title, 
                          SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                          480, 640, 
+                          640, 480, 
                          SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE| SDL_WINDOW_SHOWN);
     const Uint32 window_id = SDL_GetWindowID(window_object);
 
@@ -34,14 +34,22 @@ WindowState initWindow(const char* title)
         .majorVersion = 2,
         .minorVersion = 0
     });
-    // emscripten_webgl_make_context_current(context);
-    #endif
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+
+    SDL_GL_CreateContext(window_object);
+    // emscripten_webgl_make_context_current(context);
+    #else 
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+
+    SDL_GLContext context = SDL_GL_CreateContext(window_object);
+    SDL_GL_MakeCurrent(window_object, (SDL_GLContext)context );
+    #endif
+
     
-    SDL_GLContext mainContext = SDL_GL_CreateContext(window_object);
-    // SDL_GL_MakeCurrent(window_object, (SDL_GLContext)context );
+   
 
     // Set clear color to black
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -49,7 +57,7 @@ WindowState initWindow(const char* title)
     
 
     // Initialize viewport
-    glViewport(0,0 ,480, 640);
+    glViewport(0,0 ,640, 480);
     const WindowState window = {
         .object = window_object, 
         .id = window_id
@@ -99,16 +107,16 @@ void draw(WindowState window, Camera camera, Scene* scene, RenderProgram render_
 void updateScene(Scene* scene, float dt) {
     Mat4 rotator = m4yRotation(PI / (dt * 10));
     Vec4 old = { 
-        scene->point_light.position.x,
-        scene->point_light.position.y,
-        scene->point_light.position.z,
-        0.0
+        .x = scene->point_light.position.x,
+        .y = scene->point_light.position.y,
+        .z = scene->point_light.position.z,
+        .w = 0.0
     };
     Vec4 new = m4vectorMultiply(old, rotator);
     scene->point_light.position = (Vec3){
-        new.x,
-        new.y,
-        new.z
+        .x = new.x,
+        .y = new.y,
+        .z = new.z
     };
     
 }
@@ -166,7 +174,7 @@ int main(int argc, char** argv)
     };
 
     PointLight point_light = {
-        .position = { 0.f, 5.0f, 5.f },
+        .position = { .x = 0.f, .y = 5.0f, .z = 5.f },
         .color = { .r = 0.2f, .g = 0.2f, .b = 0.2f},
         .constant = 1.0f,
         .linear = 0.009f,
@@ -187,12 +195,12 @@ int main(int argc, char** argv)
     Model tree_model = {
         .mesh = tree_mesh,
         .material = {
-            .color = {0.1, 0.7, 0.1},
-            .specular_color = {0.2,0.2,0.2},
+            .color = { .r = 0.1, .g = 0.7, .b = 0.1},
+            .specular_color = { .r = 0.2, .g = 0.2, .b = 0.2},
             .shininess = 0.5f
         },
-        .position = { 0.f, 0.f, 0.f },
-        .rotation = { 0.f, PI / 2.f, 0.f },
+        .position = { .x = 0.f, .y = 0.f, .z = 0.f },
+        .rotation = { .x = 0.f, .y = PI / 2.f, .z = 0.f },
     };
 
     float floor_positions_data[18] = {
@@ -228,12 +236,12 @@ int main(int argc, char** argv)
     Model floor_model = {
         .mesh = floor_mesh,
         .material = {
-            .color = {0.9, 0.7, 0.1},
-            .specular_color = {0.9,0.9,0.9},
+            .color = { .r = 0.9, .g = 0.7, .b = 0.1},
+            .specular_color = { .r = 0.9, .g = 0.9, .b = 0.9},
             .shininess = 10.f
         },
-        .position = { 0.f, 0.1f, 0.f },
-        .rotation = { 0.f, 0.f, 0.f },
+        .position = { .x = 0.f, .y = 0.1f, .z = 0.f },
+        .rotation = { .x = 0.f, .y = 0.f, .z = 0.f },
     };
 
     Scene scene =  { 
@@ -251,9 +259,9 @@ int main(int argc, char** argv)
         .near = 1.f,
         .field_of_view_radians = 1.f,
         .far = 2000.f, 
-        .up = { 0.f, 1.f, 0.f }, 
-        .position = { 0.f, 3.5f, 10.f },
-        .rotation = { 0.f, 0.f, 0.f }
+        .up = { .x = 0.f, .y = 1.f, .z = 0.f }, 
+        .position = { .x = 0.f, .y = 3.5f, .z = 10.f },
+        .rotation = { .x = 0.f, .y = 0.f, .z = 0.f }
         };
 
 

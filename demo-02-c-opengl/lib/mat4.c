@@ -245,10 +245,10 @@ Mat4 m4inverse(Mat4 m) {
 
 Vec4 m4vectorMultiply(Vec4 v, Mat4 m) {
        return (Vec4){
-           m.m00 * v.x + m.m01 * v.y + m.m02 * v.z + m.m03 * v.w,
-           m.m10 * v.x + m.m11 * v.y + m.m12 * v.z + m.m13 * v.w,
-           m.m20 * v.x + m.m21 * v.y + m.m22 * v.z + m.m23 * v.w,
-           m.m30 * v.x + m.m31 * v.y + m.m32 * v.z + m.m33 * v.w
+           .x = m.m00 * v.x + m.m01 * v.y + m.m02 * v.z + m.m03 * v.w,
+           .y = m.m10 * v.x + m.m11 * v.y + m.m12 * v.z + m.m13 * v.w,
+           .z = m.m20 * v.x + m.m21 * v.y + m.m22 * v.z + m.m23 * v.w,
+           .w = m.m30 * v.x + m.m31 * v.y + m.m32 * v.z + m.m33 * v.w
         };
     }
 

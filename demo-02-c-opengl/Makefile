@@ -1,5 +1,14 @@
-# build-native:
-# 	gcc -o native -ggdb -std=c11 index.c lib/camera.c lib/mat4.c lib/vec.c -I/usr/include/SDL2 -D_REENTRANT -lSDL2 -lGL -lm -lGLESv2
+build:
+	clang -o native -ggdb -std=c11 index.c lib/*.c -Ilib/include \
+	-I/usr/include/SDL2 \
+	-D_REENTRANT \
+	-lSDL2 \
+	-lGL \
+	-lm \
+	-lGLESv2 \
+	-Wall \
+	-Werror \
+	-Wno-missing-braces
 
 setup-emsdk:
 	cd emsdk && ./emsdk install 3.1.54 && ./emsdk activate 3.1.54 && source ./emsdk_env.sh

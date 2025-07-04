@@ -56,10 +56,10 @@ void processEvents(AppState* state)
                     
                     state->input.pointer_position = pointer_position;
 
-                    GLint vp[4]; 
-                    glGetIntegerv(GL_VIEWPORT, vp);
-                    Vec2 dims = {vp[2], vp[3]};
-                    Vec2 pointer_norm = normalizeMousePosition(pointer_position, dims );
+                    // GLint vp[4]; 
+                    // glGetIntegerv(GL_VIEWPORT, vp);
+                    // Vec2 dims = {.x = vp[2], .y = vp[3]};
+                    // Vec2 pointer_norm = normalizeMousePosition(pointer_position, dims );
                 }
                 break;
             }
@@ -76,10 +76,10 @@ void processEvents(AppState* state)
                     
                     state->input.pointer_position = pointer_position;
                     
-                    GLint vp [4]; 
-                    glGetIntegerv(GL_VIEWPORT, vp);
-                    Vec2 dims = {vp[2], vp[3]};
-                    Vec2 pointer_norm = normalizeMousePosition(pointer_position, dims );
+                    // GLint vp [4]; 
+                    // glGetIntegerv(GL_VIEWPORT, vp);
+                    // Vec2 dims = {.x = vp[2], .y = vp[3]};
+                    // Vec2 pointer_norm = normalizeMousePosition(pointer_position, dims );
 
     
                 }
@@ -90,7 +90,7 @@ void processEvents(AppState* state)
             {
                 if (event.button.button == 1) {
                     state->input.pointer_down = false;
-                    Vec2 pointer_position ={ 0 } ;
+                    Vec2 pointer_position ={ .x = 0, .y = 0 } ;
                     state->input.pointer_position = pointer_position;
                 }
                 break;

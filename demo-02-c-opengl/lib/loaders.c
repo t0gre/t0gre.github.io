@@ -14,7 +14,8 @@ char* get_shader_content(const char* fileName)
     /* Read File to get size */
     fp = fopen(fileName, "rb");
     if(fp == NULL) {
-        return "";
+        printf("Fatal Error: Failed to load shader at path: %s\n", fileName);
+        exit(1);
     }
     fseek(fp, 0L, SEEK_END);
     size = ftell(fp)+1;

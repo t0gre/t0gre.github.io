@@ -13,9 +13,13 @@ GLuint guaranteeUniformLocation(GLuint program, const GLchar *name) {
 RenderProgram initShader(void)
 {
 
+    #ifdef __EMSCRIPTEN__
     const GLchar* vertexSource = get_shader_content("basic.vert");
-
     const GLchar* fragmentSource = get_shader_content("basic.frag");
+    #else 
+    const GLchar* vertexSource = get_shader_content("./lib/shaders/basic.vert");
+    const GLchar* fragmentSource = get_shader_content("./lib/shaders/basic.frag");
+    #endif
 
     // Create and compile vertex shader
     const GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);

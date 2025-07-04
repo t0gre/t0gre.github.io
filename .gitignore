@@ -3,10 +3,10 @@ build
 dist
 **/.DS_Store
 
-a.out.js
-a.out.wasm
-a.out.data
-a.out.wasm.map
+**/a.out.js
+**/a.out.wasm
+**/a.out.data
+**/a.out.wasm.map
 
 
 native

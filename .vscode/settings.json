@@ -2,6 +2,8 @@
     "files.associations": {
         "sdl.h": "c",
         "html5.h": "c",
-        "loaders.h": "c"
+        "loaders.h": "c",
+        "assert.h": "c",
+        "render_program.h": "c"
     }
 }
