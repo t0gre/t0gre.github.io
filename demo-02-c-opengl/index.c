@@ -13,19 +13,23 @@
 #include "model.h"
 #include "events.h"
 
+#include<unistd.h>
+
 
 
 WindowState initWindow(const char* title)
 {
+    
+    SDL_Init(SDL_INIT_VIDEO < 0);
+    
     // Create SDL window
-    SDL_Window* window_object = SDL_CreateWindow(title, 
+    #ifdef __EMSCRIPTEN__
+
+     SDL_Window* window_object = SDL_CreateWindow(title, 
                          SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                           640, 480, 
                          SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE| SDL_WINDOW_SHOWN);
     const Uint32 window_id = SDL_GetWindowID(window_object);
-
-    
-    #ifdef __EMSCRIPTEN__
     // This emscripten call fixes an antialiasing bug in sdl context creation for webgl2
     EMSCRIPTEN_WEBGL_CONTEXT_HANDLE context = emscripten_webgl_create_context("canvas", &(EmscriptenWebGLContextAttributes){
         .depth = 1,
@@ -41,23 +45,37 @@ WindowState initWindow(const char* title)
     SDL_GL_CreateContext(window_object);
     // emscripten_webgl_make_context_current(context);
     #else 
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 
-    SDL_GLContext context = SDL_GL_CreateContext(window_object);
-    SDL_GL_MakeCurrent(window_object, (SDL_GLContext)context );
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+
+    SDL_Window* window_object = SDL_CreateWindow(title, 
+                         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+                          640, 480, 
+                         SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE| SDL_WINDOW_SHOWN);
+    
+    const Uint32 window_id = SDL_GetWindowID(window_object);
+
+    SDL_GL_CreateContext(window_object);
+    
+    // Enable VSync (try 1, fallback to -1)
+    if (SDL_GL_SetSwapInterval(1) != 0) {
+        printf("VSync (1) not supported, trying adaptive VSync (-1)\n");
+        SDL_GL_SetSwapInterval(-1);
+    }
+
+
     #endif
 
     
-   
-
-    // Set clear color to black
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glEnable(GL_DEPTH_TEST);
-    
 
     // Initialize viewport
     glViewport(0,0 ,640, 480);
+
     const WindowState window = {
         .object = window_object, 
         .id = window_id
@@ -71,7 +89,7 @@ WindowState initWindow(const char* title)
 void draw(WindowState window, Camera camera, Scene* scene, RenderProgram render_program)
 {
     // Clear screen
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // update camera uniforms
     const Mat4 projection = getProjectionMatrix(camera);
@@ -95,12 +113,16 @@ void draw(WindowState window, Camera camera, Scene* scene, RenderProgram render_
     glUniform1f(render_program.point_light_uniform.linear_location,scene->point_light.linear);
     glUniform1f(render_program.point_light_uniform.quadratic_location,scene->point_light.quadratic); 
 
+    
+
     for (uint8_t i = 0; i < scene->model_count; i++) {
         drawModel(scene->models[i], render_program);
     } 
 
+    #ifndef __EMSCRIPTEN__ 
     // Swap front/back framebuffers
     SDL_GL_SwapWindow(window.object);
+    #endif
 }
 
 
@@ -158,8 +180,7 @@ int main(int argc, char** argv)
     };
 
     WindowState window = initWindow("Tom");
-    Uint64 now = SDL_GetPerformanceCounter();
-   
+       
     // Initialize shader and geometry
     RenderProgram render_program = initShader();
 
@@ -264,7 +285,7 @@ int main(int argc, char** argv)
         .rotation = { .x = 0.f, .y = 0.f, .z = 0.f }
         };
 
-
+    Uint64 now = SDL_GetPerformanceCounter();
     
     AppState state = {
         .window = window,

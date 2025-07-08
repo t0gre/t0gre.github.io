@@ -5,10 +5,9 @@ build:
 	-lSDL2 \
 	-lGL \
 	-lm \
-	-lGLESv2 \
 	-Wall \
-	-Werror \
-	-Wno-missing-braces
+	-Wno-missing-braces 
+	# -Werror 
 
 setup-emsdk:
 	cd emsdk && ./emsdk install 3.1.54 && ./emsdk activate 3.1.54 && source ./emsdk_env.sh

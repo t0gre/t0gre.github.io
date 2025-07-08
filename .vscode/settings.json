@@ -4,6 +4,7 @@
         "html5.h": "c",
         "loaders.h": "c",
         "assert.h": "c",
-        "render_program.h": "c"
+        "render_program.h": "c",
+        "ios": "c"
     }
 }
