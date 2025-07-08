@@ -44,7 +44,7 @@ export class Mesh  {
         if (this.vertices.indices) {
             this.gl.drawElements(this.gl.TRIANGLES, this.vertices.indices.length, this.gl.UNSIGNED_SHORT,  0);
         } else {
-            this.gl.drawArrays(this.gl.TRIANGLES, 0, this.vertices.positions.length );
+            this.gl.drawArrays(this.gl.TRIANGLES, 0, this.vertices.positions.length /3 );
         }
         
     }
@@ -144,7 +144,7 @@ export function createMesh(
         const indexBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
         gl.bufferData(
-        gl.ARRAY_BUFFER,
+        gl.ELEMENT_ARRAY_BUFFER,
         indices,
         gl.STATIC_DRAW); 
     }

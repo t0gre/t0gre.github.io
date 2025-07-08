@@ -119,7 +119,7 @@ type Scene = Mesh[]
 // Draw the scene.
 function drawScene(gl: WebGL2RenderingContext, scene: Scene, light: DirectionalLight, camera: Camera, input: InputState) {
 
-
+    gl.enableVertexAttribArray(0);
     // Tell WebGL how to convert from clip space to pixels
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
