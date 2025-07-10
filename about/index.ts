@@ -36,7 +36,7 @@ const createTimeCounter = (startDate: Date) => {
 
 export const updateTimes = () => {
     const myAgeCounter = createTimeCounter(new Date(Date.UTC(1984, 5, 4, 0, 5)));
-    const marriageCounter = createTimeCounter(new Date(Date.UTC(2014, 11, 8, 14, 0)));
+    const marriageCounter = createTimeCounter(new Date(Date.UTC(2015, 11, 8, 14, 0)));
     const xanderAgeCounter = createTimeCounter(new Date(Date.UTC(2017, 11, 7, 1, 0)));
 
     const updateMyAge = () => {
