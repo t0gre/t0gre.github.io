@@ -1,8 +1,8 @@
 
 import { Camera } from "./camera";
 import { DirectionalLight } from "./light";
-import { Vec3 } from "./vec";
 import { InputState } from "./input";
+import { Pose } from "./object3D";
 
 export type Vertices = {
     positions: Float32Array,
@@ -12,34 +12,28 @@ export type Vertices = {
   }
 
 export class Mesh  {
-    public position: Vec3;
-    public rotation: Vec3;
     private gl: WebGL2RenderingContext;
     private vertices: Vertices;
     private material: Material;
     private vao: WebGLVertexArrayObject 
     constructor(
         gl: WebGL2RenderingContext,
-        position: Vec3,
-        rotation: Vec3,
         vertices: Vertices,
         material: Material,
         vao: WebGLVertexArrayObject) {
             
-        this.position = position;
-        this.rotation = rotation;
         this.vertices = vertices;
         this.material = material;
         this.gl = gl;
         this.vao = vao;
     }  
     
-    render(light: DirectionalLight, camera: Camera, input: InputState) {
+    render(light: DirectionalLight, camera: Camera, input: InputState, pose: Pose) {
     
         this.gl.useProgram(this.material.program);
         this.gl.bindVertexArray(this.vao);
 
-        this.material.updateUniforms(this, light, camera, input);
+        this.material.updateUniforms(light, camera, input, pose);
 
         if (this.vertices.indices) {
             this.gl.drawElements(this.gl.TRIANGLES, this.vertices.indices.length, this.gl.UNSIGNED_SHORT,  0);
@@ -52,13 +46,11 @@ export class Mesh  {
 
 interface Material {
     program: WebGLProgram;
-    updateUniforms: (mesh: Mesh, light: DirectionalLight, camera: Camera, input: InputState) => void;
+    updateUniforms: (light: DirectionalLight, camera: Camera, input: InputState, pose: Pose) => void;
 }
 
 export function createMesh(
         gl: WebGL2RenderingContext, 
-        position: Vec3, 
-        rotation: Vec3,  
         material: Material,
         vertices: Vertices): Mesh | undefined {
     
@@ -154,6 +146,6 @@ export function createMesh(
     gl.bindVertexArray(null);
 
     
-    return new Mesh(gl, position, rotation, vertices, material, vao)
+    return new Mesh(gl, vertices, material, vao)
 }
 

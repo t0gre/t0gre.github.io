@@ -1,5 +1,6 @@
 import { Vec3 } from './lib/vec'
 
+import { Object3D } from './lib/object3D'
 import { degToRad } from './lib/mathUtils'
 import { Mesh, createMesh } from './lib/mesh'
 import { DirectionalLight, createDirectionalLight } from './lib/light'
@@ -38,11 +39,13 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
         if (material) {
 
             const vertices = await loadObj('/rainbowtree.obj');
-            const shape = createMesh(gl, 
-                [0,0,0], 
-                [0, Math.PI /2, 0],  
-                material, 
-                vertices);
+            const shape: Object3D = {
+                pose: {
+                    position: [0,0,0], 
+                    rotation: [0, Math.PI /2, 0],
+                },  
+                mesh: createMesh(gl, material, vertices )
+            }  ;
 
             if (!shape) {
                 console.log('failed to create shape')
@@ -82,7 +85,7 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
                     x = x / gl!.canvas.width * 2 -1;
                     y = y  / gl!.canvas.height * -2 + 1;
     
-                    shape.rotation[1] += e.movementX / 100;
+                    shape.pose.rotation[1] += e.movementX / 100;
 
                     input.pointerPosition = [x,y];
                 }
@@ -124,7 +127,7 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
 //     // shape.position = [Math.sin(1 * dt) * 100, Math.cos(1 * dt) * 100, 0]
 // }
 
-type Scene = Mesh[]
+type Scene = Object3D[]
 
 // Draw the scene.
 function drawScene(gl: WebGL2RenderingContext, scene: Scene, light: DirectionalLight, camera: Camera, input: InputState) {
@@ -136,7 +139,7 @@ function drawScene(gl: WebGL2RenderingContext, scene: Scene, light: DirectionalL
     // Clear the canvas AND the depth buffer.
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    scene.map(mesh => mesh.render(light, camera, input))
+    scene.map(object => object.mesh?.render(light, camera, input, object.pose))
      
 
     return 0

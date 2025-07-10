@@ -5,6 +5,7 @@ import { Mesh } from "../mesh";
 import { Camera } from "../camera";
 import { Vec4 } from "../vec";
 import { InputState } from "../input";
+import { Pose } from "../object3D";
 
 const vertexShaderSource = `#version 300 es
 
@@ -104,10 +105,10 @@ class BasicMaterial {
 
     }
 
-    updateUniforms(mesh: Mesh, light: DirectionalLight, camera: Camera, input: InputState) {
+    updateUniforms(light: DirectionalLight, camera: Camera, input: InputState, pose: Pose) {
 
         this.gl.useProgram(this.program)
-        const shapeWorld = m4fromPositionAndEuler(mesh.position, mesh.rotation);
+        const shapeWorld = m4fromPositionAndEuler(pose.position, pose.rotation);
         this.gl.uniformMatrix4fv(this.worldLocation, false, shapeWorld);
 
     
