@@ -16,11 +16,21 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
     
     let gl = canvas.getContext("webgl2");
 
+
     if (!gl) {
         alert('it looks like you dont have webgl available')
         return 1;
     } else {
         resizeCanvasToDisplaySize(canvas);
+
+        gl.enableVertexAttribArray(0);
+
+        // Turn on culling. By default backfacing triangles
+        // will be culled.
+        gl.enable(gl.CULL_FACE);
+
+        // Enable the depth buffer
+        gl.enable(gl.DEPTH_TEST);
 
 
         const material = createBasicMaterial(gl, [1, 1, 0.2, 1])
@@ -119,19 +129,12 @@ type Scene = Mesh[]
 // Draw the scene.
 function drawScene(gl: WebGL2RenderingContext, scene: Scene, light: DirectionalLight, camera: Camera, input: InputState) {
 
-    gl.enableVertexAttribArray(0);
     // Tell WebGL how to convert from clip space to pixels
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+   
 
     // Clear the canvas AND the depth buffer.
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-    // Turn on culling. By default backfacing triangles
-    // will be culled.
-    gl.enable(gl.CULL_FACE);
-
-    // Enable the depth buffer
-    gl.enable(gl.DEPTH_TEST);
 
     scene.map(mesh => mesh.render(light, camera, input))
      
