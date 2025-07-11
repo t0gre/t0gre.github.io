@@ -1,11 +1,11 @@
 import { createProgramFromRaw } from "./shaderUtils"
 import { DirectionalLight } from "../light";
-import { m4fromPositionAndEuler, m4inverse, m4perspective } from "../mat4";
+import { m4fromPositionAndEuler, m4inverse, m4perspective, Mat4 } from "../mat4";
 import { Mesh } from "../mesh";
 import { Camera } from "../camera";
 import { Vec4 } from "../vec";
 import { InputState } from "../input";
-import { Pose } from "../object3D";
+import { Pose } from "../Scene";
 
 const vertexShaderSource = `#version 300 es
 
@@ -105,10 +105,10 @@ class BasicMaterial {
 
     }
 
-    updateUniforms(light: DirectionalLight, camera: Camera, input: InputState, pose: Pose) {
+    updateUniforms(light: DirectionalLight, camera: Camera, input: InputState, shapeWorld: Mat4) {
 
         this.gl.useProgram(this.program)
-        const shapeWorld = m4fromPositionAndEuler(pose.position, pose.rotation);
+        
         this.gl.uniformMatrix4fv(this.worldLocation, false, shapeWorld);
 
     

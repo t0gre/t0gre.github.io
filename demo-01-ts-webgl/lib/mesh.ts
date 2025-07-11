@@ -2,7 +2,9 @@
 import { Camera } from "./camera";
 import { DirectionalLight } from "./light";
 import { InputState } from "./input";
-import { Pose } from "./object3D";
+import { Pose } from "./Scene";
+import { Matrix4 } from "three";
+import { m4fromPositionAndEuler, m4multiply, Mat4 } from "./mat4";
 
 export type Vertices = {
     positions: Float32Array,
@@ -28,12 +30,19 @@ export class Mesh  {
         this.vao = vao;
     }  
     
-    render(light: DirectionalLight, camera: Camera, input: InputState, pose: Pose) {
+    render(light: DirectionalLight, camera: Camera, input: InputState, pose: Pose, parentWorldTransform?: Mat4 ){
     
         this.gl.useProgram(this.material.program);
         this.gl.bindVertexArray(this.vao);
 
-        this.material.updateUniforms(light, camera, input, pose);
+        if (!parentWorldTransform) {
+            parentWorldTransform = m4fromPositionAndEuler([0,0,0], [0,0,0]);
+        }
+        
+        const shapeMatrix= m4fromPositionAndEuler(pose.position, pose.rotation);
+        const worldMatrix = m4multiply(parentWorldTransform, shapeMatrix);
+
+        this.material.updateUniforms(light, camera, input, worldMatrix);
 
         if (this.vertices.indices) {
             this.gl.drawElements(this.gl.TRIANGLES, this.vertices.indices.length, this.gl.UNSIGNED_SHORT,  0);
@@ -46,7 +55,7 @@ export class Mesh  {
 
 interface Material {
     program: WebGLProgram;
-    updateUniforms: (light: DirectionalLight, camera: Camera, input: InputState, pose: Pose) => void;
+    updateUniforms: (light: DirectionalLight, camera: Camera, input: InputState, worldMatrix: Mat4) => void;
 }
 
 export function createMesh(

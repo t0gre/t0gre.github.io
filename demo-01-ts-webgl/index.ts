@@ -1,6 +1,6 @@
 import { Vec3 } from './lib/vec'
 
-import { Object3D } from './lib/object3D'
+import { Scene, SceneNode } from './lib/Scene'
 import { degToRad } from './lib/mathUtils'
 import { Mesh, createMesh } from './lib/mesh'
 import { DirectionalLight, createDirectionalLight } from './lib/light'
@@ -8,6 +8,7 @@ import { Camera, createCamera } from './lib/camera'
 import { createBasicMaterial } from './lib/shaders/BasicMaterial'
 import { loadObj } from './lib/loaders/ObjLoader'
 import { InputState } from './lib/input'
+import { m4fromPositionAndEuler } from './lib/mat4'
 
 
 // const ROTATION_SPEED = 1.2;
@@ -35,17 +36,29 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
 
 
         const material = createBasicMaterial(gl, [1, 1, 0.2, 1])
+        const material1 = createBasicMaterial(gl, [1, 0.5, 0.2, 1])
 
-        if (material) {
+        if (material && material1) {
 
             const vertices = await loadObj('/rainbowtree.obj');
-            const shape: Object3D = {
+            const shape: SceneNode = {
                 pose: {
                     position: [0,0,0], 
                     rotation: [0, Math.PI /2, 0],
                 },  
                 mesh: createMesh(gl, material, vertices )
             }  ;
+
+            
+            const shape1: SceneNode = {
+                pose: {
+                    position: [0,1,0], 
+                    rotation: [0, Math.PI /2, 0],
+                },  
+                mesh: createMesh(gl, material1, vertices ),
+                parent: shape
+            }  ;
+
 
             if (!shape) {
                 console.log('failed to create shape')
@@ -105,7 +118,7 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
                 // updateShape(shape!, dt)
                 resizeCanvasToDisplaySize(canvas);
                 camera.aspect = canvas.clientWidth / canvas.clientHeight;
-                const drawError = drawScene(gl!, [shape!], light, camera, input)
+                const drawError = drawScene(gl!, [shape, shape1], light, camera, input)
                 if (drawError) {
                     console.log('draw error')
                 }
@@ -127,7 +140,7 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
 //     // shape.position = [Math.sin(1 * dt) * 100, Math.cos(1 * dt) * 100, 0]
 // }
 
-type Scene = Object3D[]
+
 
 // Draw the scene.
 function drawScene(gl: WebGL2RenderingContext, scene: Scene, light: DirectionalLight, camera: Camera, input: InputState) {
@@ -139,7 +152,7 @@ function drawScene(gl: WebGL2RenderingContext, scene: Scene, light: DirectionalL
     // Clear the canvas AND the depth buffer.
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    scene.map(object => object.mesh?.render(light, camera, input, object.pose))
+    scene.map(object => object.mesh?.render(light, camera, input, object.pose, object.parent ? m4fromPositionAndEuler(object.parent.pose.position, object.parent.pose.rotation) : undefined));
      
 
     return 0

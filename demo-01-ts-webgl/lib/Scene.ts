@@ -6,8 +6,10 @@ export type Pose = {
    rotation: Vec3;
 }
 
-export type Object3D = {
+export type SceneNode = {
    pose: Pose;
-   parent?: Object3D;
+   parent?: SceneNode;
    mesh?: Mesh;
 }
+
+export type Scene = SceneNode[];
