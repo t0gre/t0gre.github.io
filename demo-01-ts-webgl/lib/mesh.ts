@@ -3,8 +3,10 @@ import { Camera } from "./camera";
 import { DirectionalLight } from "./light";
 import { InputState } from "./input";
 import { Pose } from "./Scene";
-import { Matrix4 } from "three";
+
 import { m4fromPositionAndEuler, m4multiply, Mat4 } from "./mat4";
+import { Vec4 } from "./vec";
+import { RenderProgram } from "./shaders/BasicMaterial";
 
 export type Vertices = {
     positions: Float32Array,
@@ -13,27 +15,34 @@ export type Vertices = {
     indices?: Uint16Array,
   }
 
+export type Material = {
+    color: Vec4
+}
+
 export class Mesh  {
-    private gl: WebGL2RenderingContext;
-    private vertices: Vertices;
-    private material: Material;
-    private vao: WebGLVertexArrayObject 
+    
+    public vertices: Vertices;
+    public material: Material;
+    public vao: WebGLVertexArrayObject 
     constructor(
-        gl: WebGL2RenderingContext,
+       
         vertices: Vertices,
         material: Material,
         vao: WebGLVertexArrayObject) {
             
         this.vertices = vertices;
         this.material = material;
-        this.gl = gl;
+
         this.vao = vao;
     }  
     
-    render(light: DirectionalLight, camera: Camera, input: InputState, pose: Pose, parentWorldTransform?: Mat4 ){
     
-        this.gl.useProgram(this.material.program);
-        this.gl.bindVertexArray(this.vao);
+}
+
+export function drawMesh(mesh: Mesh, gl: WebGL2RenderingContext, renderProgram: RenderProgram, light: DirectionalLight, camera: Camera, input: InputState, pose: Pose, parentWorldTransform?: Mat4 ){
+    
+        gl.useProgram(renderProgram.program);
+        gl.bindVertexArray(mesh.vao);
 
         if (!parentWorldTransform) {
             parentWorldTransform = m4fromPositionAndEuler([0,0,0], [0,0,0]);
@@ -42,26 +51,23 @@ export class Mesh  {
         const shapeMatrix= m4fromPositionAndEuler(pose.position, pose.rotation);
         const worldMatrix = m4multiply(parentWorldTransform, shapeMatrix);
 
-        this.material.updateUniforms(light, camera, input, worldMatrix);
+        renderProgram.updateUniforms(light, camera, input, worldMatrix, mesh.material.color);
 
-        if (this.vertices.indices) {
-            this.gl.drawElements(this.gl.TRIANGLES, this.vertices.indices.length, this.gl.UNSIGNED_SHORT,  0);
+        if (mesh.vertices.indices) {
+            gl.drawElements(gl.TRIANGLES, mesh.vertices.indices.length, gl.UNSIGNED_SHORT,  0);
         } else {
-            this.gl.drawArrays(this.gl.TRIANGLES, 0, this.vertices.positions.length /3 );
+            gl.drawArrays(gl.TRIANGLES, 0, mesh.vertices.positions.length /3 );
         }
         
     }
-}
 
-interface Material {
-    program: WebGLProgram;
-    updateUniforms: (light: DirectionalLight, camera: Camera, input: InputState, worldMatrix: Mat4) => void;
-}
+
 
 export function createMesh(
         gl: WebGL2RenderingContext, 
         material: Material,
-        vertices: Vertices): Mesh | undefined {
+        vertices: Vertices,
+        program: RenderProgram): Mesh | undefined {
     
     const {positions, normals, texcoords: _, indices} = vertices;
 
@@ -72,11 +78,9 @@ export function createMesh(
     }
     gl.bindVertexArray(vao);
 
-    const program = material.program;
-
-
+    
     // positions are always present
-    const positionAttributeLocation = gl.getAttribLocation(program, "a_position");
+    const positionAttributeLocation = gl.getAttribLocation(program.program, "a_position");
     if (positionAttributeLocation === -1) {
         console.log('failed to create attribute "a_position" are you sure the shader uses it?')
         return undefined
@@ -119,7 +123,7 @@ export function createMesh(
 
     // create the buffer
     if (normals) {
-        const normalAttributeLocation = gl.getAttribLocation(program, "a_normal");
+        const normalAttributeLocation = gl.getAttribLocation(program.program, "a_normal");
         if (normalAttributeLocation === -1) {
             console.log('failed to create attribute "a_normal" are you sure the shader uses it?')
             return undefined
@@ -155,6 +159,6 @@ export function createMesh(
     gl.bindVertexArray(null);
 
     
-    return new Mesh(gl, vertices, material, vao)
+    return new Mesh(vertices, material, vao)
 }
 

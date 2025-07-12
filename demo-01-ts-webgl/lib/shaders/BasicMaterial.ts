@@ -1,11 +1,10 @@
 import { createProgramFromRaw } from "./shaderUtils"
 import { DirectionalLight } from "../light";
 import { m4fromPositionAndEuler, m4inverse, m4perspective, Mat4 } from "../mat4";
-import { Mesh } from "../mesh";
 import { Camera } from "../camera";
 import { Vec4 } from "../vec";
 import { InputState } from "../input";
-import { Pose } from "../Scene";
+
 
 const vertexShaderSource = `#version 300 es
 
@@ -66,7 +65,7 @@ const fragmentShaderSource = `#version 300 es
 
 
 
-class BasicMaterial {
+export class RenderProgram {
     public    program: WebGLProgram;
     private    gl: WebGL2RenderingContext;
     private    worldLocation: WebGLUniformLocation;
@@ -78,7 +77,7 @@ class BasicMaterial {
     private     canvasLocation: WebGLUniformLocation;
     constructor(
         gl: WebGL2RenderingContext,
-        color: Vec4,
+
         program: WebGLProgram, 
         worldLocation: WebGLUniformLocation,
         viewLocation:WebGLUniformLocation,
@@ -100,12 +99,12 @@ class BasicMaterial {
         this.canvasLocation = canvasLocation
 
         this.gl.useProgram(this.program)
-        this.gl.uniform4fv(this.diffuseLocation, color); 
+        
 
 
     }
 
-    updateUniforms(light: DirectionalLight, camera: Camera, input: InputState, shapeWorld: Mat4) {
+    updateUniforms(light: DirectionalLight, camera: Camera, input: InputState, shapeWorld: Mat4, color: Vec4) {
 
         this.gl.useProgram(this.program)
         
@@ -123,13 +122,15 @@ class BasicMaterial {
         this.gl.uniform2fv(this.pointerLocation, input.pointerPosition!)
 
         this.gl.uniform2fv(this.canvasLocation, [this.gl.canvas.width, this.gl.canvas.height])
+
+        this.gl.uniform4fv(this.diffuseLocation, color); 
     }
 
    
 }
 
 
-export function createBasicMaterial(gl: WebGL2RenderingContext, color: Vec4)  {
+export function initRenderProgram(gl: WebGL2RenderingContext)  {
 
     const program = createProgramFromRaw(gl, vertexShaderSource, fragmentShaderSource);
 
@@ -182,7 +183,16 @@ export function createBasicMaterial(gl: WebGL2RenderingContext, color: Vec4)  {
         return undefined
     } 
 
-    return new BasicMaterial(gl, color, program, worldLocation, viewLocation, projectionLocation, diffuseLocation, lightDirectionLocation, pointerLocation, canvasLocation)
+    return new RenderProgram(
+        gl, 
+        program, 
+        worldLocation, 
+        viewLocation, 
+        projectionLocation, 
+        diffuseLocation, 
+        lightDirectionLocation, 
+        pointerLocation, 
+        canvasLocation)
         
     } 
         
