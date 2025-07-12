@@ -5,7 +5,7 @@ import { degToRad } from './lib/mathUtils'
 import { Mesh, createMesh, drawMesh } from './lib/mesh'
 import { DirectionalLight, createDirectionalLight } from './lib/light'
 import { Camera, createCamera } from './lib/camera'
-import { initRenderProgram, RenderProgram } from './lib/shaders/BasicMaterial'
+import { initRenderProgram, RenderProgram } from './lib/shaders/BasicRenderProgram'
 import { loadObj } from './lib/loaders/ObjLoader'
 import { InputState } from './lib/input'
 import { m4fromPositionAndEuler } from './lib/mat4'
@@ -23,6 +23,12 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
         alert('it looks like you dont have webgl available')
         return 1;
     } else {
+
+        const glState: glState = {
+            gl,
+            vaos: new Map<string, WebGLVertexArrayObject>()
+        }
+
         resizeCanvasToDisplaySize(canvas);
 
         gl.enableVertexAttribArray(0);
@@ -34,10 +40,7 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
         // Enable the depth buffer
         gl.enable(gl.DEPTH_TEST);
 
-
         const basicRenderProgram = initRenderProgram(gl)
-    
-
 
         if (basicRenderProgram) {
 
@@ -47,7 +50,7 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
                     position: [0,0,0], 
                     rotation: [0, Math.PI /2, 0],
                 },  
-                mesh: createMesh(gl, {color:  [1, 1, 0.2, 1]}, vertices, basicRenderProgram )
+                mesh: createMesh(glState, {color:  [1, 1, 0.2, 1]}, vertices, basicRenderProgram )
             }  ;
 
             
@@ -56,7 +59,7 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
                     position: [0,1,0], 
                     rotation: [0, Math.PI /2, 0],
                 },  
-                mesh: createMesh(gl, {color:  [1, 0.5, 0.2, 1]}, vertices, basicRenderProgram ),
+                mesh: createMesh(glState, {color:  [1, 0.5, 0.2, 1]}, vertices, basicRenderProgram ),
                 parent: shape
             }  ;
 
@@ -119,7 +122,7 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
                 // updateShape(shape!, dt)
                 resizeCanvasToDisplaySize(canvas);
                 camera.aspect = canvas.clientWidth / canvas.clientHeight;
-                const drawError = drawScene(gl!, [shape, shape1], light, camera, input, basicRenderProgram!);
+                const drawError = drawScene(glState!, [shape, shape1], light, camera, input, basicRenderProgram!);
                 if (drawError) {
                     console.log('draw error')
                 }
@@ -145,12 +148,14 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
 
 // Draw the scene.
 function drawScene(
-    gl: WebGL2RenderingContext,  
+    glState: glState,  
     scene: Scene, 
     light: DirectionalLight, 
     camera: Camera, 
     input: InputState, 
     renderProgram: RenderProgram) {
+
+    const gl = glState.gl;
 
     // Tell WebGL how to convert from clip space to pixels
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -164,10 +169,16 @@ function drawScene(
              const parentWorldTransform = object.parent ? 
                 m4fromPositionAndEuler(object.parent.pose.position, object.parent.pose.rotation) : 
                 undefined
-             drawMesh(object.mesh, gl, renderProgram, light, camera, input, object.pose, parentWorldTransform)
+             drawMesh(
+                object.mesh, 
+                glState, 
+                renderProgram, 
+                light, 
+                camera, 
+                input, 
+                object.pose, 
+                parentWorldTransform)
         }
-       
-        // object.mesh?.render(light, camera, input, object.pose, object.parent ? m4fromPositionAndEuler(object.parent.pose.position, object.parent.pose.rotation) : undefined)
     });
      
 

@@ -6,7 +6,8 @@ import { Pose } from "./Scene";
 
 import { m4fromPositionAndEuler, m4multiply, Mat4 } from "./mat4";
 import { Vec4 } from "./vec";
-import { RenderProgram } from "./shaders/BasicMaterial";
+import { RenderProgram, updateUniforms } from "./shaders/BasicRenderProgram";
+import { UUID } from "crypto";
 
 export type Vertices = {
     positions: Float32Array,
@@ -19,30 +20,28 @@ export type Material = {
     color: Vec4
 }
 
-export class Mesh  {
+export type Mesh = {
     
-    public vertices: Vertices;
-    public material: Material;
-    public vao: WebGLVertexArrayObject 
-    constructor(
-       
-        vertices: Vertices,
-        material: Material,
-        vao: WebGLVertexArrayObject) {
-            
-        this.vertices = vertices;
-        this.material = material;
-
-        this.vao = vao;
-    }  
-    
-    
+    vertices: Vertices;
+    material: Material;
+    id: UUID
+        
 }
 
-export function drawMesh(mesh: Mesh, gl: WebGL2RenderingContext, renderProgram: RenderProgram, light: DirectionalLight, camera: Camera, input: InputState, pose: Pose, parentWorldTransform?: Mat4 ){
-    
+export function drawMesh(
+    mesh: Mesh, 
+    glState: glState, 
+    renderProgram: RenderProgram, 
+    light: DirectionalLight, 
+    camera: Camera, 
+    input: InputState, 
+    pose: Pose, 
+    parentWorldTransform?: Mat4 ){
+      
+        const gl = glState.gl;
+        const vao = glState.vaos.get(mesh.id)!;
         gl.useProgram(renderProgram.program);
-        gl.bindVertexArray(mesh.vao);
+        gl.bindVertexArray(vao);
 
         if (!parentWorldTransform) {
             parentWorldTransform = m4fromPositionAndEuler([0,0,0], [0,0,0]);
@@ -51,12 +50,12 @@ export function drawMesh(mesh: Mesh, gl: WebGL2RenderingContext, renderProgram: 
         const shapeMatrix= m4fromPositionAndEuler(pose.position, pose.rotation);
         const worldMatrix = m4multiply(parentWorldTransform, shapeMatrix);
 
-        renderProgram.updateUniforms(light, camera, input, worldMatrix, mesh.material.color);
+        updateUniforms(renderProgram, glState, light, camera, input, worldMatrix, mesh.material.color);
 
         if (mesh.vertices.indices) {
-            gl.drawElements(gl.TRIANGLES, mesh.vertices.indices.length, gl.UNSIGNED_SHORT,  0);
+            gl.drawElements(glState.gl.TRIANGLES, mesh.vertices.indices.length, gl.UNSIGNED_SHORT,  0);
         } else {
-            gl.drawArrays(gl.TRIANGLES, 0, mesh.vertices.positions.length /3 );
+            gl.drawArrays(glState.gl.TRIANGLES, 0, mesh.vertices.positions.length /3 );
         }
         
     }
@@ -64,13 +63,13 @@ export function drawMesh(mesh: Mesh, gl: WebGL2RenderingContext, renderProgram: 
 
 
 export function createMesh(
-        gl: WebGL2RenderingContext, 
+        glState: glState, 
         material: Material,
         vertices: Vertices,
         program: RenderProgram): Mesh | undefined {
     
     const {positions, normals, texcoords: _, indices} = vertices;
-
+    const gl = glState.gl;
     const vao = gl.createVertexArray()
     if (!vao) {
         console.log('failed to create vao - thats bad')
@@ -157,8 +156,11 @@ export function createMesh(
 
 
     gl.bindVertexArray(null);
+    
+    const mesh = { vertices, material, id: crypto.randomUUID()}
+    glState.vaos.set(mesh.id, vao);
 
     
-    return new Mesh(vertices, material, vao)
+    return mesh
 }
 
