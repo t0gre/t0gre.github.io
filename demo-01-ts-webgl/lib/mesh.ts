@@ -1,8 +1,13 @@
 
 import { Camera } from "./camera";
 import { DirectionalLight } from "./light";
-import { Vec3 } from "./vec";
 import { InputState } from "./input";
+import { Pose } from "./scene";
+
+import { m4fromPositionAndEuler, m4multiply, Mat4 } from "./mat4";
+import { Vec4 } from "./vec";
+import { RenderProgram, updateUniforms } from "./shaders/BasicRenderProgram";
+import { UUID } from "crypto";
 
 export type Vertices = {
     positions: Float32Array,
@@ -11,59 +16,52 @@ export type Vertices = {
     indices?: Uint16Array,
   }
 
-export class Mesh  {
-    public position: Vec3;
-    public rotation: Vec3;
-    private gl: WebGL2RenderingContext;
-    private vertices: Vertices;
-    private material: Material;
-    private vao: WebGLVertexArrayObject 
-    constructor(
-        gl: WebGL2RenderingContext,
-        position: Vec3,
-        rotation: Vec3,
-        vertices: Vertices,
-        material: Material,
-        vao: WebGLVertexArrayObject) {
-            
-        this.position = position;
-        this.rotation = rotation;
-        this.vertices = vertices;
-        this.material = material;
-        this.gl = gl;
-        this.vao = vao;
-    }  
-    
-    render(light: DirectionalLight, camera: Camera, input: InputState) {
-    
-        this.gl.useProgram(this.material.program);
-        this.gl.bindVertexArray(this.vao);
+export type Material = {
+    color: Vec4
+}
 
-        this.material.updateUniforms(this, light, camera, input);
+export type Mesh = {
+    
+    vertices: Vertices;
+    material: Material;
+    id: UUID
+        
+}
 
-        if (this.vertices.indices) {
-            this.gl.drawElements(this.gl.TRIANGLES, this.vertices.indices.length, this.gl.UNSIGNED_SHORT,  0);
+export function drawMesh(
+    mesh: Mesh, 
+    glState: glState, 
+    renderProgram: RenderProgram, 
+    light: DirectionalLight, 
+    camera: Camera, 
+    input: InputState, 
+    worldMatrix: Mat4 ){
+      
+        const gl = glState.gl;
+        const vao = glState.vaos.get(mesh.id)!;
+        gl.useProgram(renderProgram.program);
+        gl.bindVertexArray(vao);
+
+        updateUniforms(renderProgram, glState, light, camera, input, worldMatrix, mesh.material.color);
+
+        if (mesh.vertices.indices) {
+            gl.drawElements(glState.gl.TRIANGLES, mesh.vertices.indices.length, gl.UNSIGNED_SHORT,  0);
         } else {
-            this.gl.drawArrays(this.gl.TRIANGLES, 0, this.vertices.positions.length /3 );
+            gl.drawArrays(glState.gl.TRIANGLES, 0, mesh.vertices.positions.length /3 );
         }
         
     }
-}
 
-interface Material {
-    program: WebGLProgram;
-    updateUniforms: (mesh: Mesh, light: DirectionalLight, camera: Camera, input: InputState) => void;
-}
+
 
 export function createMesh(
-        gl: WebGL2RenderingContext, 
-        position: Vec3, 
-        rotation: Vec3,  
+        glState: glState, 
         material: Material,
-        vertices: Vertices): Mesh | undefined {
+        vertices: Vertices,
+        program: RenderProgram): Mesh | undefined {
     
     const {positions, normals, texcoords: _, indices} = vertices;
-
+    const gl = glState.gl;
     const vao = gl.createVertexArray()
     if (!vao) {
         console.log('failed to create vao - thats bad')
@@ -71,11 +69,9 @@ export function createMesh(
     }
     gl.bindVertexArray(vao);
 
-    const program = material.program;
-
-
+    
     // positions are always present
-    const positionAttributeLocation = gl.getAttribLocation(program, "a_position");
+    const positionAttributeLocation = gl.getAttribLocation(program.program, "a_position");
     if (positionAttributeLocation === -1) {
         console.log('failed to create attribute "a_position" are you sure the shader uses it?')
         return undefined
@@ -118,7 +114,7 @@ export function createMesh(
 
     // create the buffer
     if (normals) {
-        const normalAttributeLocation = gl.getAttribLocation(program, "a_normal");
+        const normalAttributeLocation = gl.getAttribLocation(program.program, "a_normal");
         if (normalAttributeLocation === -1) {
             console.log('failed to create attribute "a_normal" are you sure the shader uses it?')
             return undefined
@@ -152,8 +148,11 @@ export function createMesh(
 
 
     gl.bindVertexArray(null);
+    
+    const mesh = { vertices, material, id: crypto.randomUUID()}
+    glState.vaos.set(mesh.id, vao);
 
     
-    return new Mesh(gl, position, rotation, vertices, material, vao)
+    return mesh
 }
 

@@ -1,10 +1,10 @@
 import { createProgramFromRaw } from "./shaderUtils"
 import { DirectionalLight } from "../light";
-import { m4fromPositionAndEuler, m4inverse, m4perspective } from "../mat4";
-import { Mesh } from "../mesh";
+import { m4fromPositionAndEuler, m4inverse, m4perspective, Mat4 } from "../mat4";
 import { Camera } from "../camera";
 import { Vec4 } from "../vec";
 import { InputState } from "../input";
+
 
 const vertexShaderSource = `#version 300 es
 
@@ -65,70 +65,42 @@ const fragmentShaderSource = `#version 300 es
 
 
 
-class BasicMaterial {
-    public    program: WebGLProgram;
-    private    gl: WebGL2RenderingContext;
-    private    worldLocation: WebGLUniformLocation;
-    private    viewLocation:WebGLUniformLocation;
-    private    projectionLocation:WebGLUniformLocation;
-    private    diffuseLocation:WebGLUniformLocation;
-    private    lightDirectionLocation: WebGLUniformLocation;
-    private    pointerLocation: WebGLUniformLocation;
-    private     canvasLocation: WebGLUniformLocation;
-    constructor(
-        gl: WebGL2RenderingContext,
-        color: Vec4,
-        program: WebGLProgram, 
-        worldLocation: WebGLUniformLocation,
-        viewLocation:WebGLUniformLocation,
-        projectionLocation:WebGLUniformLocation,
-        diffuseLocation:WebGLUniformLocation,
-        lightDirectionLocation: WebGLUniformLocation,
-        pointerLocation: WebGLUniformLocation,
-        canvasLocation: WebGLUniformLocation
-        ) {
+export type RenderProgram = {
+    program: WebGLProgram;
+    gl: WebGL2RenderingContext;
+    worldLocation: WebGLUniformLocation;
+    viewLocation:WebGLUniformLocation;
+    projectionLocation:WebGLUniformLocation;
+    diffuseLocation:WebGLUniformLocation;
+    lightDirectionLocation: WebGLUniformLocation;
+    pointerLocation: WebGLUniformLocation;
+    canvasLocation: WebGLUniformLocation;
+       }
 
-        this.gl = gl
-        this.program = program
-        this.worldLocation = worldLocation
-        this.viewLocation = viewLocation
-        this.projectionLocation = projectionLocation
-        this.diffuseLocation = diffuseLocation
-        this.lightDirectionLocation = lightDirectionLocation
-        this.pointerLocation = pointerLocation
-        this.canvasLocation = canvasLocation
+    
 
-        this.gl.useProgram(this.program)
-        this.gl.uniform4fv(this.diffuseLocation, color); 
+   
 
 
-    }
+export function updateUniforms(renderProgram: RenderProgram, glState: glState, light: DirectionalLight, camera: Camera, input: InputState, shapeWorld: Mat4, color: Vec4) {
 
-    updateUniforms(mesh: Mesh, light: DirectionalLight, camera: Camera, input: InputState) {
-
-        this.gl.useProgram(this.program)
-        const shapeWorld = m4fromPositionAndEuler(mesh.position, mesh.rotation);
-        this.gl.uniformMatrix4fv(this.worldLocation, false, shapeWorld);
+        const gl = glState.gl;
+        gl.useProgram(renderProgram.program)
+        gl.uniformMatrix4fv(renderProgram.worldLocation, false, shapeWorld);
 
     
         const viewMatrix = m4inverse(m4fromPositionAndEuler(camera.position, camera.rotation));
-        this.gl.uniformMatrix4fv(this.viewLocation, false, viewMatrix);
+        gl.uniformMatrix4fv(renderProgram.viewLocation, false, viewMatrix);
 
         const projectionMatrix = m4perspective(camera.fieldOfViewRadians, camera.aspect, camera.near, camera.far)
-        this.gl.uniformMatrix4fv(this.projectionLocation, false, projectionMatrix);
-        
-        this.gl.uniform3fv(this.lightDirectionLocation, light.rotation);
-
-        this.gl.uniform2fv(this.pointerLocation, input.pointerPosition!)
-
-        this.gl.uniform2fv(this.canvasLocation, [this.gl.canvas.width, this.gl.canvas.height])
+        gl.uniformMatrix4fv(renderProgram.projectionLocation, false, projectionMatrix);
+        gl.uniform3fv(renderProgram.lightDirectionLocation, light.rotation);
+        gl.uniform2fv(renderProgram.pointerLocation, input.pointerPosition!)
+        gl.uniform2fv(renderProgram.canvasLocation, [gl.canvas.width, gl.canvas.height])
+        gl.uniform4fv(renderProgram.diffuseLocation, color); 
     }
 
-   
-}
-
-
-export function createBasicMaterial(gl: WebGL2RenderingContext, color: Vec4)  {
+export function initRenderProgram(gl: WebGL2RenderingContext)  {
 
     const program = createProgramFromRaw(gl, vertexShaderSource, fragmentShaderSource);
 
@@ -181,7 +153,19 @@ export function createBasicMaterial(gl: WebGL2RenderingContext, color: Vec4)  {
         return undefined
     } 
 
-    return new BasicMaterial(gl, color, program, worldLocation, viewLocation, projectionLocation, diffuseLocation, lightDirectionLocation, pointerLocation, canvasLocation)
+    const renderProgram: RenderProgram = {
+        gl, 
+        program, 
+        worldLocation, 
+        viewLocation, 
+        projectionLocation, 
+        diffuseLocation, 
+        lightDirectionLocation, 
+        pointerLocation, 
+        canvasLocation
+    }
+
+    return renderProgram
         
     } 
         
