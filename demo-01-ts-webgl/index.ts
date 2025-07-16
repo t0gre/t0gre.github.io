@@ -1,14 +1,13 @@
 import { Vec3 } from './lib/vec'
 
-import { Scene, SceneNode } from './lib/Scene'
+import { drawSceneNode, SceneNode, setParent } from './lib/scene'
 import { degToRad } from './lib/mathUtils'
-import { Mesh, createMesh, drawMesh } from './lib/mesh'
+import { createMesh } from './lib/mesh'
 import { DirectionalLight, createDirectionalLight } from './lib/light'
 import { Camera, createCamera } from './lib/camera'
 import { initRenderProgram, RenderProgram } from './lib/shaders/BasicRenderProgram'
 import { loadObj } from './lib/loaders/ObjLoader'
 import { InputState } from './lib/input'
-import { m4fromPositionAndEuler } from './lib/mat4'
 
 
 // const ROTATION_SPEED = 1.2;
@@ -50,19 +49,32 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
                     position: [0,0,0], 
                     rotation: [0, Math.PI /2, 0],
                 },  
-                mesh: createMesh(glState, {color:  [1, 1, 0.2, 1]}, vertices, basicRenderProgram )
+                mesh: createMesh(glState, {color:  [1, 1, 0.2, 1]}, vertices, basicRenderProgram ),
+                children: []
             }  ;
 
             
             const shape1: SceneNode = {
                 pose: {
-                    position: [0,1,0], 
+                    position: [3,0,0], 
                     rotation: [0, Math.PI /2, 0],
                 },  
                 mesh: createMesh(glState, {color:  [1, 0.5, 0.2, 1]}, vertices, basicRenderProgram ),
-                parent: shape
+                children: []
             }  ;
 
+            const shape2: SceneNode = {
+                pose: {
+                    position: [3,0,0], 
+                    rotation: [0, Math.PI /2, 0],
+                },  
+                mesh: createMesh(glState, {color:  [0.1, 0.5, 0.2, 1]}, vertices, basicRenderProgram ),
+                children: []
+            }  ;
+
+
+            setParent(shape1, shape);
+             setParent(shape2, shape1);
 
             if (!shape) {
                 console.log('failed to create shape')
@@ -122,7 +134,7 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
                 // updateShape(shape!, dt)
                 resizeCanvasToDisplaySize(canvas);
                 camera.aspect = canvas.clientWidth / canvas.clientHeight;
-                const drawError = drawScene(glState!, [shape, shape1], light, camera, input, basicRenderProgram!);
+                const drawError = drawScene(glState!, shape, light, camera, input, basicRenderProgram!);
                 if (drawError) {
                     console.log('draw error')
                 }
@@ -149,7 +161,7 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
 // Draw the scene.
 function drawScene(
     glState: glState,  
-    scene: Scene, 
+    scene: SceneNode, 
     light: DirectionalLight, 
     camera: Camera, 
     input: InputState, 
@@ -164,22 +176,7 @@ function drawScene(
     // Clear the canvas AND the depth buffer.
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    scene.map(object => {
-        if (object.mesh) {
-             const parentWorldTransform = object.parent ? 
-                m4fromPositionAndEuler(object.parent.pose.position, object.parent.pose.rotation) : 
-                undefined
-             drawMesh(
-                object.mesh, 
-                glState, 
-                renderProgram, 
-                light, 
-                camera, 
-                input, 
-                object.pose, 
-                parentWorldTransform)
-        }
-    });
+    drawSceneNode(scene, glState, renderProgram, light, camera, input);
      
 
     return 0

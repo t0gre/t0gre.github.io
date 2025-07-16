@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { setParent, SceneNode } from "demo-01-ts-webgl/lib/Scene";
+import { setParent, SceneNode } from "demo-01-ts-webgl/lib/scene";
 
 test('setParent updates parent and children correctly', () => {
 

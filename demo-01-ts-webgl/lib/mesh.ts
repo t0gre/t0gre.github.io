@@ -2,7 +2,7 @@
 import { Camera } from "./camera";
 import { DirectionalLight } from "./light";
 import { InputState } from "./input";
-import { Pose } from "./Scene";
+import { Pose } from "./scene";
 
 import { m4fromPositionAndEuler, m4multiply, Mat4 } from "./mat4";
 import { Vec4 } from "./vec";
@@ -35,20 +35,12 @@ export function drawMesh(
     light: DirectionalLight, 
     camera: Camera, 
     input: InputState, 
-    pose: Pose, 
-    parentWorldTransform?: Mat4 ){
+    worldMatrix: Mat4 ){
       
         const gl = glState.gl;
         const vao = glState.vaos.get(mesh.id)!;
         gl.useProgram(renderProgram.program);
         gl.bindVertexArray(vao);
-
-        if (!parentWorldTransform) {
-            parentWorldTransform = m4fromPositionAndEuler([0,0,0], [0,0,0]);
-        }
-        
-        const shapeMatrix= m4fromPositionAndEuler(pose.position, pose.rotation);
-        const worldMatrix = m4multiply(parentWorldTransform, shapeMatrix);
 
         updateUniforms(renderProgram, glState, light, camera, input, worldMatrix, mesh.material.color);
 
