@@ -56,7 +56,7 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
             
             const shape1: SceneNode = {
                 pose: {
-                    position: [3,0,0], 
+                    position: [5,0,0], 
                     rotation: [0, Math.PI /2, 0],
                 },  
                 mesh: createMesh(glState, {color:  [1, 0.5, 0.2, 1]}, vertices, basicRenderProgram ),
@@ -65,7 +65,7 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
 
             const shape2: SceneNode = {
                 pose: {
-                    position: [3,0,0], 
+                    position: [5,0,0], 
                     rotation: [0, Math.PI /2, 0],
                 },  
                 mesh: createMesh(glState, {color:  [0.1, 0.5, 0.2, 1]}, vertices, basicRenderProgram ),
