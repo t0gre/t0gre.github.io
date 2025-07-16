@@ -2,9 +2,8 @@
 import { Camera } from "./camera";
 import { DirectionalLight } from "./light";
 import { InputState } from "./input";
-import { Pose } from "./scene";
 
-import { m4fromPositionAndEuler, m4multiply, Mat4 } from "./mat4";
+import { Mat4 } from "./mat4";
 import { Vec4 } from "./vec";
 import { RenderProgram, updateUniforms } from "./shaders/BasicRenderProgram";
 import { UUID } from "crypto";
