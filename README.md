@@ -3,16 +3,7 @@
 yarn dev
 yarn build
 
-
-### if you want 
-make clean
-
-### to generate debug symbols for the browser
--O0 -g -gsource-map
-
-
-## activate emscripen
-look in the makefile in the opengl example folder
+to work on the c code, some extra steps are required, consult the [readme for that](./demo-02-c-opengl/README.md)
 
 ## assets
 

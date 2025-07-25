@@ -301,7 +301,7 @@ export function m4vectorMultiply(v: Vec4, m: Mat4) {
         for (let i = 0; i < 4; ++i) {
             dst[i] = 0.0;
             for (let j = 0; j < 4; ++j) {
-                dst[i] += v[j]! * m[j * 4 + i]!;
+                dst[i]! += v[j]! * m[j * 4 + i]!; // ts is not smart enough to see that we set dst[i] to a number already
             }
         }
         return dst;
