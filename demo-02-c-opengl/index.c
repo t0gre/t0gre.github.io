@@ -220,8 +220,9 @@ int main(int argc, char** argv)
             .specular_color = { .r = 0.2, .g = 0.2, .b = 0.2},
             .shininess = 0.5f
         },
-        .position = { .x = 0.f, .y = 0.f, .z = 0.f },
-        .rotation = { .x = 0.f, .y = PI / 2.f, .z = 0.f },
+        .localTransform = m4fromPositionAndEuler(
+            (Vec3){ .x = 0.f, .y = 0.f, .z = 0.f }, 
+            (Vec3){  .x = 0.f, .y = PI / 2.f, .z = 0.f }),
     };
 
     float floor_positions_data[18] = {
@@ -261,8 +262,9 @@ int main(int argc, char** argv)
             .specular_color = { .r = 0.9, .g = 0.9, .b = 0.9},
             .shininess = 10.f
         },
-        .position = { .x = 0.f, .y = 0.1f, .z = 0.f },
-        .rotation = { .x = 0.f, .y = 0.f, .z = 0.f },
+        .localTransform = m4fromPositionAndEuler(
+            (Vec3){ .x = 0.f, .y = 0.1f, .z = 0.f }, 
+            (Vec3) { .x = 0.f, .y = 0.f, .z = 0.f }),
     };
 
     Scene scene =  { 

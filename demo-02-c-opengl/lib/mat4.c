@@ -143,13 +143,7 @@ Mat4 m4scale(Mat4 m, float sx, float sy, float sz) {
     
     }
     
-/**
-   * Transposes a matrix.
-   * @param {Matrix4} m matrix to transpose.
-   * @param {Matrix4} [dst] optional matrix to store result
-   * @return {Matrix4} dst or a new matrix if none provided
-   * @memberOf module:webgl-3d-math
-   */
+
 Mat4 m4transpose(Mat4 m) {
    
     return (Mat4){
