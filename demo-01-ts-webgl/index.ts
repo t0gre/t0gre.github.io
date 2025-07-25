@@ -8,6 +8,7 @@ import { Camera, createCamera } from './lib/camera'
 import { initRenderProgram, RenderProgram } from './lib/shaders/BasicRenderProgram'
 import { loadObj } from './lib/loaders/ObjLoader'
 import { InputState } from './lib/input'
+import { m4fromPositionAndEuler, m4yRotate } from './lib/mat4'
 
 
 // const ROTATION_SPEED = 1.2;
@@ -45,36 +46,27 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
 
             const vertices = await loadObj('/rainbowtree.obj');
             const shape: SceneNode = {
-                pose: {
-                    position: [0,0,0], 
-                    rotation: [0, Math.PI /2, 0],
-                },  
+                localTransform: m4fromPositionAndEuler( [0,0,0], [0, Math.PI /2, 0]),
                 mesh: createMesh(glState, {color:  [1, 1, 0.2, 1]}, vertices, basicRenderProgram ),
                 children: []
             }  ;
 
             
             const shape1: SceneNode = {
-                pose: {
-                    position: [5,0,0], 
-                    rotation: [0, Math.PI /2, 0],
-                },  
+                localTransform: m4fromPositionAndEuler( [5,0,0], [0, Math.PI /2, 0]),
                 mesh: createMesh(glState, {color:  [1, 0.5, 0.2, 1]}, vertices, basicRenderProgram ),
                 children: []
             }  ;
 
             const shape2: SceneNode = {
-                pose: {
-                    position: [5,0,0], 
-                    rotation: [0, Math.PI /2, 0],
-                },  
+                localTransform: m4fromPositionAndEuler( [5,0,0], [0, Math.PI /2, 0]),
                 mesh: createMesh(glState, {color:  [0.1, 0.5, 0.2, 1]}, vertices, basicRenderProgram ),
                 children: []
             }  ;
 
 
             setParent(shape1, shape);
-             setParent(shape2, shape1);
+            setParent(shape2, shape1);
 
             if (!shape) {
                 console.log('failed to create shape')
@@ -114,7 +106,9 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
                     x = x / gl!.canvas.width * 2 -1;
                     y = y  / gl!.canvas.height * -2 + 1;
     
-                    shape.pose.rotation[1] += e.movementX / 100;
+                    // rotate the shapes transform
+                    // shape.pose.rotation[1] += e.movementX / 100;
+                    shape.localTransform = m4yRotate(shape.localTransform, e.movementX / 100);
 
                     input.pointerPosition = [x,y];
                 }

@@ -9,9 +9,6 @@ build:
 	-Wno-missing-braces 
 	# -Werror 
 
-setup-emsdk:
-	cd emsdk && ./emsdk install 3.1.54 && ./emsdk activate 3.1.54 && source ./emsdk_env.sh
-
 build-en:
 	emcc -std=c11 index.c lib/*.c -Ilib/include \
 	-s MAX_WEBGL_VERSION=2 \
