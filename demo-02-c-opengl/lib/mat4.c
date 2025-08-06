@@ -253,3 +253,7 @@ Mat4 m4fromPositionAndEuler(Vec3 position, Vec3 euler) {
     mat4 = m4zRotate(mat4, euler.z);
     return mat4;
 }
+
+Vec3 getPositionVector(Mat4 transform) {
+    return (Vec3){ .x = transform.m30, .y = transform.m31, .z = transform.m32};
+}

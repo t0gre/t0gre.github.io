@@ -94,8 +94,9 @@ void draw(WindowState window, Camera camera, Scene* scene, RenderProgram render_
     // update camera uniforms
     const Mat4 projection = getProjectionMatrix(camera);
     const Mat4 view = getViewMatrix(camera);
+    const Vec3 camera_position = getPositionVector(camera.transform);
     glUniformMatrix4fv(render_program.view_uniform_location,1,0, &view.data[0][0]);  
-    glUniform3fv(render_program.view_position_uniform_location,1, &camera.position.data[0]); 
+    glUniform3fv(render_program.view_position_uniform_location,1, &camera_position.data[0]); 
     glUniformMatrix4fv(render_program.projection_uniform_location,1,0, &projection.data[0][0]);
 
     // update light uniforms
@@ -283,8 +284,9 @@ int main(int argc, char** argv)
         .field_of_view_radians = 1.f,
         .far = 2000.f, 
         .up = { .x = 0.f, .y = 1.f, .z = 0.f }, 
-        .position = { .x = 0.f, .y = 3.5f, .z = 10.f },
-        .rotation = { .x = 0.f, .y = 0.f, .z = 0.f }
+        .transform = m4fromPositionAndEuler(
+            (Vec3){ .x = 0.f, .y = 3.5f, .z = 10.f },
+            (Vec3){ .x = 0.f, .y = 0.f, .z = 0.f })
         };
 
     Uint64 now = SDL_GetPerformanceCounter();

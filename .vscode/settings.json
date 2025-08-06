@@ -5,6 +5,7 @@
         "loaders.h": "c",
         "assert.h": "c",
         "render_program.h": "c",
-        "ios": "c"
+        "ios": "c",
+        "mat4.h": "c"
     }
 }

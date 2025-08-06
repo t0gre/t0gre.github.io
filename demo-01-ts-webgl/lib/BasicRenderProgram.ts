@@ -1,6 +1,6 @@
 import { createProgramFromRaw } from "./shaderUtils"
 import { DirectionalLight } from "./light";
-import { m4fromPositionAndEuler, m4inverse, m4perspective, Mat4 } from "./mat4";
+import {  m4inverse, m4perspective, Mat4 } from "./mat4";
 import { Camera } from "./camera";
 import { Vec4 } from "./vec";
 import { InputState } from "./input";
@@ -29,7 +29,7 @@ export function updateUniforms(renderProgram: RenderProgram, glState: glState, l
         gl.uniformMatrix4fv(renderProgram.worldLocation, false, shapeWorld);
 
     
-        const viewMatrix = m4inverse(m4fromPositionAndEuler(camera.position, camera.rotation));
+        const viewMatrix = m4inverse(camera.transform);
         gl.uniformMatrix4fv(renderProgram.viewLocation, false, viewMatrix);
 
         const projectionMatrix = m4perspective(camera.fieldOfViewRadians, camera.aspect, camera.near, camera.far)
