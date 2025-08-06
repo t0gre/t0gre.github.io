@@ -5,7 +5,7 @@ import { InputState } from "./input";
 
 import { Mat4 } from "./mat4";
 import { Vec4 } from "./vec";
-import { RenderProgram, updateUniforms } from "./shaders/BasicRenderProgram";
+import { RenderProgram, updateUniforms } from "./BasicRenderProgram";
 import { UUID } from "crypto";
 
 export type Vertices = {

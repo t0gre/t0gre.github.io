@@ -4,6 +4,7 @@ import { resolve } from 'path'
 
 export default  defineConfig({
     // plugins: [Inspect()],
+    assetsInclude: ["shaders/"],
     build: {
         rollupOptions: {
             input: {

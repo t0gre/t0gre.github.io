@@ -3,7 +3,7 @@ import { InputState } from "./input";
 import { DirectionalLight } from "./light";
 import { m4fromPositionAndEuler, m4multiply, Mat4 } from "./mat4";
 import { drawMesh, Mesh } from "./mesh";
-import { RenderProgram } from "./shaders/BasicRenderProgram";
+import { RenderProgram } from "./BasicRenderProgram";
 
 
 export type SceneNode = {

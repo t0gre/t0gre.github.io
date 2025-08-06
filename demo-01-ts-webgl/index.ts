@@ -5,7 +5,7 @@ import { degToRad } from './lib/mathUtils'
 import { createMesh } from './lib/mesh'
 import { DirectionalLight, createDirectionalLight } from './lib/light'
 import { Camera, createCamera } from './lib/camera'
-import { initRenderProgram, RenderProgram } from './lib/shaders/BasicRenderProgram'
+import { initRenderProgram, RenderProgram } from './lib/BasicRenderProgram'
 import { loadObj } from './lib/loaders/ObjLoader'
 import { InputState } from './lib/input'
 import { m4fromPositionAndEuler, m4yRotate } from './lib/mat4'
@@ -144,12 +144,6 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
 
     return 1
 }
-
-// function updateShape(shape: Mesh, dt: number) {
-//     // shape.rotation[1] += ROTATION_SPEED * dt;
-//     // shape.position = [Math.sin(1 * dt) * 100, Math.cos(1 * dt) * 100, 0]
-// }
-
 
 
 // Draw the scene.
