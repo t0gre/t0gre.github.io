@@ -1,7 +1,14 @@
 ### to dev
 
-yarn dev
-yarn build
+- `yarn`
+- `yarn dev`
+
+### tests
+
+- for typescript tests: `yarn test`
+- for c: none yet :scream:   
+
+### building c
 
 to work on the c code, some extra steps are required, consult the [readme for that](./demo-02-c-opengl/README.md)
 
