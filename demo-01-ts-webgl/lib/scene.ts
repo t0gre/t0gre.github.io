@@ -3,16 +3,11 @@ import { InputState } from "./input";
 import { DirectionalLight } from "./light";
 import { m4fromPositionAndEuler, m4multiply, Mat4 } from "./mat4";
 import { drawMesh, Mesh } from "./mesh";
-import { RenderProgram } from "./shaders/BasicRenderProgram";
-import { Vec3 } from "./vec";
+import { RenderProgram } from "./BasicRenderProgram";
 
-export type Pose = {
-   position: Vec3;
-   rotation: Vec3;
-}
 
 export type SceneNode = {
-   pose: Pose;
+   localTransform: Mat4;
    parent?: SceneNode;
    children: SceneNode[]; // empty array if no children
    mesh?: Mesh;
@@ -42,8 +37,8 @@ export function drawSceneNode(
    parentWorldTransform?: Mat4   
 ) {
       parentWorldTransform = parentWorldTransform || m4fromPositionAndEuler([0,0,0], [0,0,0]);
-      const shapeMatrix= m4fromPositionAndEuler(node.pose.position, node.pose.rotation);
-      const worldMatrix = m4multiply(parentWorldTransform, shapeMatrix);
+      
+      const worldMatrix = m4multiply(parentWorldTransform, node.localTransform);
       
 
       if (node.mesh) {

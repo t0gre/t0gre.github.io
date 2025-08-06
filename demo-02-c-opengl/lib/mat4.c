@@ -143,13 +143,7 @@ Mat4 m4scale(Mat4 m, float sx, float sy, float sz) {
     
     }
     
-/**
-   * Transposes a matrix.
-   * @param {Matrix4} m matrix to transpose.
-   * @param {Matrix4} [dst] optional matrix to store result
-   * @return {Matrix4} dst or a new matrix if none provided
-   * @memberOf module:webgl-3d-math
-   */
+
 Mat4 m4transpose(Mat4 m) {
    
     return (Mat4){
@@ -258,4 +252,8 @@ Mat4 m4fromPositionAndEuler(Vec3 position, Vec3 euler) {
     mat4 = m4yRotate(mat4, euler.y);
     mat4 = m4zRotate(mat4, euler.z);
     return mat4;
+}
+
+Vec3 getPositionVector(Mat4 transform) {
+    return (Vec3){ .x = transform.m30, .y = transform.m31, .z = transform.m32};
 }

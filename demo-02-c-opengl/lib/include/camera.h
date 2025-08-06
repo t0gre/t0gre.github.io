@@ -10,8 +10,7 @@ typedef struct Camera {
   float near;
   float far;
   Vec3 up;
-  Vec3 position;
-  Vec3 rotation;
+  Mat4 transform;
 } Camera;
 
 Mat4 getProjectionMatrix(Camera camera);

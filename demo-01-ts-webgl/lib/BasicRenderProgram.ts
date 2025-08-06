@@ -1,69 +1,13 @@
 import { createProgramFromRaw } from "./shaderUtils"
-import { DirectionalLight } from "../light";
-import { m4fromPositionAndEuler, m4inverse, m4perspective, Mat4 } from "../mat4";
-import { Camera } from "../camera";
-import { Vec4 } from "../vec";
-import { InputState } from "../input";
+import { DirectionalLight } from "./light";
+import {  m4inverse, m4perspective, Mat4 } from "./mat4";
+import { Camera } from "./camera";
+import { Vec4 } from "./vec";
+import { InputState } from "./input";
 
 
-const vertexShaderSource = `#version 300 es
-
-    #pragma vscode_glsllint_stage : vert //pragma to set STAGE to 'vert' 
-
-    in vec4 a_position;
-    in vec3 a_normal;
-
-    uniform mat4 u_projection;
-    uniform mat4 u_view;
-    uniform mat4 u_world;
-
-    out vec3 v_normal;
-
-    void main() {
-    gl_Position = u_projection * u_view * u_world * a_position;
-    v_normal = mat3(u_world) * a_normal;
-    }
-    `
-
-const fragmentShaderSource = `#version 300 es
-
-    #pragma vscode_glsllint_stage : frag //pragma to set STAGE to 'frag'
-
-    precision highp float;
-
-    in vec3 v_normal;
-   
-
-    uniform vec4 u_diffuse;
-    uniform vec3 u_lightDirection;
-    uniform vec2 u_pointer;
-    uniform vec2 u_canvas;
-
-    out vec4 outColor;
-
-    float RADIUS = 100.0;
-    float AMBIENT_LIGHT = 0.5;
-    float TORCH_STRENGTH = 0.4;
-
-    void main () {
-    vec3 normal = normalize(v_normal);
-    float light = dot(u_lightDirection, normal) * .5 + AMBIENT_LIGHT;
-    // get the normalised pointer position into gl_FragCoord space
-    vec2 offsetFromPointer = vec2(gl_FragCoord.x - (u_pointer.x + 1.0) * (u_canvas.x / 2.0),gl_FragCoord.y - (-u_pointer.y - 1.0) * (u_canvas.y / -2.0));
-    float distanceFromPointer = sqrt(dot(offsetFromPointer, offsetFromPointer));
-    bool pointerIsActive = !((u_pointer.x == 0.0) && (u_pointer.y == 0.0));
-    if (pointerIsActive && distanceFromPointer < RADIUS) {
-      float normalizedTorchLight = (RADIUS - distanceFromPointer )  / RADIUS;
-      light += TORCH_STRENGTH * normalizedTorchLight;
-    }
-    outColor = vec4(u_diffuse.rgb * light, u_diffuse.a);
-
-   
-
-    }
-    `
-
-
+import vertexShaderSource from "./shaders/basic.vert?raw"
+import fragmentShaderSource from "./shaders/basic.frag?raw"
 
 export type RenderProgram = {
     program: WebGLProgram;
@@ -77,10 +21,6 @@ export type RenderProgram = {
     canvasLocation: WebGLUniformLocation;
        }
 
-    
-
-   
-
 
 export function updateUniforms(renderProgram: RenderProgram, glState: glState, light: DirectionalLight, camera: Camera, input: InputState, shapeWorld: Mat4, color: Vec4) {
 
@@ -89,7 +29,7 @@ export function updateUniforms(renderProgram: RenderProgram, glState: glState, l
         gl.uniformMatrix4fv(renderProgram.worldLocation, false, shapeWorld);
 
     
-        const viewMatrix = m4inverse(m4fromPositionAndEuler(camera.position, camera.rotation));
+        const viewMatrix = m4inverse(camera.transform);
         gl.uniformMatrix4fv(renderProgram.viewLocation, false, viewMatrix);
 
         const projectionMatrix = m4perspective(camera.fieldOfViewRadians, camera.aspect, camera.near, camera.far)

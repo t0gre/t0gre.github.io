@@ -1,3 +1,4 @@
+import { Mat4, m4fromPositionAndEuler } from "./mat4"
 import { Vec3 } from "./vec"
 
 
@@ -7,8 +8,7 @@ export type Camera = {
     near: number
     far: number
     up: Vec3
-    position: Vec3
-    rotation: Vec3
+    transform: Mat4
 }
 
 export function createCamera(
@@ -18,9 +18,7 @@ export function createCamera(
     far: number,
     up: Vec3, 
     position: Vec3,
-    rotation: Vec3,) {
-    
-            
+    rotation: Vec3,) {          
 
     const camera: Camera =  { 
                 fieldOfViewRadians,
@@ -28,8 +26,7 @@ export function createCamera(
                 near,
                 far,
                 up, 
-                position,
-                rotation,
+                transform: m4fromPositionAndEuler(position, rotation)
         }
 
     return camera

@@ -52,4 +52,6 @@ Vec4 m4vectorMultiply(Vec4 v, Mat4 m);
 
 Mat4 m4fromPositionAndEuler(Vec3 position, Vec3 euler);
 
+Vec3 getPositionVector(Mat4 transform);
+
 #endif //MAT_4_H

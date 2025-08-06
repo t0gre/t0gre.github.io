@@ -5,6 +5,6 @@ Mat4 getProjectionMatrix(Camera camera) {
 }
 
 Mat4 getViewMatrix(Camera camera) {
-  return m4inverse(m4fromPositionAndEuler(camera.position, camera.rotation));
+  return m4inverse(camera.transform);
 }
 

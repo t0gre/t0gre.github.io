@@ -1,20 +1,21 @@
 import { expect, test } from 'vitest'
 import { setParent, SceneNode } from "demo-01-ts-webgl/lib/scene";
+import { m4fromPositionAndEuler } from 'demo-01-ts-webgl/lib/mat4';
 
 test('setParent updates parent and children correctly', () => {
 
 const childNode: SceneNode = {
-    pose: { position: [1, 1, 1], rotation: [0, 0, 0] },
+    localTransform: m4fromPositionAndEuler([1, 1, 1], [0, 0, 0]),
     children: []
 }
 
 const parentNode1: SceneNode = {
-    pose: { position: [0, 0, 0], rotation: [0, 0, 0] },
+    localTransform: m4fromPositionAndEuler([0, 0, 0], [0, 0, 0]),
     children: []
 }
 
 const parentNode2: SceneNode = {
-    pose: { position: [0, 0, 0], rotation: [0, 0, 0] },
+    localTransform: m4fromPositionAndEuler([0, 0, 0], [0, 0, 0]),
     children: []
 }
 

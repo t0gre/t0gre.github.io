@@ -56,10 +56,6 @@ void processEvents(AppState* state)
                     
                     state->input.pointer_position = pointer_position;
 
-                    // GLint vp[4]; 
-                    // glGetIntegerv(GL_VIEWPORT, vp);
-                    // Vec2 dims = {.x = vp[2], .y = vp[3]};
-                    // Vec2 pointer_norm = normalizeMousePosition(pointer_position, dims );
                 }
                 break;
             }
@@ -68,7 +64,8 @@ void processEvents(AppState* state)
                 SDL_MouseMotionEvent *e = (SDL_MouseMotionEvent*)&event;
                 if (state->input.pointer_down) {
                     
-                    state->scene.models[0].rotation.y += e->xrel / 100.f;
+                    // state->scene.models[0].rotation.y += e->xrel / 100.f;
+                    state->scene.models[0].localTransform = m4yRotate(state->scene.models[0].localTransform, e->xrel / 100.f);
                     Vec2 pointer_position = {
                     .x = e->x,
                     .y = e->y
@@ -76,12 +73,6 @@ void processEvents(AppState* state)
                     
                     state->input.pointer_position = pointer_position;
                     
-                    // GLint vp [4]; 
-                    // glGetIntegerv(GL_VIEWPORT, vp);
-                    // Vec2 dims = {.x = vp[2], .y = vp[3]};
-                    // Vec2 pointer_norm = normalizeMousePosition(pointer_position, dims );
-
-    
                 }
                 break;
             }
