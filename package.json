@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "vite",
     "types": "tsc",
-    "build": "tsc && vite build && cd demo-02-c-opengl && make build-en && cd .. && cp -t ./dist/demo-02-c-opengl demo-02-c-opengl/a.out.js demo-02-c-opengl/a.out.wasm demo-02-c-opengl/a.out.data",
+    "build": "vite build && cd demo-02-c-opengl && make build-en && cd .. && cp -t ./dist/demo-02-c-opengl demo-02-c-opengl/a.out.js demo-02-c-opengl/a.out.wasm demo-02-c-opengl/a.out.data",
     "preview": "vite preview",
     "test": "vitest"
     },
