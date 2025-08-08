@@ -1,11 +1,11 @@
-name: deploy to prod
+name: main
 on:
   push:
     branches:
       - main
 jobs:
   build_and_deploy:
-    name: build
+    name: build and deploy to prod
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -16,13 +16,7 @@ jobs:
       - name: check types
         run: yarn types
       - name: setup emsdk and build
-        run: | 
-          cd emsdk \
-            && ./emsdk install 3.1.54 \ 
-            && ./emsdk activate 3.1.54 \ 
-            && source ./emsdk_env.sh \
-            && cd .. \
-            && yarn build
+        run: cd emsdk && ./emsdk install 3.1.54 && ./emsdk activate 3.1.54 && source ./emsdk_env.sh && cd .. && yarn build
       - name: deploy
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
