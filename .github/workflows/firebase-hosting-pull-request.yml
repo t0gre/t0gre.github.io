@@ -17,19 +17,15 @@ jobs:
   ts_tests:
     name: typscript tests
     runs-on: ubuntu-latest
+    needs: install_node_deps
     steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
       - run: yarn test
         
   build_and_preview:
     name: build and deploy preview branch
     runs-on: ubuntu-latest
+    needs: install_node_deps
     steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
       - run: cd emsdk && ./emsdk install 3.1.54 && ./emsdk activate 3.1.54 && source ./emsdk_env.sh && cd .. && yarn build
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
