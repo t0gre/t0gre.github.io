@@ -1,4 +1,4 @@
-name: PR checks
+name: tests and preview
 on: pull_request
 permissions:
   checks: write
@@ -9,16 +9,26 @@ jobs:
     name: build and test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: checkout
+        uses: actions/checkout@v4
         with:
           submodules: true
-      - run: yarn
-      - run: yarn types
-      - run: yarn test
-      - run: cd emsdk && ./emsdk install 3.1.54 && ./emsdk activate 3.1.54 && source ./emsdk_env.sh
-      - run: yarn build
-      - uses: FirebaseExtended/action-hosting-deploy@v0
-        name: deploy
+      - name: install
+        run: yarn
+      - name: check types
+        run: yarn types
+      - name: typescript tests
+        run: yarn test
+      - name: setup emsdk and build
+        run: | 
+          cd emsdk \
+            && ./emsdk install 3.1.54 \ 
+            && ./emsdk activate 3.1.54 \ 
+            && source ./emsdk_env.sh \
+            && cd .. \
+            && yarn build
+      - name: deploy
+        uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_CARBON_DOMINION_415509 }}'
