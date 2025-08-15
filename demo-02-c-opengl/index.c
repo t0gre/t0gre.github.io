@@ -10,7 +10,7 @@
 #include "camera.h"
 #include "loaders.h"
 #include "app_state.h"
-#include "scene_node.h"
+#include "scene.h"
 #include "events.h"
 
 #include<unistd.h>
