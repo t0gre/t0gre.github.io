@@ -10,7 +10,7 @@
 #include "camera.h"
 #include "loaders.h"
 #include "app_state.h"
-#include "model.h"
+#include "scene_node.h"
 #include "events.h"
 
 #include<unistd.h>
@@ -117,7 +117,7 @@ void draw(WindowState window, Camera camera, Scene* scene, RenderProgram render_
     
 
     for (uint8_t i = 0; i < scene->model_count; i++) {
-        drawModel(scene->models[i], render_program);
+        drawSceneNode(scene->nodes[i], render_program);
     } 
 
     #ifndef __EMSCRIPTEN__ 
@@ -214,14 +214,14 @@ int main(int argc, char** argv)
 
     Mesh tree_mesh = createMesh(positions, normals, &render_program);
     
-    Model tree_model = {
+    SceneNode tree_model = {
         .mesh = tree_mesh,
         .material = {
             .color = { .r = 0.1, .g = 0.7, .b = 0.1},
             .specular_color = { .r = 0.2, .g = 0.2, .b = 0.2},
             .shininess = 0.5f
         },
-        .localTransform = m4fromPositionAndEuler(
+        .local_transform = m4fromPositionAndEuler(
             (Vec3){ .x = 0.f, .y = 0.f, .z = 0.f }, 
             (Vec3){  .x = 0.f, .y = PI / 2.f, .z = 0.f }),
     };
@@ -256,21 +256,21 @@ int main(int argc, char** argv)
 
     Mesh floor_mesh = createMesh(floor_positions, floor_normals, &render_program);
 
-    Model floor_model = {
+    SceneNode floor_model = {
         .mesh = floor_mesh,
         .material = {
             .color = { .r = 0.9, .g = 0.7, .b = 0.1},
             .specular_color = { .r = 0.9, .g = 0.9, .b = 0.9},
             .shininess = 10.f
         },
-        .localTransform = m4fromPositionAndEuler(
+        .local_transform = m4fromPositionAndEuler(
             (Vec3){ .x = 0.f, .y = 0.1f, .z = 0.f }, 
             (Vec3) { .x = 0.f, .y = 0.f, .z = 0.f }),
     };
 
     Scene scene =  { 
         .model_count = 2,
-        .models = { tree_model, floor_model },
+        .nodes = { tree_model, floor_model },
         .ambient_light = ambient_light,
         .point_light = point_light,
         .directional_light = directional_light
