@@ -65,7 +65,7 @@ void processEvents(AppState* state)
                 if (state->input.pointer_down) {
                     
                     // state->scene.models[0].rotation.y += e->xrel / 100.f;
-                    state->scene.nodes[0].local_transform = m4yRotate(state->scene.nodes[0].local_transform, e->xrel / 100.f);
+                    state->scene.nodes->array[0].local_transform = m4yRotate(state->scene.nodes->array[0].local_transform, e->xrel / 100.f);
                     Vec2 pointer_position = {
                     .x = e->x,
                     .y = e->y

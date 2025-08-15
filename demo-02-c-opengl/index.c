@@ -116,8 +116,8 @@ void draw(WindowState window, Camera camera, Scene* scene, RenderProgram render_
 
     
 
-    for (uint8_t i = 0; i < scene->model_count; i++) {
-        drawSceneNode(scene->nodes[i], render_program);
+    for (uint8_t i = 0; i < scene->nodes->size; i++) {
+        drawSceneNode(scene->nodes->array[i], render_program);
     } 
 
     #ifndef __EMSCRIPTEN__ 
@@ -214,7 +214,7 @@ int main(int argc, char** argv)
 
     Mesh tree_mesh = createMesh(positions, normals, &render_program);
     
-    SceneNode tree_model = {
+    SceneNode tree_shape = {
         .mesh = tree_mesh,
         .material = {
             .color = { .r = 0.1, .g = 0.7, .b = 0.1},
@@ -224,6 +224,30 @@ int main(int argc, char** argv)
         .local_transform = m4fromPositionAndEuler(
             (Vec3){ .x = 0.f, .y = 0.f, .z = 0.f }, 
             (Vec3){  .x = 0.f, .y = PI / 2.f, .z = 0.f }),
+    };
+
+    SceneNode tree_shape1 = {
+        .mesh = tree_mesh,
+        .material = {
+            .color = { .r = 0.8, .g = 0.8, .b = 0.8},
+            .specular_color = { .r = 0.2, .g = 0.2, .b = 0.2},
+            .shininess = 0.9f
+        },
+        .local_transform = m4fromPositionAndEuler(
+            (Vec3){ .x = 5.f, .y = 0.f, .z = 0.f }, 
+            (Vec3){  .x = 0.f, .y = PI, .z = 0.f }),
+    };
+
+    SceneNode tree_shape2 = {
+        .mesh = tree_mesh,
+        .material = {
+            .color = { .r = 0.1, .g = 0.5, .b = 0.8},
+            .specular_color = { .r = 0.2, .g = 0.2, .b = 0.2},
+            .shininess = 0.9f
+        },
+        .local_transform = m4fromPositionAndEuler(
+            (Vec3){ .x = -5.f, .y = 0.f, .z = 0.f }, 
+            (Vec3){  .x = 0.f, .y = 0.f, .z = 0.f }),
     };
 
     float floor_positions_data[18] = {
@@ -268,9 +292,15 @@ int main(int argc, char** argv)
             (Vec3) { .x = 0.f, .y = 0.f, .z = 0.f }),
     };
 
+    SceneNodeArray * scene_nodes = initSceneNodeArray(3);
+    addToSceneNodeArray(tree_shape, &scene_nodes);
+    addToSceneNodeArray(tree_shape1, &scene_nodes);
+    addToSceneNodeArray(tree_shape2, &scene_nodes);
+    addToSceneNodeArray(floor_model, &scene_nodes);
+
+
     Scene scene =  { 
-        .model_count = 2,
-        .nodes = { tree_model, floor_model },
+        .nodes = scene_nodes,
         .ambient_light = ambient_light,
         .point_light = point_light,
         .directional_light = directional_light
