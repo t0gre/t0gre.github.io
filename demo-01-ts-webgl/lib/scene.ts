@@ -40,7 +40,6 @@ export function drawSceneNode(
       
       const worldMatrix = m4multiply(parentWorldTransform, node.localTransform);
       
-
       if (node.mesh) {
          drawMesh(node.mesh, glState, renderProgram, light, camera, input, worldMatrix);
       }

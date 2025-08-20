@@ -114,11 +114,19 @@ void draw(WindowState window, Camera camera, Scene* scene, RenderProgram render_
     glUniform1f(render_program.point_light_uniform.linear_location,scene->point_light.linear);
     glUniform1f(render_program.point_light_uniform.quadratic_location,scene->point_light.quadratic); 
 
-    
 
-    for (uint8_t i = 0; i < scene->nodes->size; i++) {
-        drawSceneNode(scene->nodes->array[i], render_program);
-    } 
+    for (size_t i = 0; i < scene->nodes->size; i++) {
+        SceneNode node = scene->nodes->array[i];
+        if (node.depth == 0) {
+            drawSceneNode(
+                node, 
+                render_program, 
+                m4fromPositionAndEuler((Vec3){0,0,0}, (Vec3){0,0,0}), 
+                scene->nodes);
+        }
+        
+    }
+    
 
     #ifndef __EMSCRIPTEN__ 
     // Swap front/back framebuffers
@@ -224,6 +232,7 @@ int main(int argc, char** argv)
         .local_transform = m4fromPositionAndEuler(
             (Vec3){ .x = 0.f, .y = 0.f, .z = 0.f }, 
             (Vec3){  .x = 0.f, .y = PI / 2.f, .z = 0.f }),
+        .first_child = 1,
     };
 
     SceneNode tree_shape1 = {
@@ -235,7 +244,9 @@ int main(int argc, char** argv)
         },
         .local_transform = m4fromPositionAndEuler(
             (Vec3){ .x = 5.f, .y = 0.f, .z = 0.f }, 
-            (Vec3){  .x = 0.f, .y = PI, .z = 0.f }),
+            (Vec3){  .x = 0.f, .y = PI / 2.f, .z = 0.f }),
+        .first_child = 2,
+        .depth = 1
     };
 
     SceneNode tree_shape2 = {
@@ -246,8 +257,9 @@ int main(int argc, char** argv)
             .shininess = 0.9f
         },
         .local_transform = m4fromPositionAndEuler(
-            (Vec3){ .x = -5.f, .y = 0.f, .z = 0.f }, 
-            (Vec3){  .x = 0.f, .y = 0.f, .z = 0.f }),
+            (Vec3){ .x = 5.f, .y = 0.f, .z = 0.f }, 
+            (Vec3){  .x = 0.f, .y = PI / 2.f, .z = 0.f }),
+        .depth = 2
     };
 
     float floor_positions_data[18] = {
@@ -297,7 +309,6 @@ int main(int argc, char** argv)
     addToSceneNodeArray(tree_shape1, &scene_nodes);
     addToSceneNodeArray(tree_shape2, &scene_nodes);
     addToSceneNodeArray(floor_model, &scene_nodes);
-
 
     Scene scene =  { 
         .nodes = scene_nodes,

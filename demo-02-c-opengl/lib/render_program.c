@@ -44,7 +44,7 @@ RenderProgram initShader(void)
 
     return (RenderProgram){
         .shader_program = shader_program,
-        .model_uniform_location = guaranteeUniformLocation(shader_program, "u_model"),
+        .world_matrix_uniform_location = guaranteeUniformLocation(shader_program, "u_model"),
         .view_uniform_location = guaranteeUniformLocation(shader_program, "u_view"),
         .projection_uniform_location = guaranteeUniformLocation(shader_program, "u_projection"),
         .view_position_uniform_location = guaranteeUniformLocation(shader_program, "u_view_position"),

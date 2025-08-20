@@ -12,7 +12,10 @@
 typedef struct SceneNode {
     Mat4 local_transform; 
     Material material;
-    Mesh mesh;
+    Mesh mesh; // 0 if none
+    size_t first_child; // 0 if none
+    size_t next_sibling; // 0 if none
+    size_t depth;
 } SceneNode;  
 
 // dynamic scene_node_array
@@ -26,6 +29,8 @@ SceneNodeArray * initSceneNodeArray(size_t initial_capacity);
 
 void addToSceneNodeArray(SceneNode node, SceneNodeArray ** array_ptr);
 
+SceneNode getElement(SceneNodeArray * scene, size_t idx);
+
 typedef struct Scene {
     SceneNodeArray* nodes;
     AmbientLight ambient_light;
@@ -33,6 +38,6 @@ typedef struct Scene {
     PointLight point_light;
 } Scene;
 
-void drawSceneNode(SceneNode scene_node, RenderProgram render_program);
+void drawSceneNode(SceneNode scene_node, RenderProgram render_program, Mat4 parentWorldTransform, SceneNodeArray * scene);
 
 #endif

@@ -35,11 +35,23 @@ void addToSceneNodeArray(SceneNode node, SceneNodeArray ** array_ptr) {
     array->array[array->size++] = node;
 };
 
-void drawSceneNode(SceneNode scene_node, RenderProgram render_program) {
+SceneNode getElement(SceneNodeArray * scene, size_t idx) {
+    if (idx < scene->size) {
+        return scene->array[idx];
+    } else {
+        return (SceneNode){};
+    }
+}
+
+void drawSceneNode(SceneNode scene_node, RenderProgram render_program, Mat4 parentWorldTransform, SceneNodeArray * scene) {
+
+
+    // Mat4 world_matrix = scene_node.local_transform;
+    Mat4 world_matrix = m4multiply(parentWorldTransform, scene_node.local_transform);
 
     glUseProgram(render_program.shader_program);
-   
-    glUniformMatrix4fv(render_program.model_uniform_location,1,0, &scene_node.local_transform.data[0][0]);
+ 
+    glUniformMatrix4fv(render_program.world_matrix_uniform_location,1,0, &world_matrix.data[0][0]);
     
     glUniform3fv(render_program.material_uniform.color_location,1, scene_node.material.color.data);
     glUniform3fv(render_program.material_uniform.specular_color_location,1, scene_node.material.specular_color.data);
@@ -50,4 +62,11 @@ void drawSceneNode(SceneNode scene_node, RenderProgram render_program) {
     // Draw the vertex buffer
     glDrawArrays(GL_TRIANGLES, 0, scene_node.mesh.vertex_count);
 
+    if (scene_node.first_child != 0) {
+        drawSceneNode(getElement(scene, scene_node.first_child), render_program, world_matrix, scene);
+    }
+
+    if (scene_node.next_sibling != 0) {
+        drawSceneNode(getElement(scene, scene_node.first_child), render_program, world_matrix, scene);
+    }
 }

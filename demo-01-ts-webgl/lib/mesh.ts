@@ -20,11 +20,9 @@ export type Material = {
 }
 
 export type Mesh = {
-    
     vertices: Vertices;
     material: Material;
-    id: UUID
-        
+    id: UUID    
 }
 
 export function drawMesh(
