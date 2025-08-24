@@ -6,7 +6,11 @@
                 "${workspaceFolder}/demo-02-c-opengl/lib/include",
                 "/usr/include/SDL2"
             ],
-            "compilerArgs": ["-Wall", "-Werror", "-Wno-missing-braces"],
+            "compilerArgs": [
+                "-Wall",
+                "-Werror",
+                "-Wno-missing-braces"
+            ],
             "defines": [],
             "compilerPath": "/usr/bin/clang",
             "cStandard": "c11",

@@ -39,6 +39,9 @@ void processEvents(AppState* state)
                     glViewport(0, 0, width, height);
 
                     state->camera.aspect = (float)width / (float)height;
+
+                    state->window.width = width;
+                    state->window.height = height;
                     
                 }
                 break;
@@ -65,7 +68,7 @@ void processEvents(AppState* state)
                 if (state->input.pointer_down) {
                     
                     // state->scene.models[0].rotation.y += e->xrel / 100.f;
-                    state->scene.models[0].localTransform = m4yRotate(state->scene.models[0].localTransform, e->xrel / 100.f);
+                    state->scene.nodes->array[0].local_transform = m4yRotate(state->scene.nodes->array[0].local_transform, e->xrel / 100.f);
                     Vec2 pointer_position = {
                     .x = e->x,
                     .y = e->y

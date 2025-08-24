@@ -28,7 +28,7 @@ typedef struct PointLightUniform {
 
 typedef struct RenderProgram  {
     GLuint shader_program;
-    GLuint model_uniform_location;
+    GLuint world_matrix_uniform_location;
     GLuint view_uniform_location;
     GLuint projection_uniform_location;
     GLuint view_position_uniform_location;

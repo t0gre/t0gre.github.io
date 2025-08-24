@@ -10,7 +10,7 @@
 #include "camera.h"
 #include "loaders.h"
 #include "app_state.h"
-#include "model.h"
+#include "scene.h"
 #include "events.h"
 
 #include<unistd.h>
@@ -21,13 +21,17 @@ WindowState initWindow(const char* title)
 {
     
     SDL_Init(SDL_INIT_VIDEO < 0);
+
+    GLsizei initial_window_height = 480;
+    GLsizei initial_window_width = 600;
     
     // Create SDL window
     #ifdef __EMSCRIPTEN__
 
      SDL_Window* window_object = SDL_CreateWindow(title, 
-                         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                          640, 480, 
+                         SDL_WINDOWPOS_CENTERED, 
+                         SDL_WINDOWPOS_CENTERED,
+                         initial_window_width, initial_window_height, 
                          SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE| SDL_WINDOW_SHOWN);
     const Uint32 window_id = SDL_GetWindowID(window_object);
     // This emscripten call fixes an antialiasing bug in sdl context creation for webgl2
@@ -52,8 +56,10 @@ WindowState initWindow(const char* title)
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
     SDL_Window* window_object = SDL_CreateWindow(title, 
-                         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                          640, 480, 
+                         SDL_WINDOWPOS_CENTERED, 
+                         SDL_WINDOWPOS_CENTERED,
+                         initial_window_width, 
+                         initial_window_height, 
                          SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE| SDL_WINDOW_SHOWN);
     
     const Uint32 window_id = SDL_GetWindowID(window_object);
@@ -74,11 +80,13 @@ WindowState initWindow(const char* title)
     glEnable(GL_DEPTH_TEST);
 
     // Initialize viewport
-    glViewport(0,0 ,640, 480);
+    glViewport(0,0, initial_window_width, initial_window_height);
 
     const WindowState window = {
         .object = window_object, 
-        .id = window_id
+        .id = window_id,
+        .width = initial_window_width,
+        .height = initial_window_height
         };
         
     return window;
@@ -114,11 +122,16 @@ void draw(WindowState window, Camera camera, Scene* scene, RenderProgram render_
     glUniform1f(render_program.point_light_uniform.linear_location,scene->point_light.linear);
     glUniform1f(render_program.point_light_uniform.quadratic_location,scene->point_light.quadratic); 
 
-    
 
-    for (uint8_t i = 0; i < scene->model_count; i++) {
-        drawModel(scene->models[i], render_program);
-    } 
+    for (size_t i = 0; i < scene->nodes->size; i++) {
+        SceneNode node = scene->nodes->array[i];
+        drawSceneNode(
+                node, 
+                render_program, 
+                m4fromPositionAndEuler((Vec3){0,0,0}, (Vec3){0,0,0})
+        );
+    }
+    
 
     #ifndef __EMSCRIPTEN__ 
     // Swap front/back framebuffers
@@ -175,6 +188,8 @@ void mainLoop(void* mainLoopArg)
 int main(int argc, char** argv)
 {
 
+    size_t next_node_id = 1;
+
     InputState input = {
         .pointer_down = false,
         .pointer_position = { 0 }
@@ -203,10 +218,6 @@ int main(int argc, char** argv)
         .quadratic = 0.032f
     };
 
-    
-
-
-    // create a model
    
     // TODO do these need to be cleaned up?
     FloatData normals = read_csv("normals.txt");
@@ -214,17 +225,51 @@ int main(int argc, char** argv)
 
     Mesh tree_mesh = createMesh(positions, normals, &render_program);
     
-    Model tree_model = {
+    SceneNode tree_shape = {
+        .id = next_node_id++,
         .mesh = tree_mesh,
         .material = {
             .color = { .r = 0.1, .g = 0.7, .b = 0.1},
             .specular_color = { .r = 0.2, .g = 0.2, .b = 0.2},
             .shininess = 0.5f
         },
-        .localTransform = m4fromPositionAndEuler(
+        .local_transform = m4fromPositionAndEuler(
             (Vec3){ .x = 0.f, .y = 0.f, .z = 0.f }, 
             (Vec3){  .x = 0.f, .y = PI / 2.f, .z = 0.f }),
+        .children = initSceneNodeArray(1),
     };
+
+    SceneNode tree_shape1 = {
+        .id = next_node_id++,
+        .mesh = tree_mesh,
+        .material = {
+            .color = { .r = 0.8, .g = 0.8, .b = 0.8},
+            .specular_color = { .r = 0.2, .g = 0.2, .b = 0.2},
+            .shininess = 0.9f
+        },
+        .local_transform = m4fromPositionAndEuler(
+            (Vec3){ .x = 5.f, .y = 0.f, .z = 0.f }, 
+            (Vec3){  .x = 0.f, .y = PI / 2.f, .z = 0.f }),
+        .children = initSceneNodeArray(1),
+    };
+
+    SceneNode tree_shape2 = {
+        .id = next_node_id++,
+        .mesh = tree_mesh,
+        .material = {
+            .color = { .r = 0.1, .g = 0.5, .b = 0.8},
+            .specular_color = { .r = 0.2, .g = 0.2, .b = 0.2},
+            .shininess = 0.9f
+        },
+        .local_transform = m4fromPositionAndEuler(
+            (Vec3){ .x = 5.f, .y = 0.f, .z = 0.f }, 
+            (Vec3){  .x = 0.f, .y = PI / 2.f, .z = 0.f }),
+            
+    };
+
+    setParent(&tree_shape1, &tree_shape2);
+    setParent(&tree_shape2, &tree_shape);
+
 
     float floor_positions_data[18] = {
             -10.f ,0.f, -10.f, // back left
@@ -256,21 +301,24 @@ int main(int argc, char** argv)
 
     Mesh floor_mesh = createMesh(floor_positions, floor_normals, &render_program);
 
-    Model floor_model = {
+    SceneNode floor_model = {
         .mesh = floor_mesh,
         .material = {
             .color = { .r = 0.9, .g = 0.7, .b = 0.1},
             .specular_color = { .r = 0.9, .g = 0.9, .b = 0.9},
             .shininess = 10.f
         },
-        .localTransform = m4fromPositionAndEuler(
+        .local_transform = m4fromPositionAndEuler(
             (Vec3){ .x = 0.f, .y = 0.1f, .z = 0.f }, 
             (Vec3) { .x = 0.f, .y = 0.f, .z = 0.f }),
     };
 
+    SceneNodeArray * scene_nodes = initSceneNodeArray(3);
+    addToSceneNodeArray(tree_shape, &scene_nodes);
+    addToSceneNodeArray(floor_model, &scene_nodes);
+
     Scene scene =  { 
-        .model_count = 2,
-        .models = { tree_model, floor_model },
+        .nodes = scene_nodes,
         .ambient_light = ambient_light,
         .point_light = point_light,
         .directional_light = directional_light
@@ -279,7 +327,7 @@ int main(int argc, char** argv)
 
     // create a camera
     const Camera camera = {
-        .aspect = degreeToRad(60.f), 
+        .aspect = (float)window.width / (float)window.height, 
         .near = 1.f,
         .field_of_view_radians = 1.f,
         .far = 2000.f, 
