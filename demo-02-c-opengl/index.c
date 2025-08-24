@@ -117,14 +117,11 @@ void draw(WindowState window, Camera camera, Scene* scene, RenderProgram render_
 
     for (size_t i = 0; i < scene->nodes->size; i++) {
         SceneNode node = scene->nodes->array[i];
-        if (node.depth == 0) {
-            drawSceneNode(
+        drawSceneNode(
                 node, 
                 render_program, 
-                m4fromPositionAndEuler((Vec3){0,0,0}, (Vec3){0,0,0}), 
-                scene->nodes);
-        }
-        
+                m4fromPositionAndEuler((Vec3){0,0,0}, (Vec3){0,0,0})
+        );
     }
     
 
@@ -183,6 +180,8 @@ void mainLoop(void* mainLoopArg)
 int main(int argc, char** argv)
 {
 
+    size_t next_node_id = 1;
+
     InputState input = {
         .pointer_down = false,
         .pointer_position = { 0 }
@@ -211,10 +210,6 @@ int main(int argc, char** argv)
         .quadratic = 0.032f
     };
 
-    
-
-
-    // create a model
    
     // TODO do these need to be cleaned up?
     FloatData normals = read_csv("normals.txt");
@@ -223,6 +218,7 @@ int main(int argc, char** argv)
     Mesh tree_mesh = createMesh(positions, normals, &render_program);
     
     SceneNode tree_shape = {
+        .id = next_node_id++,
         .mesh = tree_mesh,
         .material = {
             .color = { .r = 0.1, .g = 0.7, .b = 0.1},
@@ -232,10 +228,11 @@ int main(int argc, char** argv)
         .local_transform = m4fromPositionAndEuler(
             (Vec3){ .x = 0.f, .y = 0.f, .z = 0.f }, 
             (Vec3){  .x = 0.f, .y = PI / 2.f, .z = 0.f }),
-        .first_child = 1,
+        .children = initSceneNodeArray(1),
     };
 
     SceneNode tree_shape1 = {
+        .id = next_node_id++,
         .mesh = tree_mesh,
         .material = {
             .color = { .r = 0.8, .g = 0.8, .b = 0.8},
@@ -245,11 +242,11 @@ int main(int argc, char** argv)
         .local_transform = m4fromPositionAndEuler(
             (Vec3){ .x = 5.f, .y = 0.f, .z = 0.f }, 
             (Vec3){  .x = 0.f, .y = PI / 2.f, .z = 0.f }),
-        .first_child = 2,
-        .depth = 1
+        .children = initSceneNodeArray(1),
     };
 
     SceneNode tree_shape2 = {
+        .id = next_node_id++,
         .mesh = tree_mesh,
         .material = {
             .color = { .r = 0.1, .g = 0.5, .b = 0.8},
@@ -259,8 +256,12 @@ int main(int argc, char** argv)
         .local_transform = m4fromPositionAndEuler(
             (Vec3){ .x = 5.f, .y = 0.f, .z = 0.f }, 
             (Vec3){  .x = 0.f, .y = PI / 2.f, .z = 0.f }),
-        .depth = 2
+            
     };
+
+    setParent(&tree_shape1, &tree_shape2);
+    setParent(&tree_shape2, &tree_shape);
+
 
     float floor_positions_data[18] = {
             -10.f ,0.f, -10.f, // back left
@@ -306,8 +307,6 @@ int main(int argc, char** argv)
 
     SceneNodeArray * scene_nodes = initSceneNodeArray(3);
     addToSceneNodeArray(tree_shape, &scene_nodes);
-    addToSceneNodeArray(tree_shape1, &scene_nodes);
-    addToSceneNodeArray(tree_shape2, &scene_nodes);
     addToSceneNodeArray(floor_model, &scene_nodes);
 
     Scene scene =  { 

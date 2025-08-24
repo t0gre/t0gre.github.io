@@ -57,20 +57,3 @@ export function drawSceneNode(
             });
       }
 }
-
-// object => {
-//         if (object.mesh) {
-//              const parentWorldTransform = object.parent ? 
-//                 m4fromPositionAndEuler(object.parent.pose.position, object.parent.pose.rotation) : 
-//                 undefined
-//              drawMesh(
-//                 object.mesh, 
-//                 glState, 
-//                 renderProgram, 
-//                 light, 
-//                 camera, 
-//                 input, 
-//                 object.pose, 
-//                 parentWorldTransform)
-//         }
-//     }

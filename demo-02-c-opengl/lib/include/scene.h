@@ -10,20 +10,23 @@
 #include "material.h"
 
 typedef struct SceneNode {
+    size_t id;
     Mat4 local_transform; 
     Material material;
     Mesh mesh; // 0 if none
-    size_t first_child; // 0 if none
-    size_t next_sibling; // 0 if none
-    size_t depth;
+    struct SceneNode * parent; // 0 if none
+    struct SceneNodeArray * children; // empty if no children
 } SceneNode;  
 
 // dynamic scene_node_array
 typedef struct SceneNodeArray {
     size_t size;
     size_t capacity;
-    SceneNode array[];
+    SceneNode array[]; // all 0'd strcuts in the array are removed nodes, TODO remove the nodes
 } SceneNodeArray;
+
+
+void setParent(SceneNode * node, SceneNode * parent);
 
 SceneNodeArray * initSceneNodeArray(size_t initial_capacity);
 
@@ -38,6 +41,6 @@ typedef struct Scene {
     PointLight point_light;
 } Scene;
 
-void drawSceneNode(SceneNode scene_node, RenderProgram render_program, Mat4 parentWorldTransform, SceneNodeArray * scene);
+void drawSceneNode(SceneNode scene_node, RenderProgram render_program, Mat4 parentWorldTransform);
 
 #endif
