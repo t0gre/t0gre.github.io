@@ -39,6 +39,9 @@ void processEvents(AppState* state)
                     glViewport(0, 0, width, height);
 
                     state->camera.aspect = (float)width / (float)height;
+
+                    state->window.width = width;
+                    state->window.height = height;
                     
                 }
                 break;

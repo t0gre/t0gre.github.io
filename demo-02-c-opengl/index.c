@@ -21,13 +21,17 @@ WindowState initWindow(const char* title)
 {
     
     SDL_Init(SDL_INIT_VIDEO < 0);
+
+    GLsizei initial_window_height = 480;
+    GLsizei initial_window_width = 600;
     
     // Create SDL window
     #ifdef __EMSCRIPTEN__
 
      SDL_Window* window_object = SDL_CreateWindow(title, 
-                         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                          640, 480, 
+                         SDL_WINDOWPOS_CENTERED, 
+                         SDL_WINDOWPOS_CENTERED,
+                         initial_window_width, initial_window_height, 
                          SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE| SDL_WINDOW_SHOWN);
     const Uint32 window_id = SDL_GetWindowID(window_object);
     // This emscripten call fixes an antialiasing bug in sdl context creation for webgl2
@@ -52,8 +56,10 @@ WindowState initWindow(const char* title)
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
     SDL_Window* window_object = SDL_CreateWindow(title, 
-                         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                          640, 480, 
+                         SDL_WINDOWPOS_CENTERED, 
+                         SDL_WINDOWPOS_CENTERED,
+                         initial_window_width, 
+                         initial_window_height, 
                          SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE| SDL_WINDOW_SHOWN);
     
     const Uint32 window_id = SDL_GetWindowID(window_object);
@@ -74,11 +80,13 @@ WindowState initWindow(const char* title)
     glEnable(GL_DEPTH_TEST);
 
     // Initialize viewport
-    glViewport(0,0 ,640, 480);
+    glViewport(0,0, initial_window_width, initial_window_height);
 
     const WindowState window = {
         .object = window_object, 
-        .id = window_id
+        .id = window_id,
+        .width = initial_window_width,
+        .height = initial_window_height
         };
         
     return window;
@@ -319,7 +327,7 @@ int main(int argc, char** argv)
 
     // create a camera
     const Camera camera = {
-        .aspect = degreeToRad(60.f), 
+        .aspect = (float)window.width / (float)window.height, 
         .near = 1.f,
         .field_of_view_radians = 1.f,
         .far = 2000.f, 

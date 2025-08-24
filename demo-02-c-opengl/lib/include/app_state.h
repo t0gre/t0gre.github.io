@@ -12,6 +12,9 @@ typedef struct WindowState  {
     SDL_Window* object;
     Uint32 id;
     bool should_close;
+    size_t width;
+    size_t height;
+
 } WindowState;
 
 
