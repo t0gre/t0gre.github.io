@@ -2,9 +2,9 @@ import { Vec3 } from './lib/vec'
 
 import { drawSceneNode, SceneNode, setParent } from './lib/scene'
 import { degToRad } from './lib/mathUtils'
-import { createMesh } from './lib/mesh'
+import { createMesh, Vertices } from './lib/mesh'
 import { DirectionalLight, createDirectionalLight } from './lib/light'
-import { Camera, createCamera } from './lib/camera'
+import { Camera } from './lib/camera'
 import { initRenderProgram, RenderProgram } from './lib/BasicRenderProgram'
 import { loadObj } from './lib/loaders/ObjLoader'
 import { InputState } from './lib/input'
@@ -45,6 +45,7 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
         if (basicRenderProgram) {
 
             const vertices = await loadObj('/rainbowtree.obj');
+
             const shape: SceneNode = {
                 localTransform: m4fromPositionAndEuler( [0,0,0], [0, Math.PI /2, 0]),
                 mesh: createMesh(glState, {color:  [1, 1, 0.2, 1]}, vertices, basicRenderProgram ),
@@ -73,18 +74,55 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
                 return 1
             }
     
-            
+            /////////// floor
+            const floorPositionsData = new Float32Array([
+            -10 ,0, -10, // back left
+            -10 ,0, 10, // front left
+            10  ,0, -10, // back right
+            10  ,0, -10, // back right
+            10  ,0, 10, // front right
+            -10 ,0, 10 // front left
+            ])
+
+           
+            const floorNormalsData = new Float32Array([
+                    0,1, 0,
+                    0,1, 0,
+                    0,1, 0,
+                    0,1, 0,
+                    0,1, 0,
+                    0,1, 0,
+            ])
+
+
+           const floorVertices: Vertices = {
+             positions: floorPositionsData,
+             normals: floorNormalsData
+           } 
+        
+
+            const floorNode: SceneNode = {
+                localTransform: m4fromPositionAndEuler( [0,0.1,0], [0, 0, 0]),
+                mesh: createMesh(glState, {color:  [0.1, 0.1, 0.2, 1]}, floorVertices, basicRenderProgram ),
+                children: []
+            }  
+
+
+    
+            ///////////
+
+            const scene = [shape, floorNode]
           
-            const fieldOfViewRadians = degToRad(60);
-            const aspect = canvas.clientWidth / canvas.clientHeight;
-            const near = 1;
-            const far = 2000;
-            const up: Vec3 = [1, 0, 0]; 
-            const position: Vec3 = [0, 3.5, 10];
-            const rotation: Vec3 = [0,0,0];
             
             const light = createDirectionalLight([0, 0.5, 0.5], [0.5, 0.5, 0.5])
-            const camera = createCamera(fieldOfViewRadians, aspect, near, far, up, position, rotation)
+            const camera: Camera = {
+                fieldOfViewRadians:  degToRad(60), 
+                aspect: canvas.clientWidth / canvas.clientHeight,
+                near: 1, 
+                far:2000, 
+                up: [0, 1, 0], 
+                transform: m4fromPositionAndEuler([0, 3.5, 10], [0,0,0])
+            } 
            
             ///////////////// 
             const input: InputState = {
@@ -128,7 +166,7 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
                 // updateShape(shape!, dt)
                 resizeCanvasToDisplaySize(canvas);
                 camera.aspect = canvas.clientWidth / canvas.clientHeight;
-                const drawError = drawScene(glState!, shape, light, camera, input, basicRenderProgram!);
+                const drawError = drawScene(glState!, scene, light, camera, input, basicRenderProgram!);
                 if (drawError) {
                     console.log('draw error')
                 }
@@ -149,7 +187,7 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
 // Draw the scene.
 function drawScene(
     glState: glState,  
-    scene: SceneNode, 
+    scene: SceneNode[], 
     light: DirectionalLight, 
     camera: Camera, 
     input: InputState, 
@@ -164,9 +202,10 @@ function drawScene(
     // Clear the canvas AND the depth buffer.
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    drawSceneNode(scene, glState, renderProgram, light, camera, input);
-     
-
+    scene.forEach(node => {
+        drawSceneNode(node, glState, renderProgram, light, camera, input);
+    })
+        
     return 0
     
 }
