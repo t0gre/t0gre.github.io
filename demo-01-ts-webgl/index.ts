@@ -1,5 +1,3 @@
-import { Vec3 } from './lib/vec'
-
 import { drawSceneNode, SceneNode, setParent } from './lib/scene'
 import { degToRad } from './lib/mathUtils'
 import { createMesh, Vertices } from './lib/mesh'
