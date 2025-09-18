@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 196" width="280" height="392" role="img" aria-label="Chunky red number six, thicker lines with top flush and bottom thickened">
+  <path fill="#e63946" d="
+    M0 0 H140 V40 H0 Z
+    M0 40 H36 V70 H0 Z
+    M0 70 H36 V100 H0 Z
+    M0 100 H140 V140 H0 Z
+    M0 140 H36 V170 H0 Z
+    M76 140 H140 V170 H76 Z
+    M0 170 H140 V196 H0 Z
+  "/>
+</svg>
