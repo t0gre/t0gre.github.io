@@ -79,9 +79,9 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
             -10 ,0, -10, // back left
             -10 ,0, 10, // front left
             10  ,0, -10, // back right
-            10  ,0, -10, // back right
-            10  ,0, 10, // front right
-            -10 ,0, 10 // front left
+            -10 ,0, 10, // front left
+             10  ,0, 10, // front right
+             10  ,0, -10, // back right
             ])
 
            

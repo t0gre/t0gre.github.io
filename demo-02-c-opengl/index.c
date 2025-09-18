@@ -275,9 +275,9 @@ int main(int argc, char** argv)
             -10.f ,0.f, -10.f, // back left
             -10.f ,0.f, 10.f, // front left
             10.f ,0.f, -10.f, // back right
-            10.f ,0.f, -10.f, // back right
+            -10.f ,0.f, 10.f, // front left
             10.f ,0.f, 10.f, // front right
-            -10.f ,0.f, 10.f // front left
+            10.f ,0.f, -10.f, // back right
         };
 
     FloatData floor_positions = {
