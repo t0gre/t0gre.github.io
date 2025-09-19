@@ -8,6 +8,7 @@ export type Ray = {
     direction: Vec3 
 }
 
+// https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
 export function rayIntersectsTriangle(ray: Ray, triangle: Triangle): Vec3 | null {
 
     const epsilon = Number.EPSILON
@@ -48,9 +49,9 @@ export function rayIntersectsVertices(ray: Ray, vertices: Vertices): Vec3[] {
     const intersections: Vec3[] = []
 
     const positions = vertices.positions
-    console.log("positions", positions)
-
-    console.log("length", positions.length)
+    
+    // console.log("positions", positions)
+    // console.log("length", positions.length)
 
     for (let i = 0; i < positions.length; i += 9) {
         
@@ -61,12 +62,13 @@ export function rayIntersectsVertices(ray: Ray, vertices: Vertices): Vec3[] {
         ]
 
         const intersection = rayIntersectsTriangle(ray, triangle)
-        console.log("i", i)
-        console.log("triangle", triangle)
-        console.log("intersection", intersection)
+        
+        // console.log("i", i)
+        // console.log("triangle", triangle)
+        // console.log("intersection", intersection)
 
         if (intersection) {
-            console.log("adding intersection", intersection)
+            // console.log("adding intersection", intersection)
             intersections.push(intersection)
         }
     }
