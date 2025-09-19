@@ -1,4 +1,5 @@
-import { addVectors, cross, dot, normalize, scaleVector, subtractVectors, Vec3 } from "./vec";
+import { Vertices } from "./mesh";
+import { addVectors, cross, dot, scaleVector, subtractVectors, Vec3 } from "./vec";
 
 export type Triangle = [Vec3, Vec3, Vec3]
 
@@ -10,7 +11,6 @@ export type Ray = {
 export function rayIntersectsTriangle(ray: Ray, triangle: Triangle): Vec3 | null {
 
     const epsilon = Number.EPSILON
-    // const rayDirection = normalize(ray.direction)
 
     const edge1 = subtractVectors(triangle[1], triangle[0])
     const edge2 = subtractVectors(triangle[2], triangle[0])
@@ -29,7 +29,7 @@ export function rayIntersectsTriangle(ray: Ray, triangle: Triangle): Vec3 | null
         return null;
 
     const sCrossEdge1 = cross(s, edge1);
-    const v = invDet * dot(ray.direction, edge1)
+    const v = invDet * dot(ray.direction, sCrossEdge1)
 
     if ((v < 0 && Math.abs(v) > epsilon) || (u + v > 1 && Math.abs(u + v - 1) > epsilon))
         return null;
@@ -42,4 +42,34 @@ export function rayIntersectsTriangle(ray: Ray, triangle: Triangle): Vec3 | null
     } else { // This means that there is a line intersection but not a ray intersection.
         return null;
     }
+}
+
+export function rayIntersectsVertices(ray: Ray, vertices: Vertices): Vec3[] {
+    const intersections: Vec3[] = []
+
+    const positions = vertices.positions
+    console.log("positions", positions)
+
+    console.log("length", positions.length)
+
+    for (let i = 0; i < positions.length; i += 9) {
+        
+        const triangle: Triangle = [
+            [positions[i]!,positions[i+1]!,positions[i+2]!], 
+            [positions[i+3]!,positions[i+4]!,positions[i+5]!], 
+            [positions[i+6]!,positions[i+7]!,positions[i+8]!]
+        ]
+
+        const intersection = rayIntersectsTriangle(ray, triangle)
+        console.log("i", i)
+        console.log("triangle", triangle)
+        console.log("intersection", intersection)
+
+        if (intersection) {
+            console.log("adding intersection", intersection)
+            intersections.push(intersection)
+        }
+    }
+
+    return intersections
 }

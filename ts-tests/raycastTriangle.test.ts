@@ -109,3 +109,35 @@ test('it correctly finds no intersection based on direction', () => {
     expect(result, "no intersection").toEqual(expected)
 
 })
+
+test('it correctly finds no intersection based on origin', () => {
+ 
+    const triangle: Triangle = [ [ -10, 0, -10 ], [ -10, 0, 10 ], [ 10, 0, -10 ] ]
+    // this should intersect the triangles plane, but not the triangle itself
+    const ray: Ray = {
+    origin: [110, 0.5, 0],
+    direction: [0, -1, 0]
+    }
+
+    const result = rayIntersectsTriangle(ray, triangle)
+
+    const expected = null
+    expect(result, "no intersection").toEqual(expected)
+
+})
+
+test('it correctly finds no intersection based on origin', () => {
+ 
+    const triangle: Triangle = [ [ -10, 0, -10 ], [ -10, 0, 10 ], [ 10, 0, -10 ] ]
+    // this should intersect the triangles plane, but not the triangle itself
+    const ray: Ray = {
+    origin: [1, 0.5, 0],
+    direction: [0, -1, 0]
+    }
+
+    const result = rayIntersectsTriangle(ray, triangle)
+
+    const expected = null
+    expect(result, "no intersection").toEqual(expected)
+
+})
