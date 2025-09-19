@@ -1,4 +1,4 @@
-import { addVectors, cross, dot, scaleVector, subtractVectors, Vec3 } from "./vec";
+import { addVectors, cross, dot, normalize, scaleVector, subtractVectors, Vec3 } from "./vec";
 
 export type Triangle = [Vec3, Vec3, Vec3]
 
@@ -10,6 +10,7 @@ export type Ray = {
 export function rayIntersectsTriangle(ray: Ray, triangle: Triangle): Vec3 | null {
 
     const epsilon = Number.EPSILON
+    // const rayDirection = normalize(ray.direction)
 
     const edge1 = subtractVectors(triangle[1], triangle[0])
     const edge2 = subtractVectors(triangle[2], triangle[0])
