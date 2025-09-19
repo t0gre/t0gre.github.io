@@ -6,6 +6,14 @@ export function subtractVectors(a: Vec3, b: Vec3): Vec3 {
     return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 }
 
+export function addVectors(a: Vec3, b: Vec3): Vec3 {
+    return [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+}
+
+export function scaleVector(vec: Vec3, scalar: number): Vec3 {
+    return [vec[0] * scalar, vec[1] * scalar, vec[2] * scalar]
+}
+
 export function normalize(v: Vec3): Vec3 {
     const length = Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
     // make sure we don't divide by 0.
@@ -20,4 +28,8 @@ export function cross(a: Vec3, b: Vec3): Vec3 {
     return [a[1] * b[2] - a[2] * b[1],
     a[2] * b[0] - a[0] * b[2],
     a[0] * b[1] - a[1] * b[0]];
+}
+
+export function dot(a: Vec3, b: Vec3): number {
+    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 }
