@@ -6,7 +6,7 @@ import { InputState } from "./input";
 import { Mat4 } from "./mat4";
 import { Vec4 } from "./vec";
 import { RenderProgram, updateUniforms } from "./BasicRenderProgram";
-import { UUID } from "crypto";
+import { GlState } from "./gl";
 
 export type Vertices = {
     positions: Float32Array,
@@ -22,42 +22,59 @@ export type Material = {
 export type Mesh = {
     vertices: Vertices;
     material: Material;
-    id: UUID    
+    _id?: number    // undefined means it does not have a vao initialised, 
+    // draw function will check it and set it. not to be set manually 
 }
 
 export function drawMesh(
     mesh: Mesh, 
-    glState: glState, 
+    glState: GlState, 
     renderProgram: RenderProgram, 
     light: DirectionalLight, 
     camera: Camera, 
     input: InputState, 
     worldMatrix: Mat4 ){
       
-        const gl = glState.gl;
-        const vao = glState.vaos.get(mesh.id)!;
-        gl.useProgram(renderProgram.program);
-        gl.bindVertexArray(vao);
+        const drawInitializedMesh = (mesh: Mesh) => {
+            const gl = glState.gl;
+            const vao = glState.vaos.get(mesh._id!)!; // if the mesh has been inited then id will be present
+            gl.useProgram(renderProgram.program);
+            gl.bindVertexArray(vao);
 
-        updateUniforms(renderProgram, glState, light, camera, input, worldMatrix, mesh.material.color);
+            updateUniforms(renderProgram, glState, light, camera, input, worldMatrix, mesh.material.color);
 
-        if (mesh.vertices.indices) {
-            gl.drawElements(glState.gl.TRIANGLES, mesh.vertices.indices.length, gl.UNSIGNED_SHORT,  0);
+            if (mesh.vertices.indices) {
+                gl.drawElements(glState.gl.TRIANGLES, mesh.vertices.indices.length, gl.UNSIGNED_SHORT,  0);
+            } else {
+                gl.drawArrays(glState.gl.TRIANGLES, 0, mesh.vertices.positions.length /3 );
+            }
+        } 
+
+        if (!mesh._id) {
+            // initialise the mesh 
+            initMesh(mesh, glState, renderProgram)
+            drawInitializedMesh(mesh)
         } else {
-            gl.drawArrays(glState.gl.TRIANGLES, 0, mesh.vertices.positions.length /3 );
+            // alre
+            drawInitializedMesh(mesh)
         }
+        
         
     }
 
 
 
-export function createMesh(
-        glState: glState, 
-        material: Material,
-        vertices: Vertices,
+export function initMesh(
+        mesh: Mesh,
+        glState: GlState,
         program: RenderProgram): Mesh | undefined {
     
-    const {positions, normals, texcoords: _, indices} = vertices;
+    if (mesh._id) {
+        console.log("mesh is already init, you shouldn't be trying to reinit it")
+        return mesh
+    }
+    
+    const {positions, normals, texcoords: _, indices} = mesh.vertices;
     const gl = glState.gl;
     const vao = gl.createVertexArray()
     if (!vao) {
@@ -146,9 +163,9 @@ export function createMesh(
 
     gl.bindVertexArray(null);
     
-    const mesh = { vertices, material, id: crypto.randomUUID()}
-    glState.vaos.set(mesh.id, vao);
-
+    mesh._id = glState.nextVaoId;
+    glState.vaos.set(mesh._id!, vao); // _id is set above
+    glState.nextVaoId += 1; // the id is just an ascending int
     
     return mesh
 }

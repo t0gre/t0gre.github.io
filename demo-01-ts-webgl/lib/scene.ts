@@ -4,6 +4,7 @@ import { DirectionalLight } from "./light";
 import { m4fromPositionAndEuler, m4multiply, Mat4 } from "./mat4";
 import { drawMesh, Mesh } from "./mesh";
 import { RenderProgram } from "./BasicRenderProgram";
+import { GlState } from "./gl";
 
 
 export type SceneNode = {
@@ -29,7 +30,7 @@ export function setParent(node: SceneNode, parent: SceneNode) {
 
 export function drawSceneNode(
    node: SceneNode, 
-   glState: glState, 
+   glState: GlState, 
    renderProgram: RenderProgram,
    light: DirectionalLight,
    camera: Camera,
@@ -56,4 +57,29 @@ export function drawSceneNode(
                worldMatrix)
             });
       }
+}
+
+export function drawScene(
+    glState: GlState,  
+    scene: SceneNode[], 
+    light: DirectionalLight, 
+    camera: Camera, 
+    input: InputState, 
+    renderProgram: RenderProgram) {
+
+    const gl = glState.gl;
+
+    // Tell WebGL how to convert from clip space to pixels
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+   
+
+    // Clear the canvas AND the depth buffer.
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    scene.forEach(node => {
+        drawSceneNode(node, glState, renderProgram, light, camera, input);
+    })
+        
+    return 0
+    
 }
