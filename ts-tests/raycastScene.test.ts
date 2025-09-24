@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 import { Ray, rayIntersectsSceneNode } from "demo-01-ts-webgl/lib/raycast";
 import { Vertices } from 'demo-01-ts-webgl/lib/mesh';
-import { SceneNode } from 'demo-01-ts-webgl/lib/scene';
+import { initSceneNode } from 'demo-01-ts-webgl/lib/scene';
 import { m4fromPositionAndEuler } from 'demo-01-ts-webgl/lib/mat4';
 
 
@@ -30,16 +30,13 @@ const vertices: Vertices = {
   normals
 } 
         
-const node: SceneNode = {
-    mesh: {
+const node = initSceneNode(m4fromPositionAndEuler([-2,0,0], [0,0,0]), {
         vertices,
         material: {
             color: [1,1,1,1]
         }
-    },
-    localTransform: m4fromPositionAndEuler([-2,0,0], [0,0,0]),
-    children: []
-} 
+    })
+   
 
 test('it correctly finds an intersection in the right place', () => {
    

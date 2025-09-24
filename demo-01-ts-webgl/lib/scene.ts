@@ -8,13 +8,40 @@ import { GlState } from "./gl";
 
 
 export type SceneNode = {
-   localTransform: Mat4;
+   _localTransform: Mat4;
+   _worldTransform: Mat4; // should not be set directly
    parent?: SceneNode;
    children: SceneNode[]; // empty array if no children
    mesh?: Mesh;
 }
 
 export type Scene = SceneNode[]
+
+
+export function updateWorldTransform(node: SceneNode) {
+   // n.b. this assumes the parent world transform is always up-to-date so we must keep it that way
+   const parentWorldTransform = node.parent?._worldTransform ?? m4fromPositionAndEuler([0,0,0], [0,0,0]);
+   node._worldTransform = m4multiply(parentWorldTransform, node._localTransform);
+
+   node.children.forEach(child => updateWorldTransform(child))
+}
+
+export function updateTransform(node: SceneNode, transform: Mat4) {
+   node._localTransform = transform
+   updateWorldTransform(node)
+}
+
+export function initSceneNode(transform: Mat4, mesh?: Mesh) {
+   const node:SceneNode = {
+   _localTransform: transform,
+   _worldTransform: transform, // actually valid since there's no parent
+   children: [], // empty array if no children
+   mesh
+}
+
+   updateWorldTransform(node)
+   return node
+}
 
 export function setParent(node: SceneNode, parent: SceneNode) {
    
@@ -24,6 +51,7 @@ export function setParent(node: SceneNode, parent: SceneNode) {
    }
 
    node.parent = parent;
+   updateWorldTransform(node)
    parent.children.push(node);
 }
 
@@ -35,14 +63,11 @@ export function drawSceneNode(
    light: DirectionalLight,
    camera: Camera,
    input: InputState,
-   parentWorldTransform?: Mat4   
 ) {
-      parentWorldTransform = parentWorldTransform || m4fromPositionAndEuler([0,0,0], [0,0,0]);
       
-      const worldMatrix = m4multiply(parentWorldTransform, node.localTransform);
       
       if (node.mesh) {
-         drawMesh(node.mesh, glState, renderProgram, light, camera, input, worldMatrix);
+         drawMesh(node.mesh, glState, renderProgram, light, camera, input, node._worldTransform);
       }
 
       if (node.children) {
@@ -53,8 +78,7 @@ export function drawSceneNode(
                renderProgram, 
                light, 
                camera, 
-               input, 
-               worldMatrix)
+               input)
             });
       }
 }

@@ -1,4 +1,4 @@
-import { drawScene, SceneNode, setParent } from './lib/scene'
+import { drawScene, initSceneNode, setParent, updateTransform } from './lib/scene'
 import { degToRad } from './lib/mathUtils'
 import { Vertices } from './lib/mesh'
 import { createDirectionalLight } from './lib/light'
@@ -41,37 +41,29 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
 
             const vertices = await loadObj('/rainbowtree.obj');
 
-            const shape: SceneNode = {
-                localTransform: m4fromPositionAndEuler( [0,0,0], [0, Math.PI /2, 0]),
-                mesh: {
+            const shape = initSceneNode(m4fromPositionAndEuler( [0,0,0], [0, Math.PI /2, 0]),
+                   {
                     vertices,
                     material: {
                         color:  [1, 1, 0.2, 1]
-                    }},
-                children: []
-            }  ;
+                    }})
 
             
-            const shape1: SceneNode = {
-                localTransform: m4fromPositionAndEuler( [5,0,0], [0, Math.PI /2, 0]),
-                mesh: { 
+            const shape1 = initSceneNode(
+                m4fromPositionAndEuler( [5,0,0], [0, Math.PI /2, 0]),
+                { 
                     vertices, 
                     material: {
                         color:  [1, 0.5, 0.2, 1]
-                    }},
-                children: []
-            }  ;
+                    }})
 
-            const shape2: SceneNode = {
-                localTransform: m4fromPositionAndEuler( [5,0,0], [0, Math.PI /2, 0]),
-                mesh: {
+            const shape2  = initSceneNode(
+                 m4fromPositionAndEuler( [5,0,0], [0, Math.PI /2, 0]),
+                 {
                     vertices,
                     material: {
                         color:  [0.1, 0.5, 0.2, 1]
-                    }},
-                children: []
-            }  ;
-
+                    }})
 
             setParent(shape1, shape);
             setParent(shape2, shape1);
@@ -108,15 +100,12 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
            } 
         
 
-            const floorNode: SceneNode = {
-                localTransform: m4fromPositionAndEuler( [0,0.1,0], [0, 0, 0]),
-                mesh: {
+            const floorNode = initSceneNode(m4fromPositionAndEuler( [0,0.1,0], [0, 0, 0]),
+                    {
                     vertices: floorVertices,
                     material: {
                         color:  [0.1, 0.1, 0.2, 1]
-                    }} ,
-                children: []
-            }  
+                    }})
 
             ///////////
 
@@ -155,7 +144,7 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
     
                     // rotate the shapes transform
                     // shape.pose.rotation[1] += e.movementX / 100;
-                    shape.localTransform = m4yRotate(shape.localTransform, e.movementX / 100);
+                    updateTransform(shape, m4yRotate(shape._localTransform, e.movementX / 100));
 
                     input.pointerPosition = [x,y];
                 }
