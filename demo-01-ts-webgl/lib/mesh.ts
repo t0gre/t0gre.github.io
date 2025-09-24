@@ -58,8 +58,6 @@ export function drawMesh(
             // alre
             drawInitializedMesh(mesh)
         }
-        
-        
     }
 
 

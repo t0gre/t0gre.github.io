@@ -79,7 +79,7 @@ export function rayIntersectsVertices(ray: Ray, vertices: Vertices): Vec3[] {
 }
 
 export function rayIntersectsMesh(ray: Ray, mesh: Mesh): Vec3[] {
-    return rayIntersectsVertices(ray, mesh.vertices) // what about transform?
+    return rayIntersectsVertices(ray, mesh.vertices) 
 }
 
 
@@ -93,7 +93,7 @@ export function rayIntersectsSceneNode(ray: Ray, node: SceneNode): Vec3[] {
     while (nodeStack.length > 0) {
         const nodeUnderTest = nodeStack.pop()!
         if (node.mesh) {
-            const rayNodeIntersections = rayIntersectsMesh(ray, node.mesh)
+            const rayNodeIntersections = rayIntersectsMesh(ray, node.mesh) // what about transform?
             if (rayNodeIntersections) {
                 intersections.push(...rayNodeIntersections)
             }
