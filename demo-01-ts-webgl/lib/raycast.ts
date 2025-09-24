@@ -1,4 +1,6 @@
 import { Vertices } from "./mesh";
+import { Mesh } from "./mesh";
+import { SceneNode, Scene } from "./scene";
 import { addVectors, cross, dot, scaleVector, subtractVectors, Vec3 } from "./vec";
 
 export type Triangle = [Vec3, Vec3, Vec3]
@@ -71,6 +73,50 @@ export function rayIntersectsVertices(ray: Ray, vertices: Vertices): Vec3[] {
             // console.log("adding intersection", intersection)
             intersections.push(intersection)
         }
+    }
+
+    return intersections
+}
+
+export function rayIntersectsMesh(ray: Ray, mesh: Mesh): Vec3[] {
+    return rayIntersectsVertices(ray, mesh.vertices) // what about transform?
+}
+
+
+export function rayIntersectsSceneNode(ray: Ray, node: SceneNode): Vec3[] {
+    
+    const intersections: Vec3[] =[]
+    const nodeStack: SceneNode[] = []
+    
+    nodeStack.push(node)
+
+    while (nodeStack.length > 0) {
+        const nodeUnderTest = nodeStack.pop()!
+        if (node.mesh) {
+            const rayNodeIntersections = rayIntersectsMesh(ray, node.mesh)
+            if (rayNodeIntersections) {
+                intersections.push(...rayNodeIntersections)
+            }
+        }
+        
+        for (const child of nodeUnderTest.children) {
+            nodeStack.push(child)
+        }
+    }
+
+    return intersections
+}
+
+export function rayIntersectsScene(ray: Ray, scene: Scene): Vec3[] {
+    
+    const intersections: Vec3[] =[]
+    
+    for (const node of scene) {
+        const rayNodeIntersections = rayIntersectsSceneNode(ray, node)
+        if (rayNodeIntersections) {
+                intersections.push(...rayNodeIntersections)
+            }
+        
     }
 
     return intersections

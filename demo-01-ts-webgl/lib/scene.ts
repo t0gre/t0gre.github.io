@@ -13,6 +13,8 @@ export type SceneNode = {
    mesh?: Mesh;
 }
 
+export type Scene = SceneNode[]
+
 export function setParent(node: SceneNode, parent: SceneNode) {
    
    // Remove node from its current parent's children array
@@ -23,8 +25,6 @@ export function setParent(node: SceneNode, parent: SceneNode) {
    node.parent = parent;
    parent.children.push(node);
 }
-
-
 
 
 export function drawSceneNode(
