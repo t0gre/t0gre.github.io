@@ -8,6 +8,7 @@ import { InputState } from "./input";
 
 import vertexShaderSource from "./shaders/basic.vert?raw"
 import fragmentShaderSource from "./shaders/basic.frag?raw"
+import { GlState } from "./gl";
 
 export type RenderProgram = {
     program: WebGLProgram;
@@ -22,7 +23,7 @@ export type RenderProgram = {
        }
 
 
-export function updateUniforms(renderProgram: RenderProgram, glState: glState, light: DirectionalLight, camera: Camera, input: InputState, shapeWorld: Mat4, color: Vec4) {
+export function updateUniforms(renderProgram: RenderProgram, glState: GlState, light: DirectionalLight, camera: Camera, input: InputState, shapeWorld: Mat4, color: Vec4) {
 
         const gl = glState.gl;
         gl.useProgram(renderProgram.program)

@@ -32,7 +32,7 @@ export function updateTransform(node: SceneNode, transform: Mat4) {
 }
 
 export function initSceneNode(transform: Mat4, mesh?: Mesh) {
-   const node:SceneNode = {
+   const node: SceneNode = {
    _localTransform: transform,
    _worldTransform: transform, // actually valid since there's no parent
    children: [], // empty array if no children

@@ -4,8 +4,13 @@ export default defineConfig({
   test: {
     exclude:[
       ...configDefaults.exclude, 
-      'emsdk/*'
+      'emsdk/*',
+      'build'
     ],
+    
   },
+  build: {
+    sourcemap: true
+  }
   
 });

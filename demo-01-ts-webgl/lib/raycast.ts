@@ -1,3 +1,4 @@
+import { m4inverse, m4PositionMultiply, m4DirectionMultiply, m4yRotate } from "./mat4";
 import { Vertices } from "./mesh";
 import { Mesh } from "./mesh";
 import { SceneNode, Scene } from "./scene";
@@ -93,9 +94,36 @@ export function rayIntersectsSceneNode(ray: Ray, node: SceneNode): Vec3[] {
     while (nodeStack.length > 0) {
         const nodeUnderTest = nodeStack.pop()!
         if (node.mesh) {
-            const rayNodeIntersections = rayIntersectsMesh(ray, node.mesh) // what about transform?
+            // transform the ray into mesh space
+            const inverseTransform = m4inverse(node._worldTransform)
+            const meshSpaceOrigin = m4PositionMultiply(
+                ray.origin, 
+                inverseTransform)
+
+            m4yRotate
+            const meshSpaceDirection = m4DirectionMultiply(
+                ray.direction, 
+                inverseTransform)
+
+            
+            const newRay: Ray = {
+                origin: meshSpaceOrigin ,
+                direction: meshSpaceDirection
+            } 
+
+            console.log('newray', newRay)
+            const rayNodeIntersections = rayIntersectsMesh(newRay, node.mesh) 
             if (rayNodeIntersections) {
-                intersections.push(...rayNodeIntersections)
+                for (const intersection of rayNodeIntersections) {
+                    const worldSpaceIntersection = m4PositionMultiply(
+                        intersection, 
+                        node._worldTransform)
+
+                    console.log('ms', intersection)
+                    console.log('ws', worldSpaceIntersection)
+                    intersections.push(worldSpaceIntersection)
+                }
+                
             }
         }
         

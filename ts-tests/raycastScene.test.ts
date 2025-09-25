@@ -30,7 +30,7 @@ const vertices: Vertices = {
   normals
 } 
         
-const node = initSceneNode(m4fromPositionAndEuler([-2,0,0], [0,0,0]), {
+const node =  initSceneNode(m4fromPositionAndEuler([-2,0,0], [0,0,0]), {
         vertices,
         material: {
             color: [1,1,1,1]
