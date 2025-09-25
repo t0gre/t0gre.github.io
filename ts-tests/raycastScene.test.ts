@@ -30,9 +30,7 @@ const vertices: Vertices = {
   normals
 } 
         
-
-   
-
+ 
 test('it correctly finds an intersection with position transform', () => {
    
     const node =  initSceneNode(m4fromPositionAndEuler([-2,0,0], [0,0,0]), {
@@ -80,23 +78,29 @@ test('it correctly finds an intersection with multiple position transforms', () 
 })
 
 
-// test('it correctly finds an intersection with rotation transform', () => {
+test('it correctly finds an intersection with rotation transform', () => {
    
-//     const node =  initSceneNode(m4fromPositionAndEuler([-2,0,0], [0,0,Math.PI/4]), {
-//         vertices,
-//         material: {
-//             color: [1,1,1,1]
-//         }
-//     })
+    const node =  initSceneNode(m4fromPositionAndEuler([0,0,0], [0,0,Math.PI/4]), {
+        vertices,
+        material: {
+            color: [1,1,1,1]
+        }
+    })
 
-//     const ray: Ray = {
-//     origin: [-1, 0.5, 0],
-//     direction: [0, -1, 0]
-//     }
+    const ray: Ray = {
+    origin: [-1, 2, 0],
+    direction: [0, -1, 0]
+    }
 
-//     const result = rayIntersectsSceneNode(ray, node)
+    const result = rayIntersectsSceneNode(ray, node)
 
-//     const expected = [[-1, 0.0, -1]]
-//     expect(result, "intersection is correct").toEqual(expected)
+    const expected = [[-1, -1, 0]]
 
-// })
+    for (let i = 0; i < expected.length; i++) {
+        const elementofResult = result[0]![i]!
+        const elementOfExpected = expected[0]![i]!
+        expect(elementofResult, "intersection element is correct")
+        .toBeCloseTo(elementOfExpected, 6)
+    }
+
+})
