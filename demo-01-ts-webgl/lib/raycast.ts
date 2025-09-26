@@ -15,7 +15,8 @@ export type Ray = {
 export type Intersection = {
     meshId?: number;
     nodeName?: string;
-    point: Vec3
+    point: Vec3;
+    triangleIdx: number;
 }
 
 // https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
@@ -55,8 +56,8 @@ export function rayIntersectsTriangle(ray: Ray, triangle: Triangle): Vec3 | null
     }
 }
 
-export function rayIntersectsVertices(ray: Ray, vertices: Vertices): Vec3[] {
-    const intersections: Vec3[] = []
+export function rayIntersectsVertices(ray: Ray, vertices: Vertices): Intersection[] {
+    const intersections: Intersection[] = []
 
     const positions = vertices.positions
     
@@ -71,15 +72,15 @@ export function rayIntersectsVertices(ray: Ray, vertices: Vertices): Vec3[] {
             [positions[i+6]!,positions[i+7]!,positions[i+8]!]
         ]
 
-        const intersection = rayIntersectsTriangle(ray, triangle)
+        const intersectionPoint = rayIntersectsTriangle(ray, triangle)
         
         // console.log("i", i)
         // console.log("triangle", triangle)
         // console.log("intersection", intersection)
 
-        if (intersection) {
+        if (intersectionPoint) {
             // console.log("adding intersection", intersection)
-            intersections.push(intersection)
+            intersections.push({ point: intersectionPoint, triangleIdx: i / 3})
         }
     }
 
@@ -88,9 +89,10 @@ export function rayIntersectsVertices(ray: Ray, vertices: Vertices): Vec3[] {
 
 export function rayIntersectsMesh(ray: Ray, mesh: Mesh): Intersection[] {
 
-    return rayIntersectsVertices(ray, mesh.vertices).map(point => {
+    return rayIntersectsVertices(ray, mesh.vertices).map(intersection => {
         return {
-            point,
+            point: intersection.point,
+            triangleIdx: intersection.triangleIdx,
             meshId: mesh._id 
         }
     })
@@ -142,6 +144,7 @@ export function rayIntersectsSceneNode(ray: Ray, node: SceneNode): Intersection[
                     // console.log('ws', worldSpaceIntersection)
                     intersections.push({ 
                         point: worldSpaceIntersection, 
+                        triangleIdx: intersection.triangleIdx,
                         meshId: intersection.meshId,
                         nodeName: nodeUnderTest.name
                     })
