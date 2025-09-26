@@ -208,3 +208,17 @@ export function getWorldRayFromClipSpaceAndCamera(
     return worldRay
 }
 
+export function sortBySceneDepth(intersections: Intersection[], camera: Camera
+): Intersection[] {
+    const sorted = intersections.toSorted((a, b) => {
+        const viewMatrix = m4inverse(camera.transform);
+        const projectionMatrix = getProjectionMatrix(camera);
+        const viewProj = m4multiply(projectionMatrix, viewMatrix);
+        const glPosA = m4PositionMultiply(a.point, viewProj)
+        const glPosB = m4PositionMultiply(b.point, viewProj)
+
+        return   glPosA[2] - glPosB[2]
+    })
+
+    return sorted
+}

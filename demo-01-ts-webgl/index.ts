@@ -8,7 +8,7 @@ import { loadObj } from './lib/loaders/ObjLoader'
 import { InputState } from './lib/input'
 import { m4fromPositionAndEuler, m4yRotate } from './lib/mat4'
 import { initGlState } from './lib/gl'
-import { getWorldRayFromClipSpaceAndCamera, rayIntersectsScene } from './lib/raycast'
+import { getWorldRayFromClipSpaceAndCamera, rayIntersectsScene, sortBySceneDepth } from './lib/raycast'
 import { getPointerClickInClipSpace } from './lib/events'
 
 // const ROTATION_SPEED = 1.2;
@@ -142,9 +142,13 @@ canvas.addEventListener('pointerdown', (e) => {
     const worldRay = getWorldRayFromClipSpaceAndCamera(clickPoint, camera)
 
     const hits = rayIntersectsScene(worldRay, scene)
-    // console.log('ray', mouseRay)
-    console.log('worldRay', worldRay)
-    console.log('hits', ...hits)
+    
+    if (hits.length > 0) {
+         // sort hits by scene depth
+    const sortedHits = sortBySceneDepth(hits, camera)
+    console.log('you clicked', sortedHits[0]?.nodeName)
+    }
+   
 })
 
 
