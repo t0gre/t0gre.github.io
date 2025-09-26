@@ -13,6 +13,7 @@ export type Ray = {
 
 export type Intersection = {
     meshId?: number;
+    nodeName?: string;
     point: Vec3
 }
 
@@ -140,7 +141,8 @@ export function rayIntersectsSceneNode(ray: Ray, node: SceneNode): Intersection[
                     // console.log('ws', worldSpaceIntersection)
                     intersections.push({ 
                         point: worldSpaceIntersection, 
-                        meshId: intersection.meshId
+                        meshId: intersection.meshId,
+                        nodeName: nodeUnderTest.name
                     })
                 }
                 

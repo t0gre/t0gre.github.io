@@ -13,6 +13,7 @@ export type SceneNode = {
    parent?: SceneNode;
    children: SceneNode[]; // empty array if no children
    mesh?: Mesh;
+   name?: string
 }
 
 export type Scene = SceneNode[]
@@ -31,12 +32,13 @@ export function updateTransform(node: SceneNode, transform: Mat4) {
    updateWorldTransform(node)
 }
 
-export function initSceneNode(transform: Mat4, mesh?: Mesh) {
+export function initSceneNode(transform: Mat4, mesh?: Mesh, name?: string) {
    const node: SceneNode = {
    _localTransform: transform,
    _worldTransform: transform, // actually valid since there's no parent
    children: [], // empty array if no children
-   mesh
+   mesh,
+   name
 }
 
    updateWorldTransform(node)

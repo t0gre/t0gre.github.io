@@ -48,7 +48,8 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
                     vertices,
                     material: {
                         color:  [1, 1, 0.2, 1]
-                    }})
+                    }},
+                "yellow tree")
 
             
             const shape1 = initSceneNode(
@@ -57,7 +58,8 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
                     vertices, 
                     material: {
                         color:  [1, 0.5, 0.2, 1]
-                    }})
+                    }},
+                "orange tree")
 
             const shape2  = initSceneNode(
                  m4fromPositionAndEuler( [5,0,0], [0, Math.PI /2, 0]),
@@ -65,7 +67,8 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
                     vertices,
                     material: {
                         color:  [0.1, 0.5, 0.2, 1]
-                    }})
+                    }},
+                "green tree")
 
             setParent(shape1, shape);
             setParent(shape2, shape1);
@@ -107,7 +110,8 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
                     vertices: floorVertices,
                     material: {
                         color:  [0.1, 0.1, 0.2, 1]
-                    }})
+                    }},
+                "floor")
 
             ///////////
 
@@ -162,9 +166,9 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
                 const worldRay = m4RayMultiply(viewRay, m4inverse(viewMatrix))
 
                 const hits = rayIntersectsScene(worldRay, scene)
-                console.log('ray', mouseRay)
-                console.log('worldRay', worldRay)
-                console.log('hits', hits)
+                // console.log('ray', mouseRay)
+                // console.log('worldRay', worldRay)
+                console.log('hits', ...hits)
             })
 
 
