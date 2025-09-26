@@ -1,8 +1,9 @@
-import { m4inverse, m4PositionMultiply, m4DirectionMultiply } from "./mat4";
+import { Camera, getProjectionMatrix } from "./camera";
+import { m4inverse, m4PositionMultiply, m4DirectionMultiply, m4multiply } from "./mat4";
 import { Vertices } from "./mesh";
 import { Mesh } from "./mesh";
 import { SceneNode, Scene } from "./scene";
-import { addVectors, cross, dot, scaleVector, subtractVectors, Vec3 } from "./vec";
+import { addVectors, cross, dot, scaleVector, subtractVectors, Vec2, Vec3 } from "./vec";
 
 export type Triangle = [Vec3, Vec3, Vec3]
 
@@ -170,3 +171,37 @@ export function rayIntersectsScene(ray: Ray, scene: Scene): Intersection[] {
 
     return intersections
 }
+
+
+export function getWorldRayFromClipSpaceAndCamera(
+    clipSpacePoint: Vec2, 
+    camera: Camera) {
+
+    const [x,y] = clipSpacePoint
+    const nearPoint: Vec3 = [x, y, -1];
+    const farPoint: Vec3  = [x, y,  1];
+
+    const viewMatrix = m4inverse(camera.transform);
+    const projectionMatrix = getProjectionMatrix(camera);
+    const viewProjInverse = m4inverse(m4multiply(projectionMatrix, viewMatrix));
+
+    const worldNear = m4PositionMultiply(nearPoint, viewProjInverse);
+    const worldFar  = m4PositionMultiply(farPoint, viewProjInverse);
+
+    const rayOrigin = worldNear
+    const rayDirection: Vec3 = [
+        worldFar[0] - worldNear[0],
+        worldFar[1] - worldNear[1],
+        worldFar[2] - worldNear[2]
+    ];
+    const len = Math.hypot(...rayDirection);
+    const rayDirNorm = rayDirection.map(v => v / len);
+
+    const worldRay: Ray = {
+        origin: rayOrigin,
+        direction: rayDirNorm as Vec3
+    };
+
+    return worldRay
+}
+
