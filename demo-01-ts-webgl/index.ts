@@ -2,12 +2,14 @@ import { drawScene, initSceneNode, setParent, updateTransform } from './lib/scen
 import { degToRad } from './lib/mathUtils'
 import { Vertices } from './lib/mesh'
 import { createDirectionalLight } from './lib/light'
-import { Camera } from './lib/camera'
+import { Camera, getProjectionMatrix } from './lib/camera'
 import { initRenderProgram } from './lib/BasicRenderProgram'
 import { loadObj } from './lib/loaders/ObjLoader'
 import { InputState } from './lib/input'
-import { m4fromPositionAndEuler, m4yRotate } from './lib/mat4'
+import { m4fromPositionAndEuler, m4inverse, m4multiply, m4PositionMultiply, m4RayMultiply, m4yRotate, Mat4 } from './lib/mat4'
 import { initGlState } from './lib/gl'
+import { Ray, rayIntersectsScene } from './lib/raycast'
+import { Vec3 } from './lib/vec'
 
 // const ROTATION_SPEED = 1.2;
 
@@ -127,21 +129,60 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
                 pointerPosition: [0,0]
             }
 
+            canvas.addEventListener('pointerdown', (e) => {
+                const rect = canvas.getBoundingClientRect();
+            
+                let x = e.clientX - rect.left;
+                let y = e.clientY - rect.top;
+
+                // these are both 0-1
+                x = x * canvas.width / canvas.clientWidth
+                y = y * canvas.height / canvas.clientHeight
+
+                // convert to webgl clip space
+                x = x / gl!.canvas.width * 2 -1;
+                y = y  / gl!.canvas.height * -2 + 1;
+
+
+                // raycast (in clip space)
+                const mouseRay: Ray = {
+                    origin: [x, y, 0],
+                    direction: [0,0,-1]
+                }
+
+                // transform ray into world space
+                const viewMatrix = m4inverse(camera.transform)
+                const projectionMatrix = getProjectionMatrix(camera)
+               
+                
+                const viewRay: Ray = {
+                    origin: m4PositionMultiply(mouseRay.origin, m4inverse(projectionMatrix)),
+                    direction: mouseRay.direction
+                } 
+                const worldRay = m4RayMultiply(viewRay, m4inverse(viewMatrix))
+
+                const hits = rayIntersectsScene(worldRay, scene)
+                console.log('ray', mouseRay)
+                console.log('worldRay', worldRay)
+                console.log('hits', hits)
+            })
+
+
             canvas.addEventListener('pointerdown', () => {
                 const handler = (e: PointerEvent) => {
                     const rect = canvas.getBoundingClientRect();
             
                     let x = e.clientX - rect.left;
                     let y = e.clientY - rect.top;
-    
+
                     // these are both 0-1
                     x = x * canvas.width / canvas.clientWidth
                     y = y * canvas.height / canvas.clientHeight
-    
+
                     // convert to webgl clip space
                     x = x / gl!.canvas.width * 2 -1;
                     y = y  / gl!.canvas.height * -2 + 1;
-    
+
                     // rotate the shapes transform
                     // shape.pose.rotation[1] += e.movementX / 100;
                     updateTransform(shape, m4yRotate(shape._localTransform, e.movementX / 100));

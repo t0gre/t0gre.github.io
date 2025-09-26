@@ -1,4 +1,4 @@
-import { Mat4 } from "./mat4"
+import { m4perspective, Mat4 } from "./mat4"
 import { Vec3 } from "./vec"
 
 
@@ -9,4 +9,8 @@ export type Camera = {
     far: number
     up: Vec3
     transform: Mat4
+}
+
+export function getProjectionMatrix(camera: Camera) {
+    return m4perspective(camera.fieldOfViewRadians, camera.aspect, camera.near, camera.far)
 }

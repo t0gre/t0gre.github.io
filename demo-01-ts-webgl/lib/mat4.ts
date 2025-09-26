@@ -1,3 +1,4 @@
+import { Ray } from './raycast';
 import { Vec3, Vec4, normalize, subtractVectors, cross } from './vec'
 
 
@@ -328,6 +329,14 @@ export function m4DirectionMultiply(v: Vec3, m: Mat4): Vec3 {
         }
         return [dst[0],dst[1],dst[2]];
     }
+
+export function m4RayMultiply(ray: Ray, m: Mat4) {
+    return {
+        origin: m4PositionMultiply(ray.origin, m),
+        direction: m4DirectionMultiply(ray.direction, m)
+        
+    }
+}
 
 export function m4fromPositionAndEuler(position: Vec3, euler: Vec3): Mat4 {
     let mat4 = m4translate(m4yRotation(0), position[0], position[1], position[2]) ;

@@ -7,8 +7,13 @@ import { addVectors, cross, dot, scaleVector, subtractVectors, Vec3 } from "./ve
 export type Triangle = [Vec3, Vec3, Vec3]
 
 export type Ray = {
-    origin: Vec3,
+    origin: Vec3
     direction: Vec3 
+}
+
+export type Intersection = {
+    meshId?: number;
+    point: Vec3
 }
 
 // https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
@@ -79,14 +84,20 @@ export function rayIntersectsVertices(ray: Ray, vertices: Vertices): Vec3[] {
     return intersections
 }
 
-export function rayIntersectsMesh(ray: Ray, mesh: Mesh): Vec3[] {
-    return rayIntersectsVertices(ray, mesh.vertices) 
+export function rayIntersectsMesh(ray: Ray, mesh: Mesh): Intersection[] {
+
+    return rayIntersectsVertices(ray, mesh.vertices).map(point => {
+        return {
+            point,
+            meshId: mesh._id 
+        }
+    })
 }
 
-
-export function rayIntersectsSceneNode(ray: Ray, node: SceneNode): Vec3[] {
+// ray is assumed to be in world space
+export function rayIntersectsSceneNode(ray: Ray, node: SceneNode): Intersection[] {
     
-    const intersections: Vec3[] =[]
+    const intersections: Intersection[] =[]
     const nodeStack: SceneNode[] = []
     
     nodeStack.push(node)
@@ -112,21 +123,25 @@ export function rayIntersectsSceneNode(ray: Ray, node: SceneNode): Vec3[] {
                 direction: meshSpaceDirection
             } 
 
-            console.log('newray', newRay)
+            // console.log('newray', newRay)
             
             const rayNodeIntersections = rayIntersectsMesh(
                 newRay, 
                 nodeUnderTest.mesh)
-                 
+
             if (rayNodeIntersections) {
                 for (const intersection of rayNodeIntersections) {
+                    // transform the interection back into world space
                     const worldSpaceIntersection = m4PositionMultiply(
-                        intersection, 
+                        intersection.point, 
                         node._worldTransform)
 
-                    console.log('ms', intersection)
-                    console.log('ws', worldSpaceIntersection)
-                    intersections.push(worldSpaceIntersection)
+                    // console.log('ms', intersection)
+                    // console.log('ws', worldSpaceIntersection)
+                    intersections.push({ 
+                        point: worldSpaceIntersection, 
+                        meshId: intersection.meshId
+                    })
                 }
                 
             }
@@ -140,16 +155,15 @@ export function rayIntersectsSceneNode(ray: Ray, node: SceneNode): Vec3[] {
     return intersections
 }
 
-export function rayIntersectsScene(ray: Ray, scene: Scene): Vec3[] {
+export function rayIntersectsScene(ray: Ray, scene: Scene): Intersection[] {
     
-    const intersections: Vec3[] =[]
+    const intersections: Intersection[] =[]
     
     for (const node of scene) {
         const rayNodeIntersections = rayIntersectsSceneNode(ray, node)
         if (rayNodeIntersections) {
                 intersections.push(...rayNodeIntersections)
             }
-        
     }
 
     return intersections

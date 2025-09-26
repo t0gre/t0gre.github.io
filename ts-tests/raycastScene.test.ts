@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { Ray, rayIntersectsSceneNode } from "demo-01-ts-webgl/lib/raycast";
+import { Intersection, Ray, rayIntersectsSceneNode } from "demo-01-ts-webgl/lib/raycast";
 import { Vertices } from 'demo-01-ts-webgl/lib/mesh';
 import { initSceneNode, setParent } from 'demo-01-ts-webgl/lib/scene';
 import { m4fromPositionAndEuler } from 'demo-01-ts-webgl/lib/mat4';
@@ -47,7 +47,7 @@ test('it correctly finds an intersection with position transform', () => {
 
     const result = rayIntersectsSceneNode(ray, node)
 
-    const expected = [[-11, 0.0, 0]]
+    const expected: Intersection[] = [{ point: [-11, 0.0, 0]}]
     expect(result, "intersection is correct").toEqual(expected)
 
 })
@@ -72,7 +72,7 @@ test('it correctly finds an intersection with multiple position transforms', () 
 
     const result = rayIntersectsSceneNode(ray, parentNode)
 
-    const expected = [[-11, 0.0, 0]]
+    const expected: Intersection[] = [{ point: [-11, 0.0, 0]}]
     expect(result, "intersection is correct").toEqual(expected)
 
 })
@@ -94,11 +94,11 @@ test('it correctly finds an intersection with rotation transform', () => {
 
     const result = rayIntersectsSceneNode(ray, node)
 
-    const expected = [[-1, -1, 0]]
+    const expected: Intersection[] = [{ point: [-1, -1, 0]}]
 
     for (let i = 0; i < expected.length; i++) {
-        const elementofResult = result[0]![i]!
-        const elementOfExpected = expected[0]![i]!
+        const elementofResult = result[0]!.point[i]!
+        const elementOfExpected = expected[0]!.point[i]!
         expect(elementofResult, "intersection element is correct")
         .toBeCloseTo(elementOfExpected, 6)
     }
