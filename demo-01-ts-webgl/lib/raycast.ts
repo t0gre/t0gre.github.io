@@ -109,7 +109,7 @@ export function rayIntersectsSceneNode(ray: Ray, node: SceneNode): Intersection[
         // console.log(nodeUnderTest)
         if (nodeUnderTest.mesh) {
             // transform the ray into mesh space
-            const inverseTransform = m4inverse(node._worldTransform)
+            const inverseTransform = m4inverse(nodeUnderTest._worldTransform)
             const meshSpaceOrigin = m4PositionMultiply(
                 ray.origin, 
                 inverseTransform)
@@ -135,7 +135,7 @@ export function rayIntersectsSceneNode(ray: Ray, node: SceneNode): Intersection[
                     // transform the interection back into world space
                     const worldSpaceIntersection = m4PositionMultiply(
                         intersection.point, 
-                        node._worldTransform)
+                        nodeUnderTest._worldTransform)
 
                     // console.log('ms', intersection)
                     // console.log('ws', worldSpaceIntersection)

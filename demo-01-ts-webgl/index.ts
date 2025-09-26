@@ -148,26 +148,38 @@ export async function main(canvas: HTMLCanvasElement): Promise<1> {
                 y = y  / gl!.canvas.height * -2 + 1;
 
 
-                // raycast (in clip space)
-                const mouseRay: Ray = {
-                    origin: [x, y, 0],
-                    direction: [0,0,-1]
-                }
-
-                // transform ray into world space
-                const viewMatrix = m4inverse(camera.transform)
-                const projectionMatrix = getProjectionMatrix(camera)
-               
                 
-                const viewRay: Ray = {
-                    origin: m4PositionMultiply(mouseRay.origin, m4inverse(projectionMatrix)),
-                    direction: mouseRay.direction
-                } 
-                const worldRay = m4RayMultiply(viewRay, m4inverse(viewMatrix))
+
+                // calculate ray in world space
+                const nearPoint: Vec3 = [x, y, -1];
+                const farPoint: Vec3  = [x, y,  1];
+
+                const viewMatrix = m4inverse(camera.transform);
+                const projectionMatrix = getProjectionMatrix(camera);
+                const viewProjInverse = m4inverse(m4multiply(projectionMatrix, viewMatrix));
+
+                const worldNear = m4PositionMultiply(nearPoint, viewProjInverse);
+                const worldFar  = m4PositionMultiply(farPoint, viewProjInverse);
+
+       
+
+                const rayOrigin = worldNear
+                const rayDirection: Vec3 = [
+                    worldFar[0] - worldNear[0],
+                    worldFar[1] - worldNear[1],
+                    worldFar[2] - worldNear[2]
+                ];
+                const len = Math.hypot(...rayDirection);
+                const rayDirNorm = rayDirection.map(v => v / len);
+
+                const worldRay: Ray = {
+                    origin: rayOrigin,
+                    direction: rayDirNorm as Vec3
+                };
 
                 const hits = rayIntersectsScene(worldRay, scene)
                 // console.log('ray', mouseRay)
-                // console.log('worldRay', worldRay)
+                console.log('worldRay', worldRay)
                 console.log('hits', ...hits)
             })
 

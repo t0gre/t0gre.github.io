@@ -316,7 +316,7 @@ export function m4PositionMultiply(v: Vec3, m: Mat4): Vec3 {
                 dst[i]! += v1[j]! * m[j * 4 + i]!; // ts is not smart enough to see that we set dst[i] to a number already
             }
         }
-        return [dst[0],dst[1],dst[2]];
+        return [dst[0]/dst[3],dst[1]/dst[3],dst[2]/dst[3]];
     }
 
 export function m4DirectionMultiply(v: Vec3, m: Mat4): Vec3 {
