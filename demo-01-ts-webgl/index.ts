@@ -150,24 +150,12 @@ canvas.addEventListener('pointerdown', (e) => {
 
 canvas.addEventListener('pointerdown', () => {
     const handler = (e: PointerEvent) => {
-        const rect = canvas.getBoundingClientRect();
-
-        let x = e.clientX - rect.left;
-        let y = e.clientY - rect.top;
-
-        // these are both 0-1
-        x = x * canvas.width / canvas.clientWidth
-        y = y * canvas.height / canvas.clientHeight
-
-        // convert to webgl clip space
-        x = x / gl!.canvas.width * 2 -1;
-        y = y  / gl!.canvas.height * -2 + 1;
-
+       
         // rotate the shapes transform
         // shape.pose.rotation[1] += e.movementX / 100;
         updateTransform(shape, m4yRotate(shape._localTransform, e.movementX / 100));
 
-        input.pointerPosition = [x,y];
+        input.pointerPosition = getPointerClickInClipSpace(canvas, e, gl);
     }
     canvas.addEventListener('pointerup', () => {
         canvas.removeEventListener('pointermove', handler)
