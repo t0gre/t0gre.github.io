@@ -75,6 +75,7 @@ export function updateUniforms(
     camera: Camera, 
     shapeWorld: Mat4,
     mesh: Mesh, 
+    // @ts-ignore not using input but might be useful in the future
     input?: InputState,
 ) {
 

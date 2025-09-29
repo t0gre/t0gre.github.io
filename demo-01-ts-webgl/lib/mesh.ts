@@ -53,7 +53,8 @@ export function drawMesh(
                 pointLight, 
                 camera, 
                 worldMatrix, 
-                mesh);
+                mesh,
+                input);
 
             if (mesh.vertices.indices) {
                 gl.drawElements(glState.gl.TRIANGLES, mesh.vertices.indices.length, gl.UNSIGNED_SHORT,  0);
