@@ -1,7 +1,7 @@
 import { drawScene, initSceneNode, setParent, updateTransform } from './lib/scene'
 import { degToRad } from './lib/mathUtils'
 import { Vertices } from './lib/mesh'
-import { createDirectionalLight } from './lib/light'
+import { DirectionalLight, AmbientLight, PointLight } from './lib/light'
 import { Camera } from './lib/camera'
 import { initRenderProgram } from './lib/BasicRenderProgram'
 import { loadObj } from './lib/loaders/ObjLoader'
@@ -10,16 +10,16 @@ import { m4fromPositionAndEuler, m4yRotate } from './lib/mat4'
 import { initGlState } from './lib/gl'
 import { getWorldRayFromClipSpaceAndCamera, rayIntersectsScene, sortBySceneDepth } from './lib/raycast'
 import { getPointerClickInClipSpace } from './lib/events'
-import { Vec4 } from './lib/vec'
+import { Vec3 } from './lib/vec'
 
 
 type NodeName = "yellow tree" | "orange tree" | "green tree" | "floor";
 
-const meshColorMap: Record<NodeName, Vec4> = {
-  "yellow tree": [1, 1, 0.2, 1],
-  "orange tree": [1, 0.5, 0.2, 1],
-  "green tree": [0.1, 0.5, 0.2, 1],
-  "floor": [0.1, 0.1, 0.2, 1]
+const meshColorMap: Record<NodeName, Vec3> = {
+  "yellow tree": [1, 1, 0.2 ],
+  "orange tree": [1, 0.5, 0.2],
+  "green tree": [0.1, 0.5, 0.2],
+  "floor": [0.1, 0.1, 0.2]
 };
 // const ROTATION_SPEED = 1.2;
 
@@ -60,7 +60,9 @@ const yellowTree = initSceneNode(m4fromPositionAndEuler( [0,0,0], [0, Math.PI /2
         {
         vertices,
         material: {
-            color:  meshColorMap["yellow tree"]
+            color:  meshColorMap["yellow tree"],
+            specularColor: [0.5, 0.5, 0.5],
+            shininess: 0.5
         }},
     "yellow tree")
 
@@ -70,7 +72,9 @@ const orangeTree = initSceneNode(
     { 
         vertices, 
         material: {
-            color:  meshColorMap["orange tree"]
+            color:  meshColorMap["orange tree"],
+            specularColor: [0.5, 0.5, 0.5],
+            shininess: 0.5
         }},
     "orange tree")
 
@@ -79,7 +83,9 @@ const greenTree  = initSceneNode(
         {
         vertices,
         material: {
-            color:  meshColorMap["green tree"]
+            color:  meshColorMap["green tree"],
+            specularColor: [0.5, 0.5, 0.5],
+            shininess: 0.5
         }},
     "green tree")
 
@@ -121,7 +127,9 @@ const floorNode = initSceneNode(m4fromPositionAndEuler( [0,0.1,0], [0, 0, 0]),
         {
         vertices: floorVertices,
         material: {
-            color:  meshColorMap["floor"]
+            color:  meshColorMap["floor"],
+            specularColor: [0.5, 0.5, 0.5],
+            shininess: 0.1
         }},
     "floor")
 
@@ -129,7 +137,25 @@ const floorNode = initSceneNode(m4fromPositionAndEuler( [0,0.1,0], [0, 0, 0]),
 const scene = [yellowTree, floorNode]
 
 
-const light = createDirectionalLight([0, 0.5, 0.5], [0.5, 0.5, 0.5])
+// create lights
+const ambientLight: AmbientLight = {
+        color: [0.1, 0.1, 0.1]
+    };
+
+const directionalLight: DirectionalLight = {
+        rotation : [ 0.0,  -0.8 , -0.5],
+        color : [0.5,  0.5,  0.5],
+    };
+
+const pointLight: PointLight = {
+        position: [ 0, 5.0, 5],
+        color: [ 0.2, 0.2, 0.2],
+        constant: 1.0,
+        linear: 0.009,
+        quadratic: 0.032
+    };
+
+
 const camera: Camera = {
     fieldOfViewRadians:  degToRad(60), 
     aspect: canvas.clientWidth / canvas.clientHeight,
@@ -192,7 +218,14 @@ function animate(time: DOMHighResTimeStamp) {
     // updateShape(shape!, dt)
     resizeCanvasToDisplaySize(canvas);
     camera.aspect = canvas.clientWidth / canvas.clientHeight;
-    const drawError = drawScene(glState!, scene, light, camera, input, basicRenderProgram!);
+    const drawError = drawScene(
+        glState, 
+        scene, 
+        ambientLight,
+        directionalLight,
+        pointLight, 
+        camera, 
+        basicRenderProgram!);
     if (drawError) {
         console.log('draw error')
     }
