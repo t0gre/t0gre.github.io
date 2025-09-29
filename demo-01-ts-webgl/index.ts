@@ -146,7 +146,7 @@ const input: InputState = {
 
 canvas.addEventListener('pointerdown', (e) => {
     
-    const clickPoint = getPointerClickInClipSpace(canvas, e, gl)
+    const clickPoint = getPointerClickInClipSpace(canvas, e, gl!)
 
     // calculate ray in world space
     const worldRay = getWorldRayFromClipSpaceAndCamera(clickPoint, camera)
@@ -174,7 +174,7 @@ canvas.addEventListener('pointerdown', () => {
         // shape.pose.rotation[1] += e.movementX / 100;
         updateTransform(yellowTree, m4yRotate(yellowTree._localTransform, e.movementX / 100));
 
-        input.pointerPosition = getPointerClickInClipSpace(canvas, e, gl);
+        input.pointerPosition = getPointerClickInClipSpace(canvas, e, gl!);
     }
     canvas.addEventListener('pointerup', () => {
         canvas.removeEventListener('pointermove', handler)
