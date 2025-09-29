@@ -10,7 +10,17 @@ import { m4fromPositionAndEuler, m4yRotate } from './lib/mat4'
 import { initGlState } from './lib/gl'
 import { getWorldRayFromClipSpaceAndCamera, rayIntersectsScene, sortBySceneDepth } from './lib/raycast'
 import { getPointerClickInClipSpace } from './lib/events'
+import { Vec4 } from './lib/vec'
 
+
+type NodeName = "yellow tree" | "orange tree" | "green tree" | "floor";
+
+const meshColorMap: Record<NodeName, Vec4> = {
+  "yellow tree": [1, 1, 0.2, 1],
+  "orange tree": [1, 0.5, 0.2, 1],
+  "green tree": [0.1, 0.5, 0.2, 1],
+  "floor": [0.1, 0.1, 0.2, 1]
+};
 // const ROTATION_SPEED = 1.2;
 
 export async function main(canvas: HTMLCanvasElement): Promise<1> {
@@ -46,37 +56,37 @@ if (!basicRenderProgram) {
 
 const vertices = await loadObj('/rainbowtree.obj');
 
-const shape = initSceneNode(m4fromPositionAndEuler( [0,0,0], [0, Math.PI /2, 0]),
+const yellowTree = initSceneNode(m4fromPositionAndEuler( [0,0,0], [0, Math.PI /2, 0]),
         {
         vertices,
         material: {
-            color:  [1, 1, 0.2, 1]
+            color:  meshColorMap["yellow tree"]
         }},
     "yellow tree")
 
 
-const shape1 = initSceneNode(
+const orangeTree = initSceneNode(
     m4fromPositionAndEuler( [5,0,0], [0, Math.PI /2, 0]),
     { 
         vertices, 
         material: {
-            color:  [1, 0.5, 0.2, 1]
+            color:  meshColorMap["orange tree"]
         }},
     "orange tree")
 
-const shape2  = initSceneNode(
+const greenTree  = initSceneNode(
         m4fromPositionAndEuler( [5,0,0], [0, Math.PI /2, 0]),
         {
         vertices,
         material: {
-            color:  [0.1, 0.5, 0.2, 1]
+            color:  meshColorMap["green tree"]
         }},
     "green tree")
 
-setParent(shape1, shape);
-setParent(shape2, shape1);
+setParent(orangeTree, yellowTree);
+setParent(greenTree, orangeTree);
 
-if (!shape) {
+if (!yellowTree) {
     console.log('failed to create shape')
     return 1
 }
@@ -111,12 +121,12 @@ const floorNode = initSceneNode(m4fromPositionAndEuler( [0,0.1,0], [0, 0, 0]),
         {
         vertices: floorVertices,
         material: {
-            color:  [0.1, 0.1, 0.2, 1]
+            color:  meshColorMap["floor"]
         }},
     "floor")
 
 
-const scene = [shape, floorNode]
+const scene = [yellowTree, floorNode]
 
 
 const light = createDirectionalLight([0, 0.5, 0.5], [0.5, 0.5, 0.5])
@@ -146,7 +156,12 @@ canvas.addEventListener('pointerdown', (e) => {
     if (hits.length > 0) {
          // sort hits by scene depth
     const sortedHits = sortBySceneDepth(hits, camera)
-    console.log('you clicked', sortedHits[0]?.nodeName)
+
+    const clicked = sortedHits[0]?.nodeName 
+
+    if (clicked) {
+        floorNode.mesh!.material.color = meshColorMap[clicked as NodeName]
+    }
     }
    
 })
@@ -157,7 +172,7 @@ canvas.addEventListener('pointerdown', () => {
        
         // rotate the shapes transform
         // shape.pose.rotation[1] += e.movementX / 100;
-        updateTransform(shape, m4yRotate(shape._localTransform, e.movementX / 100));
+        updateTransform(yellowTree, m4yRotate(yellowTree._localTransform, e.movementX / 100));
 
         input.pointerPosition = getPointerClickInClipSpace(canvas, e, gl);
     }
