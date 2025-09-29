@@ -94,5 +94,7 @@
                       + directional_components.specular
                       + point_components.diffuse
                       + point_components.specular, 
-                      1.0);               
+                      1.0);  
+             
+        outColor.rgb = min(outColor.rgb, vec3(1.0));
     }

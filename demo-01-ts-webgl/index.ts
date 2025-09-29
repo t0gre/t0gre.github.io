@@ -16,12 +16,12 @@ import { Vec3, Vec4 } from './lib/vec'
 type NodeName = "yellow tree" | "orange tree" | "green tree" | "floor";
 
 const meshColorMap: Record<NodeName, Vec3> = {
-  "yellow tree": [1, 1, 0.2 ],
-  "orange tree": [1, 0.5, 0.2],
-  "green tree": [0.1, 0.5, 0.2],
+  "yellow tree": [0.5, 0.5, 0.01 ],
+  "orange tree": [0.5, 0.25, 0.001],
+  "green tree": [0.01, 0.5, 0.1],
   "floor": [0.1, 0.1, 0.2]
 };
-// const ROTATION_SPEED = 1.2;
+
 
 export async function main(canvas: HTMLCanvasElement): Promise<1> {
 
@@ -47,6 +47,7 @@ gl.enable(gl.CULL_FACE);
 // Enable the depth buffer
 gl.enable(gl.DEPTH_TEST);
 
+
 const basicRenderProgram = initRenderProgram(gl)
 
 if (!basicRenderProgram) {
@@ -61,8 +62,8 @@ const yellowTree = initSceneNode(m4fromPositionAndEuler( [0,0,0], [0, Math.PI /2
         vertices,
         material: {
             color:  meshColorMap["yellow tree"],
-            specularColor: [0.5, 0.5, 0.5],
-            shininess: 0.5
+            specularColor: [0.1,0.1,0.1],
+            shininess: 0.4
         }},
     "yellow tree")
 
@@ -73,8 +74,8 @@ const orangeTree = initSceneNode(
         vertices, 
         material: {
             color:  meshColorMap["orange tree"],
-            specularColor: [0.5, 0.5, 0.5],
-            shininess: 0.5
+            specularColor: [0.1,0.1,0.1],
+            shininess: 0.9
         }},
     "orange tree")
 
@@ -84,7 +85,7 @@ const greenTree  = initSceneNode(
         vertices,
         material: {
             color:  meshColorMap["green tree"],
-            specularColor: [0.5, 0.5, 0.5],
+            specularColor: [0.1,0.1,0.1],
             shininess: 0.5
         }},
     "green tree")
@@ -128,8 +129,8 @@ const floorNode = initSceneNode(m4fromPositionAndEuler( [0,0.1,0], [0, 0, 0]),
         vertices: floorVertices,
         material: {
             color:  meshColorMap["floor"],
-            specularColor: [0.5, 0.5, 0.5],
-            shininess: 0.1
+            specularColor: [0.1,0.1,0.1],
+            shininess: 0.5
         }},
     "floor")
 
@@ -139,20 +140,20 @@ const scene = [yellowTree, floorNode]
 
 // create lights
 const ambientLight: AmbientLight = {
-        color: [0.1, 0.1, 0.1]
+        color: [0.2, 0.2, 0.2]
     };
 
 const directionalLight: DirectionalLight = {
         rotation : [ 0.0,  -0.8 , -0.5],
-        color : [0.5,  0.5,  0.5],
+        color : [0.7,  0.7,  0.7],
     };
 
 const pointLight: PointLight = {
         position: [ 0, 5.0, 5],
-        color: [ 0.2, 0.2, 0.2],
+        color: [ 0.8, 0.8, 0.8],
         constant: 1.0,
-        linear: 0.009,
-        quadratic: 0.032
+        linear: 0.0009,
+        quadratic: 0.0032
     };
 
 

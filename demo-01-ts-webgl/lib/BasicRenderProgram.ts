@@ -2,7 +2,6 @@ import { createProgramFromRaw } from "./shaderUtils"
 import { AmbientLight, DirectionalLight, PointLight } from "./light";
 import {  m4inverse, m4perspective, Mat4 } from "./mat4";
 import { Camera } from "./camera";
-import { Vec4 } from "./vec";
 import { InputState } from "./input";
 
 
