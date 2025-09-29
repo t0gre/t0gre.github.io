@@ -50,9 +50,9 @@ export function initRenderProgram(gl: WebGL2RenderingContext)  {
         return undefined
     }
 
-    const worldLocation = gl.getUniformLocation(program, "u_world");
+    const worldLocation = gl.getUniformLocation(program, "u_model");
     if (!worldLocation) {
-        console.log('failed to create uniform "u_world", are you sure the shader uses it?')
+        console.log('failed to create uniform "u_model", are you sure the shader uses it?')
         return undefined
     }
 
