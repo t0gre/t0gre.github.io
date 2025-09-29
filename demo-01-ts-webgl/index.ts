@@ -6,11 +6,11 @@ import { Camera } from './lib/camera'
 import { initRenderProgram } from './lib/BasicRenderProgram'
 import { loadObj } from './lib/loaders/ObjLoader'
 import { InputState } from './lib/input'
-import { m4fromPositionAndEuler, m4yRotate } from './lib/mat4'
+import { m4fromPositionAndEuler, m4vectorMultiply, m4yRotate, m4yRotation } from './lib/mat4'
 import { initGlState } from './lib/gl'
 import { getWorldRayFromClipSpaceAndCamera, rayIntersectsScene, sortBySceneDepth } from './lib/raycast'
 import { getPointerClickInClipSpace } from './lib/events'
-import { Vec3 } from './lib/vec'
+import { Vec3, Vec4 } from './lib/vec'
 
 
 type NodeName = "yellow tree" | "orange tree" | "green tree" | "floor";
@@ -210,12 +210,13 @@ canvas.addEventListener('pointerdown', () => {
 })
 
 ///////////////////////////
-// let lastTime = 0;
+
+let lastTime = 0;
 function animate(time: DOMHighResTimeStamp) {
     time *= 0.001 // convert from millis to seconds
-    // const dt = time - lastTime;
-    // lastTime = time;
-    // updateShape(shape!, dt)
+    const dt = time - lastTime;
+    lastTime = time;
+    updateLight(pointLight, dt)
     resizeCanvasToDisplaySize(canvas);
     camera.aspect = canvas.clientWidth / canvas.clientHeight;
     const drawError = drawScene(
@@ -256,3 +257,15 @@ function resizeCanvasToDisplaySize(canvas: HTMLCanvasElement): void {
 
 }
 
+function updateLight(pointLight: PointLight, dt: number) {
+      const rotator = m4yRotation(Math.PI / (dt * 10000));
+      const oldTransform: Vec4 = [
+        pointLight.position[0],
+        pointLight.position[1],
+        pointLight.position[2],
+         0.0
+      ];
+   
+    const newTransform = m4vectorMultiply(oldTransform, rotator);
+    pointLight.position = [newTransform[0],newTransform[1],newTransform[2]]
+}
