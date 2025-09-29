@@ -24,3 +24,8 @@ build-en:
 clean:
 	rm a.out.data a.out.js a.out.wasm
 	rm a.out.wasm.map
+
+test:
+	clang -o test-run -ggdb -std=c11 tests/tests.c lib/vec.c -Ilib/include \
+	-lm \
+	&& ./test-run
