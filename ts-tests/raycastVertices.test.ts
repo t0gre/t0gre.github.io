@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { Ray, rayIntersectsVertices } from "demo-01-ts-webgl/lib/raycast";
+import { Intersection, Ray, rayIntersectsVertices } from "demo-01-ts-webgl/lib/raycast";
 import { Vertices } from 'demo-01-ts-webgl/lib/mesh';
 import { Vec3 } from 'demo-01-ts-webgl/lib/vec';
 
@@ -40,7 +40,7 @@ test('it correctly finds an intersection in the first triangle', () => {
 
     const result = rayIntersectsVertices(ray, meshVertices)
 
-    const expected = [[-1, 0.0, 0]]
+    const expected: Intersection[] = [{ point: [-1, 0.0, 0], triangleIdx: 0 }]
     expect(result, "intersection is correct").toEqual(expected)
 
 })
@@ -54,7 +54,7 @@ test('it correctly finds an intersection in the last triangle', () => {
 
     const result = rayIntersectsVertices(ray, meshVertices)
 
-    const expected = [1, 0.0, 0]
+    const expected: Intersection = { point: [1, 0.0, 0], triangleIdx: 1 }
     expect(result.length, "only one hit").toEqual(1)
     expect(result[0], "intersection is correct").toEqual(expected)
 

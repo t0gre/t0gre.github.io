@@ -80,7 +80,7 @@ export function rayIntersectsVertices(ray: Ray, vertices: Vertices): Intersectio
 
         if (intersectionPoint) {
             // console.log("adding intersection", intersection)
-            intersections.push({ point: intersectionPoint, triangleIdx: i / 3})
+            intersections.push({ point: intersectionPoint, triangleIdx: i / 9})
         }
     }
 

@@ -47,7 +47,7 @@ test('it correctly finds an intersection with position transform', () => {
 
     const result = rayIntersectsSceneNode(ray, node)
 
-    const expected: Intersection[] = [{ point: [-11, 0.0, 0]}]
+    const expected: Intersection[] = [{ point: [-11, 0.0, 0], triangleIdx: 0}]
     expect(result, "intersection is correct").toEqual(expected)
 
 })
@@ -72,7 +72,7 @@ test('it correctly finds an intersection with multiple position transforms', () 
 
     const result = rayIntersectsSceneNode(ray, parentNode)
 
-    const expected: Intersection[] = [{ point: [-11, 0.0, 0]}]
+    const expected: Intersection[] = [{ point: [-11, 0.0, 0], triangleIdx: 0}]
     expect(result, "intersection is correct").toEqual(expected)
 
 })
@@ -94,7 +94,7 @@ test('it correctly finds an intersection with rotation transform', () => {
 
     const result = rayIntersectsSceneNode(ray, node)
 
-    const expected: Intersection[] = [{ point: [-1, -1, 0]}]
+    const expected: Intersection[] = [{ point: [-1, -1, 0], triangleIdx: 0}]
 
     for (let i = 0; i < expected.length; i++) {
         const elementofResult = result[0]!.point[i]!
