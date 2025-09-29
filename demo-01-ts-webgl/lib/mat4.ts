@@ -1,3 +1,4 @@
+import { Ray } from './raycast';
 import { Vec3, Vec4, normalize, subtractVectors, cross } from './vec'
 
 
@@ -49,6 +50,7 @@ export function m4projection(width: number, height: number, depth: number): Mat4
     }
 
 export function m4multiply(a: Mat4, b: Mat4): Mat4 {
+
         const a00 = a[0 * 4 + 0]!;
         const a01 = a[0 * 4 + 1]!;
         const a02 = a[0 * 4 + 2]!;
@@ -296,16 +298,45 @@ export function m4inverse(m: Mat4): Mat4 {
         ];
     }
 
-export function m4vectorMultiply(v: Vec4, m: Mat4) {
-        const dst = [];
+export function m4vectorMultiply(v: Vec4, m: Mat4): Vec4 {
+        const dst: Vec4 = [0,0,0,0];
         for (let i = 0; i < 4; ++i) {
-            dst[i] = 0.0;
             for (let j = 0; j < 4; ++j) {
                 dst[i]! += v[j]! * m[j * 4 + i]!; // ts is not smart enough to see that we set dst[i] to a number already
             }
         }
         return dst;
     }
+
+export function m4PositionMultiply(v: Vec3, m: Mat4): Vec3 {
+        const v1: Vec4 = [...v, 1]
+        const dst: Vec4 = [0,0,0,0];
+        for (let i = 0; i < 4; ++i) {
+            for (let j = 0; j < 4; ++j) {
+                dst[i]! += v1[j]! * m[j * 4 + i]!; // ts is not smart enough to see that we set dst[i] to a number already
+            }
+        }
+        return [dst[0]/dst[3],dst[1]/dst[3],dst[2]/dst[3]];
+    }
+
+export function m4DirectionMultiply(v: Vec3, m: Mat4): Vec3 {
+        const v1: Vec4 = [...v, 0]
+        const dst: Vec4 = [0,0,0,0];
+        for (let i = 0; i < 4; ++i) {
+            for (let j = 0; j < 4; ++j) {
+                dst[i]! += v1[j]! * m[j * 4 + i]!; // ts is not smart enough to see that we set dst[i] to a number already
+            }
+        }
+        return [dst[0],dst[1],dst[2]];
+    }
+
+export function m4RayMultiply(ray: Ray, m: Mat4) {
+    return {
+        origin: m4PositionMultiply(ray.origin, m),
+        direction: m4DirectionMultiply(ray.direction, m)
+        
+    }
+}
 
 export function m4fromPositionAndEuler(position: Vec3, euler: Vec3): Mat4 {
     let mat4 = m4translate(m4yRotation(0), position[0], position[1], position[2]) ;

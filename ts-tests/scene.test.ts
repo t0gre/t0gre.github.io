@@ -1,26 +1,16 @@
 import { expect, test } from 'vitest'
-import { setParent, SceneNode } from "demo-01-ts-webgl/lib/scene";
+import { setParent, initSceneNode } from "demo-01-ts-webgl/lib/scene";
 import { m4fromPositionAndEuler } from 'demo-01-ts-webgl/lib/mat4';
 
 test('setParent updates parent and children correctly', () => {
 
-const childNode: SceneNode = {
-    localTransform: m4fromPositionAndEuler([1, 1, 1], [0, 0, 0]),
-    children: []
-}
+const childNode = initSceneNode(m4fromPositionAndEuler([1, 1, 1], [0, 0, 0]))
+   
+const parentNode1 = initSceneNode(m4fromPositionAndEuler([0, 0, 0], [0, 0, 0]))
 
-const parentNode1: SceneNode = {
-    localTransform: m4fromPositionAndEuler([0, 0, 0], [0, 0, 0]),
-    children: []
-}
-
-const parentNode2: SceneNode = {
-    localTransform: m4fromPositionAndEuler([0, 0, 0], [0, 0, 0]),
-    children: []
-}
+const parentNode2 = initSceneNode(m4fromPositionAndEuler([0, 0, 0], [0, 0, 0]))
 
 setParent(childNode, parentNode1);
-
 
 expect(childNode.parent === parentNode1, "child's parent is correct").toBe(true), 
 expect(parentNode1.children.includes(childNode), "parent's children to be correct").toBe(true) 
