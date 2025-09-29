@@ -1,6 +1,6 @@
 import { Camera } from "./camera";
 import { InputState } from "./input";
-import { DirectionalLight } from "./light";
+import { AmbientLight, DirectionalLight, PointLight } from "./light";
 import { m4fromPositionAndEuler, m4multiply, Mat4 } from "./mat4";
 import { drawMesh, Mesh } from "./mesh";
 import { RenderProgram } from "./BasicRenderProgram";
@@ -62,14 +62,24 @@ export function drawSceneNode(
    node: SceneNode, 
    glState: GlState, 
    renderProgram: RenderProgram,
-   light: DirectionalLight,
+   ambientLight: AmbientLight, 
+   directionalLight: DirectionalLight,
+   pointLight: PointLight, 
    camera: Camera,
-   input: InputState,
+   input?: InputState,
 ) {
       
       
       if (node.mesh) {
-         drawMesh(node.mesh, glState, renderProgram, light, camera, input, node._worldTransform);
+         drawMesh(
+            node.mesh, 
+            glState, 
+            renderProgram, 
+            ambientLight,
+            directionalLight,
+            pointLight, 
+            camera, 
+            node._worldTransform);
       }
 
       if (node.children) {
@@ -78,7 +88,9 @@ export function drawSceneNode(
                child, 
                glState, 
                renderProgram, 
-               light, 
+               ambientLight,
+               directionalLight,
+               pointLight, 
                camera, 
                input)
             });
@@ -88,10 +100,12 @@ export function drawSceneNode(
 export function drawScene(
     glState: GlState,  
     scene: SceneNode[], 
-    light: DirectionalLight, 
+    ambientLight: AmbientLight, 
+    directionalLight: DirectionalLight,
+    pointLight: PointLight,  
     camera: Camera, 
-    input: InputState, 
-    renderProgram: RenderProgram) {
+    renderProgram: RenderProgram,
+    input?: InputState,) {
 
     const gl = glState.gl;
 
@@ -103,7 +117,15 @@ export function drawScene(
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     scene.forEach(node => {
-        drawSceneNode(node, glState, renderProgram, light, camera, input);
+        drawSceneNode(
+         node, 
+         glState, 
+         renderProgram, 
+         ambientLight,
+         directionalLight,
+         pointLight, 
+         camera, 
+         input);
     })
         
     return 0

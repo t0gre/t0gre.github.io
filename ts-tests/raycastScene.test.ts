@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 import { Intersection, Ray, rayIntersectsSceneNode } from "demo-01-ts-webgl/lib/raycast";
-import { Vertices } from 'demo-01-ts-webgl/lib/mesh';
+import { Material, Vertices } from 'demo-01-ts-webgl/lib/mesh';
 import { initSceneNode, setParent } from 'demo-01-ts-webgl/lib/scene';
 import { m4fromPositionAndEuler } from 'demo-01-ts-webgl/lib/mat4';
 
@@ -30,14 +30,17 @@ const vertices: Vertices = {
   normals
 } 
         
+const material: Material = {
+            color: [1,1,1],
+            specularColor: [1,1,1],
+            shininess: 0
+        }
  
 test('it correctly finds an intersection with position transform', () => {
    
     const node =  initSceneNode(m4fromPositionAndEuler([-2,0,0], [0,0,0]), {
         vertices,
-        material: {
-            color: [1,1,1,1]
-        }
+        material
     })
 
     const ray: Ray = {
@@ -56,9 +59,7 @@ test('it correctly finds an intersection with multiple position transforms', () 
    
     const node =  initSceneNode(m4fromPositionAndEuler([-2,0,0], [0,0,0]), {
         vertices,
-        material: {
-            color: [1,1,1,1]
-        }
+        material
     })
 
     const parentNode =  initSceneNode(m4fromPositionAndEuler([-2,0,0], [0,0,0]))
@@ -82,9 +83,7 @@ test('it correctly finds an intersection with rotation transform', () => {
    
     const node =  initSceneNode(m4fromPositionAndEuler([0,0,0], [0,0,Math.PI/4]), {
         vertices,
-        material: {
-            color: [1,1,1,1]
-        }
+        material
     })
 
     const ray: Ray = {

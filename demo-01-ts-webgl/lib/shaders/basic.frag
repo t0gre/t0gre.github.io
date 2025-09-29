@@ -1,34 +1,100 @@
-#version 300 es
+    #version 300 es 
+    precision highp float;  
 
-precision highp float;
+    uniform vec3 u_view_position; 
 
-in vec3 v_normal;
+    struct Material {
+      vec3 color;
+      vec3 specular_color;
+      float shininess;
+    };
 
+    uniform Material u_material;
+     
+    struct AmbientLight {
+      vec3 color;
+    };
 
-uniform vec4 u_diffuse;
-uniform vec3 u_lightDirection;
-uniform vec2 u_pointer;
-uniform vec2 u_canvas;
+    struct DirectionalLight {
+      vec3 color;
+      vec3 rotation;
+    };
 
-out vec4 outColor;
+    struct PointLight {
+      vec3 color;
+      vec3 position;
+      float constant;
+      float linear;
+      float quadratic;
+    };
 
-float RADIUS = 100.0;
-float AMBIENT_LIGHT = 0.5;
-float TORCH_STRENGTH = 0.4;
+    struct LightColorComponents {
+      vec3 diffuse;
+      vec3 specular;
+    };
 
-void main () {
-vec3 normal = normalize(v_normal);
-float light = dot(u_lightDirection, normal) * .5 + AMBIENT_LIGHT;
-// get the normalised pointer position into gl_FragCoord space
-vec2 offsetFromPointer = vec2(gl_FragCoord.x - (u_pointer.x + 1.0) * (u_canvas.x / 2.0),gl_FragCoord.y - (-u_pointer.y - 1.0) * (u_canvas.y / -2.0));
-float distanceFromPointer = sqrt(dot(offsetFromPointer, offsetFromPointer));
-bool pointerIsActive = !((u_pointer.x == 0.0) && (u_pointer.y == 0.0));
-if (pointerIsActive && distanceFromPointer < RADIUS) {
-    float normalizedTorchLight = (RADIUS - distanceFromPointer )  / RADIUS;
-    light += TORCH_STRENGTH * normalizedTorchLight;
-}
-outColor = vec4(u_diffuse.rgb * light, u_diffuse.a);
+    uniform AmbientLight u_ambient_light;
+    uniform DirectionalLight u_directional_light; 
+    uniform PointLight u_point_light;                    
+                                                  
+    in vec3 v_normal;     
+    in vec3 frag_world_position;                    
+    out vec4 outColor;                        
 
+    LightColorComponents calculateLightComponents(
+      vec3 light_color, 
+      vec3 light_direction,
+      vec3 view_dir,
+      vec3 normal) {    
 
+        // diffuse
+        float light_diff = max(dot(light_direction, normal), 0.0);   
+        vec3 diffuse_color_component = light_color * light_diff * u_material.color;
 
-}
+        // specular
+        vec3 reflect_dir = reflect(-light_direction, normal);  
+        float spec = pow(max(dot(view_dir, reflect_dir), 0.0), u_material.shininess);
+        vec3 specular_color_component = u_material.specular_color * spec * u_material.color;
+
+        return LightColorComponents(diffuse_color_component, specular_color_component);
+
+    }
+
+    void main()                                  
+    {                
+
+        vec3 normal = normalize(v_normal);  
+        vec3 view_dir = normalize(u_view_position - frag_world_position);
+
+        // ambient
+        vec3 ambient_color = u_ambient_light.color * u_material.color;                           
+
+        LightColorComponents directional_components = calculateLightComponents(
+          u_directional_light.color,
+          normalize(-u_directional_light.rotation),
+          view_dir,
+          normal
+        );
+
+        LightColorComponents point_components = calculateLightComponents(
+          u_point_light.color,
+          normalize(u_point_light.position - frag_world_position),
+          view_dir,
+          normal
+        );
+
+        // point light attenuation
+        float distance    = length(u_point_light.position - frag_world_position);
+        float attenuation = 1.0 / (u_point_light.constant + u_point_light.linear * distance + u_point_light.quadratic * (distance * distance));  
+        point_components.diffuse *= attenuation;
+        point_components.specular *= attenuation;
+                                                                                                                                     
+        outColor = vec4(ambient_color 
+                      + directional_components.diffuse
+                      + directional_components.specular
+                      + point_components.diffuse
+                      + point_components.specular, 
+                      1.0);  
+             
+        outColor.rgb = min(outColor.rgb, vec3(1.0));
+    }

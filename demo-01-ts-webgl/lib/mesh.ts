@@ -1,10 +1,10 @@
 
 import { Camera } from "./camera";
-import { DirectionalLight } from "./light";
+import { DirectionalLight, PointLight, AmbientLight } from "./light";
 import { InputState } from "./input";
 
 import { Mat4 } from "./mat4";
-import { Vec4 } from "./vec";
+import { Vec3 } from "./vec";
 import { RenderProgram, updateUniforms } from "./BasicRenderProgram";
 import { GlState } from "./gl";
 
@@ -16,7 +16,9 @@ export type Vertices = {
   }
 
 export type Material = {
-    color: Vec4
+    color: Vec3
+    specularColor: Vec3
+    shininess: number
 }
 
 export type Mesh = {
@@ -30,10 +32,12 @@ export function drawMesh(
     mesh: Mesh, 
     glState: GlState, 
     renderProgram: RenderProgram, 
-    light: DirectionalLight, 
+    ambientLight: AmbientLight,
+    directionalLight: DirectionalLight,
+    pointLight: PointLight, 
     camera: Camera, 
-    input: InputState, 
-    worldMatrix: Mat4 ){
+    worldMatrix: Mat4,
+    input?: InputState){
       
         const drawInitializedMesh = (mesh: Mesh) => {
             const gl = glState.gl;
@@ -41,7 +45,16 @@ export function drawMesh(
             gl.useProgram(renderProgram.program);
             gl.bindVertexArray(vao);
 
-            updateUniforms(renderProgram, glState, light, camera, input, worldMatrix, mesh.material.color);
+            updateUniforms(
+                renderProgram, 
+                glState, 
+                ambientLight,
+                directionalLight,
+                pointLight, 
+                camera, 
+                worldMatrix, 
+                mesh,
+                input);
 
             if (mesh.vertices.indices) {
                 gl.drawElements(glState.gl.TRIANGLES, mesh.vertices.indices.length, gl.UNSIGNED_SHORT,  0);

@@ -1,27 +1,27 @@
 import { drawScene, initSceneNode, setParent, updateTransform } from './lib/scene'
 import { degToRad } from './lib/mathUtils'
 import { Vertices } from './lib/mesh'
-import { createDirectionalLight } from './lib/light'
+import { DirectionalLight, AmbientLight, PointLight } from './lib/light'
 import { Camera } from './lib/camera'
 import { initRenderProgram } from './lib/BasicRenderProgram'
 import { loadObj } from './lib/loaders/ObjLoader'
 import { InputState } from './lib/input'
-import { m4fromPositionAndEuler, m4yRotate } from './lib/mat4'
+import { m4fromPositionAndEuler, m4vectorMultiply, m4yRotate, m4yRotation } from './lib/mat4'
 import { initGlState } from './lib/gl'
 import { getWorldRayFromClipSpaceAndCamera, rayIntersectsScene, sortBySceneDepth } from './lib/raycast'
 import { getPointerClickInClipSpace } from './lib/events'
-import { Vec4 } from './lib/vec'
+import { Vec3, Vec4 } from './lib/vec'
 
 
 type NodeName = "yellow tree" | "orange tree" | "green tree" | "floor";
 
-const meshColorMap: Record<NodeName, Vec4> = {
-  "yellow tree": [1, 1, 0.2, 1],
-  "orange tree": [1, 0.5, 0.2, 1],
-  "green tree": [0.1, 0.5, 0.2, 1],
-  "floor": [0.1, 0.1, 0.2, 1]
+const meshColorMap: Record<NodeName, Vec3> = {
+  "yellow tree": [0.7, 0.7, 0.01 ],
+  "orange tree": [0.6, 0.3, 0.001],
+  "green tree": [0.1, 0.6, 0.1],
+  "floor": [0.2, 0.2, 0.4]
 };
-// const ROTATION_SPEED = 1.2;
+
 
 export async function main(canvas: HTMLCanvasElement): Promise<1> {
 
@@ -47,6 +47,7 @@ gl.enable(gl.CULL_FACE);
 // Enable the depth buffer
 gl.enable(gl.DEPTH_TEST);
 
+
 const basicRenderProgram = initRenderProgram(gl)
 
 if (!basicRenderProgram) {
@@ -60,7 +61,9 @@ const yellowTree = initSceneNode(m4fromPositionAndEuler( [0,0,0], [0, Math.PI /2
         {
         vertices,
         material: {
-            color:  meshColorMap["yellow tree"]
+            color:  meshColorMap["yellow tree"],
+            specularColor: [0.2,0.2,0.2],
+            shininess: 0.9
         }},
     "yellow tree")
 
@@ -70,7 +73,9 @@ const orangeTree = initSceneNode(
     { 
         vertices, 
         material: {
-            color:  meshColorMap["orange tree"]
+            color:  meshColorMap["orange tree"],
+            specularColor: [0.2,0.2,0.2],
+            shininess: 0.9
         }},
     "orange tree")
 
@@ -79,7 +84,9 @@ const greenTree  = initSceneNode(
         {
         vertices,
         material: {
-            color:  meshColorMap["green tree"]
+            color:  meshColorMap["green tree"],
+            specularColor: [0.2,0.2,0.2],
+            shininess: 0.5
         }},
     "green tree")
 
@@ -121,7 +128,9 @@ const floorNode = initSceneNode(m4fromPositionAndEuler( [0,0.1,0], [0, 0, 0]),
         {
         vertices: floorVertices,
         material: {
-            color:  meshColorMap["floor"]
+            color:  meshColorMap["floor"],
+            specularColor: [0.2,0.2,0.2],
+            shininess: 0.9
         }},
     "floor")
 
@@ -129,7 +138,25 @@ const floorNode = initSceneNode(m4fromPositionAndEuler( [0,0.1,0], [0, 0, 0]),
 const scene = [yellowTree, floorNode]
 
 
-const light = createDirectionalLight([0, 0.5, 0.5], [0.5, 0.5, 0.5])
+// create lights
+const ambientLight: AmbientLight = {
+        color: [0.2, 0.2, 0.2]
+    };
+
+const directionalLight: DirectionalLight = {
+        rotation : [ 0.0,  -0.8 , -0.5],
+        color : [0.5,  0.5,  0.5],
+    };
+
+const pointLight: PointLight = {
+        position: [ 0, 5.0, 5],
+        color: [ 0.7, 0.7, 0.7],
+        constant: 1.0,
+        linear: 0.009,
+        quadratic: 0.032
+    };
+
+
 const camera: Camera = {
     fieldOfViewRadians:  degToRad(60), 
     aspect: canvas.clientWidth / canvas.clientHeight,
@@ -184,15 +211,23 @@ canvas.addEventListener('pointerdown', () => {
 })
 
 ///////////////////////////
-// let lastTime = 0;
+
+let lastTime = 0;
 function animate(time: DOMHighResTimeStamp) {
     time *= 0.001 // convert from millis to seconds
-    // const dt = time - lastTime;
-    // lastTime = time;
-    // updateShape(shape!, dt)
+    const dt = time - lastTime;
+    lastTime = time;
+    updateLight(pointLight, dt)
     resizeCanvasToDisplaySize(canvas);
     camera.aspect = canvas.clientWidth / canvas.clientHeight;
-    const drawError = drawScene(glState!, scene, light, camera, input, basicRenderProgram!);
+    const drawError = drawScene(
+        glState, 
+        scene, 
+        ambientLight,
+        directionalLight,
+        pointLight, 
+        camera, 
+        basicRenderProgram!);
     if (drawError) {
         console.log('draw error')
     }
@@ -223,3 +258,15 @@ function resizeCanvasToDisplaySize(canvas: HTMLCanvasElement): void {
 
 }
 
+function updateLight(pointLight: PointLight, dt: number) {
+      const rotator = m4yRotation(Math.PI / (dt * 10000));
+      const oldTransform: Vec4 = [
+        pointLight.position[0],
+        pointLight.position[1],
+        pointLight.position[2],
+         0.0
+      ];
+   
+    const newTransform = m4vectorMultiply(oldTransform, rotator);
+    pointLight.position = [newTransform[0],newTransform[1],newTransform[2]]
+}
