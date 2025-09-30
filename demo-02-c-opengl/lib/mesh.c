@@ -1,6 +1,6 @@
 #include "mesh.h"
 
-Mesh createMesh(FloatData positions, FloatData normals, RenderProgram* render_program) {
+Mesh createMesh(Vertices vertices, RenderProgram* render_program) {
 
     // setup vao
     GLuint vao;
@@ -12,7 +12,8 @@ Mesh createMesh(FloatData positions, FloatData normals, RenderProgram* render_pr
     GLuint vbo;
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*positions.count, positions.data, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*vertices.vertex_count*3, 
+                 vertices.positions, GL_STATIC_DRAW);
 
     // Specify the layout of the shader vertex data (positions only, 3 floats)
     GLint posAttrib = glGetAttribLocation(render_program->shader_program, "a_position");
@@ -24,7 +25,8 @@ Mesh createMesh(FloatData positions, FloatData normals, RenderProgram* render_pr
     GLuint vbo_norm;
     glGenBuffers(1, &vbo_norm);
     glBindBuffer(GL_ARRAY_BUFFER, vbo_norm);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*normals.count, normals.data, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*vertices.vertex_count*3, 
+                 vertices.normals, GL_STATIC_DRAW);
 
     // Specify the layout of the shader vertex data (normals only, 3 floats)
     GLint normAttrib = glGetAttribLocation(render_program->shader_program, "a_normal");
@@ -39,7 +41,7 @@ Mesh createMesh(FloatData positions, FloatData normals, RenderProgram* render_pr
   
 
   return (Mesh){
-    .vertex_count = positions.count / 3,
+    .vertices = vertices,
     .render_program = render_program,
     .vao = vao
   };

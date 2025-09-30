@@ -2,6 +2,7 @@
 #define RAYCAST_H
 
 #include "vec.h"
+#include "mesh.h"
 #include "my_string.h"
 
 typedef struct Triangle {
@@ -22,7 +23,21 @@ typedef struct Intersection {
     size_t triangleIdx;
 } Intersection;
 
+
+typedef struct IntersectionArray {
+    Intersection *array;
+    size_t size;
+    size_t capacity;
+} IntersectionArray;
+
+IntersectionArray * createIntersectionArray(size_t initial_capacity);
+
+void addIntersection(IntersectionArray *arr, Intersection value);
+
+void freeIntersectionArray(IntersectionArray *arr);
+
 Vec3Result rayIntersectsTriangle(Ray ray, Triangle triangle);
 
+IntersectionArray * rayIntersectsVertices(Ray ray, Vertices vertices);
 
 #endif  

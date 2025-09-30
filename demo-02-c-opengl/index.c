@@ -223,7 +223,13 @@ int main(int argc, char** argv)
     FloatData normals = read_csv("normals.txt");
     FloatData positions = read_csv("positions.txt");
 
-    Mesh tree_mesh = createMesh(positions, normals, &render_program);
+    Vertices vertices = {
+        .positions = positions.data,
+        .normals = normals.data,
+        .vertex_count = positions.count / 3
+    };
+
+    Mesh tree_mesh = createMesh(vertices, &render_program);
     
     SceneNode tree_shape = {
         .id = next_node_id++,
@@ -280,10 +286,7 @@ int main(int argc, char** argv)
             10.f ,0.f, -10.f, // back right
         };
 
-    FloatData floor_positions = {
-        .count = 18,
-        .data = floor_positions_data
-    };
+    
 
     float floor_normals_data[18] = {
             0.f ,1.f, 0.f,
@@ -294,12 +297,13 @@ int main(int argc, char** argv)
             0.f ,1.f, 0.f,
         };
 
-    FloatData floor_normals = {
-        .count = 18,
-        .data = floor_normals_data
+    Vertices floor_vertices = {
+        .positions = floor_positions_data,
+        .normals = floor_normals_data,
+        .vertex_count = 6
     };
 
-    Mesh floor_mesh = createMesh(floor_positions, floor_normals, &render_program);
+    Mesh floor_mesh = createMesh(floor_vertices, &render_program);
 
     SceneNode floor_model = {
         .mesh = floor_mesh,

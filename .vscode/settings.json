@@ -9,7 +9,8 @@
         "mat4.h": "c",
         "__node_handle": "c",
         "limits": "c",
-        "random": "c"
+        "random": "c",
+        "chrono": "c"
     },
     "C_Cpp.default.compilerPath": "/usr/bin/clang"
 }

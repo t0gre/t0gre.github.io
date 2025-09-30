@@ -1,6 +1,28 @@
 #include "raycast.h"
 #include "float.h"
+#include "mesh.h"
+#include "vec.h"
 
+IntersectionArray *createIntersectionArray(size_t initial_capacity) {
+    IntersectionArray *arr = malloc(sizeof(IntersectionArray));
+    arr->size = 0;
+    arr->capacity = initial_capacity;
+    arr->array = malloc(initial_capacity * sizeof(Intersection));
+    return arr;
+}
+
+void addIntersection(IntersectionArray *arr, Intersection value) {
+    if (arr->size >= arr->capacity) {
+        arr->capacity *= 2;
+        arr->array = realloc(arr->array, arr->capacity * sizeof(Intersection));
+    }
+    arr->array[arr->size++] = value;
+}
+
+void freeIntersectionArray(IntersectionArray *arr) {
+    free(arr->array);
+    free(arr);
+}
 
 Vec3Result rayIntersectsTriangle(Ray ray, Triangle triangle) {
 
@@ -39,4 +61,36 @@ Vec3Result rayIntersectsTriangle(Ray ray, Triangle triangle) {
     } else { // This means that there is a line intersection but not a ray intersection.
           return (Vec3Result){.valid = false};
     }
+}
+
+
+IntersectionArray * rayIntersectsVertices(Ray ray, Vertices vertices) {
+    IntersectionArray * intersections = createIntersectionArray(10);
+
+    float * positions = vertices.positions;
+
+    for (size_t i = 0; i < vertices.vertex_count / 3; i += 9) {
+        
+        Triangle triangle = {
+
+            {positions[i],positions[i+1],positions[i+2]}, 
+            {positions[i+3],positions[i+4],positions[i+5]}, 
+            {positions[i+6],positions[i+7],positions[i+8]}
+        };
+
+        Vec3Result intersectionPoint = rayIntersectsTriangle(ray, triangle);
+
+        if (intersectionPoint.valid) {
+            
+           Intersection intersection = { 
+            .point = intersectionPoint.value,
+            .triangleIdx = i / 9
+            };
+           
+           addIntersection(intersections, intersection);
+
+        }
+    }
+
+    return intersections;
 }

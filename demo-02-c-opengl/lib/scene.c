@@ -85,7 +85,7 @@ void drawSceneNode(SceneNode node, RenderProgram render_program, Mat4 parentWorl
 
     glBindVertexArray(node.mesh.vao);
     // Draw the vertex buffer
-    glDrawArrays(GL_TRIANGLES, 0, node.mesh.vertex_count);
+    glDrawArrays(GL_TRIANGLES, 0, node.mesh.vertices.vertex_count);
 
     if (node.children != 0) {
         for (size_t i = 0; i < node.children->size; i++) {
