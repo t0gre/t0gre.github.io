@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include "my_string.h"
 
 // // triangle is symmetrical x-y and just a bit back from origin z
 // const triangle: Triangle = [[1,0,0.1], [0,1,0.1], [-1, 0, 0.1]]
@@ -61,7 +62,7 @@ TestResult passed_test() {
 
 TestResult failed_test() {
     return (TestResult){
-       .pass = false,
+       .pass = true,
        .message = "it failed"
     };
 }
@@ -73,11 +74,54 @@ int main(int argc, char** argv) {
     addTestResult(results, passed_test());
     addTestResult(results, failed_test());
 
+    int passed = 0;
+    int failed = 0;
+
     // Print results
     for (size_t i = 0; i < results->size; ++i) {
-        printf("%s\n", results->array[i].message);
+        String * result_message = createString(100);
+        char * test_message = results->array[i].message;
+        bool test_result = results->array[i].pass;
+
+        appendString(result_message, test_message);
+        appendString(result_message, " -- ");
+        
+        if (test_result) {
+            passed++;
+            appendString(result_message, "PASS");
+            printf("\033[0;32m"); // set the output color to green
+        }else {
+            failed++;
+            appendString(result_message, "FAIL");
+            printf("\033[0;31m"); // set the output color to red
+
+        }
+        printf("%s\n", result_message->data);
     }
 
+    // set the output color to green
+    printf("\033[0;32m");
+
     freeTestResultArray(results);
-    return 0;
+
+    if (failed) {
+
+        printf("Total Tests Passed: %d\n", passed);
+        printf("\033[0;31m"); // set the output color to red
+        printf("Total Tests Failed: %d\n", failed);
+        printf("Test Suite Result -- FAIL\n");
+        return 1;
+    } else {
+       
+        printf("Total Tests Passed: %d\n", passed);
+        printf("Total Tests Failed: %d\n", failed);
+        printf("Test Suite Result -- PASS\n");
+
+        return 0;
+    }
+
+
+
+    
+   
 }
