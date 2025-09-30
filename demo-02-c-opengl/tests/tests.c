@@ -37,13 +37,6 @@ void freeTestResultArray(TestResultArray *arr) {
     free(arr);
 }
 
-TestResult passed_test() {
-    return (TestResult){
-       .pass = true,
-       .message = "it passed"
-    };
-}
-
 bool floatsAreClose(float a, float b) {
     return fabs(a - b) < 0.0000001f;
 }
@@ -54,15 +47,16 @@ bool vec3sAreEqual(Vec3 a, Vec3 b) {
             floatsAreClose(a.z, b.z));
 }
 
+const Triangle triangle = {
+        { 1.f, 0.f, 0.1f }, 
+        { 0.f, 1.f, 0.1f }, 
+        {-1.f, 0.f, 0.1f } 
+    };
 
 TestResult intersect_triangle() {
    
     // triangle is symmetrical x-y and just a bit back from origin z
-    const Triangle triangle = {
-        {1.f,0.f,0.1f}, 
-        {0.f,1.f,0.1f}, 
-        {-1.f, 0.f, 0.1f}
-    };
+   
     const Ray ray = {
      .origin = {0.5f, 0.5f, 0.f},
      .direction = {0.f, 0.f, 1.f}
@@ -96,11 +90,64 @@ TestResult intersect_triangle() {
 
 }
 
+
+TestResult dont_intersect_because_origin() {
+    
+ 
+    // pointing away from the triangle
+    const Ray ray = {
+        .origin = {0.5f, 0.5f, 0.2f},
+        .direction = {0.f, 0.f, 1.f}
+    };
+
+    const Vec3Result result = rayIntersectsTriangle(ray, triangle);
+
+    if (result.valid) {
+         return (TestResult){
+            .message = "intersection found when it should not",
+            .pass = false
+        };
+    } else {
+        return (TestResult){
+            .message = "no intersection found, correctly",
+            .pass = true
+        };
+    }
+
+}
+
+TestResult dont_intersect_because_direction() {
+    
+ 
+    // this should intersect the triangles plane, but not the triangle itself
+    const Ray ray = {
+     .origin = {0.5f, 0.5f, -10.f},
+     .direction = normalize((Vec3){0.f, 1.f, 1.f})
+    };
+
+    const Vec3Result result = rayIntersectsTriangle(ray, triangle);
+
+    if (result.valid) {
+         return (TestResult){
+            .message = "intersection found when it should not",
+            .pass = false
+        };
+    } else {
+        return (TestResult){
+            .message = "no intersection found, correctly",
+            .pass = true
+        };
+    }
+
+}
+    
 int main(int argc, char** argv) {
     TestResultArray *results = createTestResultArray(4);
 
-    addTestResult(results, passed_test());
+    
     addTestResult(results, intersect_triangle());
+    addTestResult(results, dont_intersect_because_origin());
+    addTestResult(results, dont_intersect_because_direction());
 
     int passed = 0;
     int failed = 0;
