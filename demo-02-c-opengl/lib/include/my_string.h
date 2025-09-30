@@ -1,3 +1,6 @@
+#ifndef MY_STRING_H
+#define MY_STRING_H
+
 #include <stdlib.h>
 
 typedef struct {
@@ -11,3 +14,5 @@ String *createString(size_t initial_capacity);
 void appendString(String *str, const char *suffix);
 
 void freeString(String *str);
+
+#endif

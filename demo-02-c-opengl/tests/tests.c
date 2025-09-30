@@ -3,23 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "my_string.h"
-
-// // triangle is symmetrical x-y and just a bit back from origin z
-// const triangle: Triangle = [[1,0,0.1], [0,1,0.1], [-1, 0, 0.1]]
-
-// test('it correctly finds an intersection', () => {
-   
-//     const ray: Ray = {
-//     origin: [0.5, 0.5, 0],
-//     direction: [0, 0, 1]
-//     }
-
-//     const result = rayIntersectsTriangle(ray, triangle)
-
-//     const expected = [0.5, 0.5, 0.1]
-//     expect(result, "intersection is correct").toEqual(expected)
-
-// })
+#include "raycast.h"
 
 typedef struct TestResult {
     bool pass;
@@ -60,19 +44,63 @@ TestResult passed_test() {
     };
 }
 
-TestResult failed_test() {
-    return (TestResult){
-       .pass = true,
-       .message = "it failed"
-    };
+bool floatsAreClose(float a, float b) {
+    return fabs(a - b) < 0.0000001f;
 }
 
-// Example usage in main:
+bool vec3sAreEqual(Vec3 a, Vec3 b) {
+    return (floatsAreClose(a.x, b.x) && 
+            floatsAreClose(a.y, b.y) && 
+            floatsAreClose(a.z, b.z));
+}
+
+
+TestResult intersect_triangle() {
+   
+    // triangle is symmetrical x-y and just a bit back from origin z
+    const Triangle triangle = {
+        {1.f,0.f,0.1f}, 
+        {0.f,1.f,0.1f}, 
+        {-1.f, 0.f, 0.1f}
+    };
+    const Ray ray = {
+     .origin = {0.5f, 0.5f, 0.f},
+     .direction = {0.f, 0.f, 1.f}
+    };
+
+    const Vec3Result result = rayIntersectsTriangle(ray, triangle);
+
+    const Vec3Result expected = {
+        .valid = true,
+        .value = {0.5f, 0.5f, 0.1f}
+    };
+
+    if (!result.valid) {
+        return (TestResult){
+            .message = "no intersection found",
+            .pass = false
+        };
+    } else {
+        if (vec3sAreEqual(expected.value, result.value)) {
+           return (TestResult){
+            .message = "correct intersection was found",
+            .pass = true
+        }; 
+        } else {
+            return (TestResult){
+            .message = "incorrect intersection found",
+            .pass = false
+        };
+        }
+    }
+
+}
+
 int main(int argc, char** argv) {
     TestResultArray *results = createTestResultArray(4);
 
     addTestResult(results, passed_test());
-    addTestResult(results, failed_test());
+    addTestResult(results, intersect_triangle());
 
     int passed = 0;
     int failed = 0;

@@ -28,6 +28,7 @@ clean:
 test:
 	clang -o test-run -ggdb -std=c11 tests/tests.c \
 	lib/my_string.c \
+	lib/raycast.c \
 	lib/vec.c \
 	-Ilib/include \
 	-lm \

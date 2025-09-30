@@ -7,7 +7,9 @@
         "render_program.h": "c",
         "ios": "c",
         "mat4.h": "c",
-        "__node_handle": "c"
+        "__node_handle": "c",
+        "limits": "c",
+        "random": "c"
     },
     "C_Cpp.default.compilerPath": "/usr/bin/clang"
 }
