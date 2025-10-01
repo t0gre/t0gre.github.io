@@ -47,17 +47,23 @@ int main(int argc, char** argv) {
     addTestResult(results, dont_intersect_because_direction());
 
     // mesh tests
-    addTestResult(results, intersect_vertices());
+    addTestResult(results, intersect_vertices_first());
+    addTestResult(results, intersect_vertices_last());
 
+    int total = 0;
     int passed = 0;
     int failed = 0;
 
     // Print results
     for (size_t i = 0; i < results->size; ++i) {
+        total++;
         String * result_message = createString(100);
         char * test_message = results->array[i].message;
         bool test_result = results->array[i].pass;
 
+        char test_number_string[50];
+        snprintf(test_number_string, sizeof(test_number_string), "test result %d: ", total);
+        appendString(result_message, test_number_string);
         appendString(result_message, test_message);
         appendString(result_message, " -- ");
         

@@ -27,7 +27,7 @@ const Vertices meshVertices = {
 }; 
         
 
-TestResult intersect_vertices() {
+TestResult intersect_vertices_first() {
    
     // triangle is symmetrical x-y and just a bit back from origin z
    
@@ -66,19 +66,45 @@ TestResult intersect_vertices() {
 
 }
 
-// test('it correctly finds an intersection in the first triangle', () => {
+TestResult intersect_vertices_last() {
    
-//     const ray: Ray = {
-//     origin: [-1, 0.5, 0],
-//     direction: [0, -1, 0]
-//     }
+    // triangle is symmetrical x-y and just a bit back from origin z
+   
+    const Ray ray = {
+     .origin = { 1.f, 0.5f, 0.f},
+     .direction = {0.f, -1.f, 0.f}
+    };
 
-//     const result = rayIntersectsVertices(ray, meshVertices)
+    const IntersectionArray * result = rayIntersectsVertices(ray, meshVertices);
 
-//     const expected: Intersection[] = [{ point: [-1, 0.0, 0], triangleIdx: 0 }]
-//     expect(result, "intersection is correct").toEqual(expected)
+    const Intersection expected = { 
+        .point = { 1.f, 0.f, 0.f}, 
+        .triangleIdx = 1 
+    };
 
-// })
+    if (!result->size) {
+        return (TestResult){
+            .message = "no intersection found",
+            .pass = false
+        };
+    } else {
+        Intersection intersection_result = result->array[0];
+        if (vec3sAreEqual(expected.point, intersection_result.point) &&
+            expected.triangleIdx == intersection_result.triangleIdx) {
+           return (TestResult){
+            .message = "correct intersection was found",
+            .pass = true
+        }; 
+        } else {
+            return (TestResult){
+            .message = "incorrect intersection found",
+            .pass = false
+        };
+        }
+    }
+
+}
+
 
 // test('it correctly finds an intersection in the last triangle', () => {
    
@@ -95,16 +121,3 @@ TestResult intersect_vertices() {
 
 // })
 
-// test('it correctly finds no intersection', () => {
-   
-//     const ray: Ray = {
-//     origin: [110, 0.5, 0],
-//     direction: [0, -1, 0]
-//     }
-
-//     const result = rayIntersectsVertices(ray, meshVertices)
-
-//     const expected: Vec3[] = []
-//     expect(result).toEqual(expected)
-
-// })

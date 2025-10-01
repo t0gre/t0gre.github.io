@@ -69,7 +69,7 @@ IntersectionArray * rayIntersectsVertices(Ray ray, Vertices vertices) {
 
     float * positions = vertices.positions;
 
-    for (size_t i = 0; i < vertices.vertex_count / 3; i += 9) {
+    for (size_t i = 0; i < vertices.vertex_count * 3; i += 9) {
         
         Triangle triangle = {
 
