@@ -35,13 +35,15 @@ WindowState initWindow(const char* title)
                          SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE| SDL_WINDOW_SHOWN);
     const Uint32 window_id = SDL_GetWindowID(window_object);
     // This emscripten call fixes an antialiasing bug in sdl context creation for webgl2
-    EMSCRIPTEN_WEBGL_CONTEXT_HANDLE context = emscripten_webgl_create_context("canvas", &(EmscriptenWebGLContextAttributes){
+
+    EmscriptenWebGLContextAttributes attributes = {
         .depth = 1,
         .stencil = 1,
         .antialias = 1,
         .majorVersion = 2,
         .minorVersion = 0
-    });
+    };
+    EMSCRIPTEN_WEBGL_CONTEXT_HANDLE context = emscripten_webgl_create_context("canvas", &attributes);
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
@@ -85,8 +87,8 @@ WindowState initWindow(const char* title)
     const WindowState window = {
         .object = window_object, 
         .id = window_id,
-        .width = initial_window_width,
-        .height = initial_window_height
+        .width = static_cast<size_t>(initial_window_width),
+        .height = static_cast<size_t>(initial_window_height)
         };
         
     return window;
@@ -142,17 +144,17 @@ void draw(WindowState window, Camera camera, Scene* scene, RenderProgram render_
 
 void updateScene(Scene* scene, float dt) {
     Mat4 rotator = m4yRotation(PI / (dt * 10));
-    Vec4 old = { 
+    Vec4 oldMatrix = { 
         .x = scene->point_light.position.x,
         .y = scene->point_light.position.y,
         .z = scene->point_light.position.z,
         .w = 0.0
     };
-    Vec4 new = m4vectorMultiply(old, rotator);
+    Vec4 newMatrix = m4vectorMultiply(oldMatrix, rotator);
     scene->point_light.position = (Vec3){
-        .x = new.x,
-        .y = new.y,
-        .z = new.z
+        .x = newMatrix.x,
+        .y = newMatrix.y,
+        .z = newMatrix.z
     };
     
 }
@@ -206,13 +208,13 @@ int main(int argc, char** argv)
     };
 
     DirectionalLight directional_light = {
-        .rotation = { .x = 0.0f, .y = -0.8f, .z = -0.5f},
         .color = { .r = 0.5f, .g = 0.5f, .b = 0.5f},
+        .rotation = { .x = 0.0f, .y = -0.8f, .z = -0.5f},
     };
 
     PointLight point_light = {
-        .position = { .x = 0.f, .y = 5.0f, .z = 5.f },
         .color = { .r = 0.2f, .g = 0.2f, .b = 0.2f},
+        .position = { .x = 0.f, .y = 5.0f, .z = 5.f },
         .constant = 1.0f,
         .linear = 0.009f,
         .quadratic = 0.032f
@@ -224,53 +226,52 @@ int main(int argc, char** argv)
     FloatData positions = read_csv("positions.txt");
 
     Vertices vertices = {
+        .vertex_count = positions.count / 3,
         .positions = positions.data,
         .normals = normals.data,
-        .vertex_count = positions.count / 3
     };
 
     Mesh tree_mesh = createMesh(vertices, &render_program);
     
     SceneNode tree_shape = {
-        .id = next_node_id++,
-        .mesh = tree_mesh,
+        .id = next_node_id++,  
+        .local_transform = m4fromPositionAndEuler(
+            (Vec3){ .x = 0.f, .y = 0.f, .z = 0.f }, 
+            (Vec3){  .x = 0.f, .y = PI / 2.f, .z = 0.f }),
         .material = {
             .color = { .r = 0.1, .g = 0.7, .b = 0.1},
             .specular_color = { .r = 0.2, .g = 0.2, .b = 0.2},
             .shininess = 0.5f
         },
-        .local_transform = m4fromPositionAndEuler(
-            (Vec3){ .x = 0.f, .y = 0.f, .z = 0.f }, 
-            (Vec3){  .x = 0.f, .y = PI / 2.f, .z = 0.f }),
+        .mesh = tree_mesh,
         .children = initSceneNodeArray(1),
     };
 
     SceneNode tree_shape1 = {
         .id = next_node_id++,
-        .mesh = tree_mesh,
+        .local_transform = m4fromPositionAndEuler(
+            (Vec3){ .x = 5.f, .y = 0.f, .z = 0.f }, 
+            (Vec3){  .x = 0.f, .y = PI / 2.f, .z = 0.f }),
         .material = {
             .color = { .r = 0.8, .g = 0.8, .b = 0.8},
             .specular_color = { .r = 0.2, .g = 0.2, .b = 0.2},
             .shininess = 0.9f
         },
-        .local_transform = m4fromPositionAndEuler(
-            (Vec3){ .x = 5.f, .y = 0.f, .z = 0.f }, 
-            (Vec3){  .x = 0.f, .y = PI / 2.f, .z = 0.f }),
+        .mesh = tree_mesh,
         .children = initSceneNodeArray(1),
     };
 
     SceneNode tree_shape2 = {
         .id = next_node_id++,
-        .mesh = tree_mesh,
+        .local_transform = m4fromPositionAndEuler(
+            (Vec3){ .x = 5.f, .y = 0.f, .z = 0.f }, 
+            (Vec3){  .x = 0.f, .y = PI / 2.f, .z = 0.f }),
         .material = {
             .color = { .r = 0.1, .g = 0.5, .b = 0.8},
             .specular_color = { .r = 0.2, .g = 0.2, .b = 0.2},
             .shininess = 0.9f
         },
-        .local_transform = m4fromPositionAndEuler(
-            (Vec3){ .x = 5.f, .y = 0.f, .z = 0.f }, 
-            (Vec3){  .x = 0.f, .y = PI / 2.f, .z = 0.f }),
-            
+        .mesh = tree_mesh,      
     };
 
     setParent(&tree_shape1, &tree_shape2);
@@ -298,23 +299,24 @@ int main(int argc, char** argv)
         };
 
     Vertices floor_vertices = {
+        .vertex_count = 6,
         .positions = floor_positions_data,
         .normals = floor_normals_data,
-        .vertex_count = 6
     };
 
     Mesh floor_mesh = createMesh(floor_vertices, &render_program);
 
     SceneNode floor_model = {
-        .mesh = floor_mesh,
+        .id = next_node_id++,
+        .local_transform = m4fromPositionAndEuler(
+            (Vec3){ .x = 0.f, .y = 0.1f, .z = 0.f }, 
+            (Vec3) { .x = 0.f, .y = 0.f, .z = 0.f }),
         .material = {
             .color = { .r = 0.9, .g = 0.7, .b = 0.1},
             .specular_color = { .r = 0.9, .g = 0.9, .b = 0.9},
             .shininess = 10.f
         },
-        .local_transform = m4fromPositionAndEuler(
-            (Vec3){ .x = 0.f, .y = 0.1f, .z = 0.f }, 
-            (Vec3) { .x = 0.f, .y = 0.f, .z = 0.f }),
+        .mesh = floor_mesh,
     };
 
     SceneNodeArray * scene_nodes = initSceneNodeArray(3);
@@ -324,16 +326,16 @@ int main(int argc, char** argv)
     Scene scene =  { 
         .nodes = scene_nodes,
         .ambient_light = ambient_light,
+        .directional_light = directional_light,
         .point_light = point_light,
-        .directional_light = directional_light
         };
 
 
     // create a camera
     const Camera camera = {
+        .field_of_view_radians = 1.f,
         .aspect = (float)window.width / (float)window.height, 
         .near = 1.f,
-        .field_of_view_radians = 1.f,
         .far = 2000.f, 
         .up = { .x = 0.f, .y = 1.f, .z = 0.f }, 
         .transform = m4fromPositionAndEuler(
@@ -346,10 +348,10 @@ int main(int argc, char** argv)
     AppState state = {
         .window = window,
         .last_frame_time = now,
-        .scene = scene,
         .camera = camera,
         .input = input,
-        .render_program = render_program
+        .render_program = render_program,
+        .scene = scene,
     };
 
     // Start the main loop

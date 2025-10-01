@@ -7,7 +7,7 @@ SceneNodeArray * initSceneNodeArray(size_t initial_capacity) {
  
     size_t capacity = sizeof(SceneNode) * initial_capacity;
     size_t total_size = sizeof(SceneNodeArray) + capacity;
-    SceneNodeArray * scene_node_array = malloc(total_size);
+    SceneNodeArray * scene_node_array = (SceneNodeArray *)malloc(total_size);
 
     scene_node_array->size = 0;
     scene_node_array->capacity = initial_capacity;
@@ -20,7 +20,7 @@ void addToSceneNodeArray(SceneNode node, SceneNodeArray ** array_ptr) {
 
     if (array->size >= array->capacity) {
         size_t new_capacity = array->capacity * 2;
-        SceneNodeArray * new_array = realloc(
+        SceneNodeArray * new_array = (SceneNodeArray *)realloc(
             array,
             sizeof(SceneNodeArray) + new_capacity * sizeof(SceneNode)
         );

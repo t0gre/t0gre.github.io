@@ -1,5 +1,5 @@
 #include "raycast.h"
-#include "test_helpers.c"
+#include "test_helpers.cpp"
 
 const Triangle triangle = {
         { 1.f, 0.f, 0.1f }, 
@@ -25,19 +25,20 @@ TestResult intersect_triangle() {
 
     if (!result.valid) {
         return (TestResult){
+            .pass = false,
             .message = "no intersection found",
-            .pass = false
         };
     } else {
         if (vec3sAreEqual(expected.value, result.value)) {
            return (TestResult){
+            .pass = true,
             .message = "correct intersection was found",
-            .pass = true
         }; 
         } else {
             return (TestResult){
+            .pass = false,
             .message = "incorrect intersection found",
-            .pass = false
+           
         };
         }
     }
@@ -58,13 +59,13 @@ TestResult dont_intersect_because_origin() {
 
     if (result.valid) {
          return (TestResult){
-            .message = "intersection found when it should not",
-            .pass = false
+            .pass = false,
+            .message = "intersection found when it should not",   
         };
     } else {
         return (TestResult){
+            .pass = true,
             .message = "no intersection found, correctly",
-            .pass = true
         };
     }
 
@@ -83,13 +84,14 @@ TestResult dont_intersect_because_direction() {
 
     if (result.valid) {
          return (TestResult){
+            .pass = false,
             .message = "intersection found when it should not",
-            .pass = false
+           
         };
     } else {
         return (TestResult){
+            .pass = true,
             .message = "no intersection found, correctly",
-            .pass = true
         };
     }
 

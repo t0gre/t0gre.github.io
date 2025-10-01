@@ -53,8 +53,8 @@ void processEvents(AppState* state)
                 if (event.button.button == 1) {
                     state->input.pointer_down = true;
                     Vec2 pointer_position = {
-                    .x = e->x,
-                    .y = e->y
+                    .x = static_cast<float>(e->x),
+                    .y = static_cast<float>(e->y)
                     };
                     
                     state->input.pointer_position = pointer_position;
@@ -70,8 +70,8 @@ void processEvents(AppState* state)
                     // state->scene.models[0].rotation.y += e->xrel / 100.f;
                     state->scene.nodes->array[0].local_transform = m4yRotate(state->scene.nodes->array[0].local_transform, e->xrel / 100.f);
                     Vec2 pointer_position = {
-                    .x = e->x,
-                    .y = e->y
+                    .x = static_cast<float>(e->x),
+                    .y = static_cast<float>(e->y)
                     };
                     
                     state->input.pointer_position = pointer_position;

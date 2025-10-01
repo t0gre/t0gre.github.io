@@ -4,9 +4,9 @@
 #include <stdio.h>
 #include "my_string.h"
 
-#include "test_helpers.c" // include before tests
-#include "raycast_triangle_tests.c"
-#include "raycast_vertices_tests.c"
+#include "test_helpers.cpp" // include before tests
+#include "raycast_triangle_tests.cpp"
+#include "raycast_vertices_tests.cpp"
 
 
 typedef struct {
@@ -16,17 +16,17 @@ typedef struct {
 } TestResultArray;
 
 TestResultArray *createTestResultArray(size_t initial_capacity) {
-    TestResultArray *arr = malloc(sizeof(TestResultArray));
+    TestResultArray *arr = (TestResultArray *)malloc(sizeof(TestResultArray));
     arr->size = 0;
     arr->capacity = initial_capacity;
-    arr->array = malloc(initial_capacity * sizeof(TestResult));
+    arr->array = (TestResult*)malloc(initial_capacity * sizeof(TestResult));
     return arr;
 }
 
 void addTestResult(TestResultArray *arr, TestResult result) {
     if (arr->size >= arr->capacity) {
         arr->capacity *= 2;
-        arr->array = realloc(arr->array, arr->capacity * sizeof(TestResult));
+        arr->array = (TestResult*)realloc(arr->array, arr->capacity * sizeof(TestResult));
     }
     arr->array[arr->size++] = result;
 }
@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
     for (size_t i = 0; i < results->size; ++i) {
         total++;
         String * result_message = createString(100);
-        char * test_message = results->array[i].message;
+        const char * test_message = results->array[i].message;
         bool test_result = results->array[i].pass;
 
         char test_number_string[50];

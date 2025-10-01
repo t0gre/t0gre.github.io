@@ -4,17 +4,17 @@
 #include "vec.h"
 
 IntersectionArray *createIntersectionArray(size_t initial_capacity) {
-    IntersectionArray *arr = malloc(sizeof(IntersectionArray));
+    IntersectionArray *arr = (IntersectionArray *)malloc(sizeof(IntersectionArray));
     arr->size = 0;
     arr->capacity = initial_capacity;
-    arr->array = malloc(initial_capacity * sizeof(Intersection));
+    arr->array = (Intersection*)malloc(initial_capacity * sizeof(Intersection));
     return arr;
 }
 
 void addIntersection(IntersectionArray *arr, Intersection value) {
     if (arr->size >= arr->capacity) {
         arr->capacity *= 2;
-        arr->array = realloc(arr->array, arr->capacity * sizeof(Intersection));
+        arr->array = (Intersection*)realloc(arr->array, arr->capacity * sizeof(Intersection));
     }
     arr->array[arr->size++] = value;
 }

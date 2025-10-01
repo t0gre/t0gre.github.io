@@ -1,5 +1,5 @@
 build:
-	clang -o native -ggdb -std=c11 index.c lib/*.c -Ilib/include \
+	clang -o native -ggdb -std=c++17 index.cpp lib/*.cpp -Ilib/include \
 	-I/usr/include/SDL2 \
 	-D_REENTRANT \
 	-lSDL2 \
@@ -10,7 +10,7 @@ build:
 	# -Werror 
 
 build-en:
-	emcc -std=c11 index.c lib/*.c -Ilib/include \
+	emcc -std=c++17 index.cpp lib/*.cpp -Ilib/include \
 	-s MAX_WEBGL_VERSION=2 \
 	-s USE_SDL=2 \
 	-s FULL_ES3=1 \
@@ -26,10 +26,10 @@ clean:
 	rm a.out.wasm.map
 
 test:
-	clang -o test-run -ggdb -std=c11 tests/tests.c \
-	lib/my_string.c \
-	lib/raycast.c \
-	lib/vec.c \
+	clang -o test-run -ggdb -std=c++17 tests/tests.cpp \
+	lib/my_string.cpp \
+	lib/raycast.cpp \
+	lib/vec.cpp \
 	-Ilib/include \
 	-lm \
 	&& ./test-run

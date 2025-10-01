@@ -1,5 +1,5 @@
 #include "mesh.h"
-#include "test_helpers.c"
+#include "test_helpers.cpp"
 #include <raycast.h>
 
 float pos_dat[18] = {
@@ -21,9 +21,10 @@ float norm_dat[18] = {
 };
 
 const Vertices meshVertices = {
-  .positions = pos_dat,
-  .normals = norm_dat,
-  .vertex_count = 6
+    .vertex_count = 6,
+    .positions = pos_dat,
+    .normals = norm_dat,
+  
 }; 
         
 
@@ -45,21 +46,22 @@ TestResult intersect_vertices_first() {
 
     if (!result->size) {
         return (TestResult){
+            .pass = false,
             .message = "no intersection found",
-            .pass = false
         };
     } else {
         Intersection intersection_result = result->array[0];
         if (vec3sAreEqual(expected.point, intersection_result.point) &&
             expected.triangleIdx == intersection_result.triangleIdx) {
            return (TestResult){
+            .pass = true,
             .message = "correct intersection was found",
-            .pass = true
-        }; 
+            }; 
         } else {
             return (TestResult){
+            .pass = false,
             .message = "incorrect intersection found",
-            .pass = false
+            
         };
         }
     }
@@ -84,21 +86,22 @@ TestResult intersect_vertices_last() {
 
     if (!result->size) {
         return (TestResult){
+            .pass = false,
             .message = "no intersection found",
-            .pass = false
         };
     } else {
         Intersection intersection_result = result->array[0];
         if (vec3sAreEqual(expected.point, intersection_result.point) &&
             expected.triangleIdx == intersection_result.triangleIdx) {
            return (TestResult){
+            .pass = true,
             .message = "correct intersection was found",
-            .pass = true
+            
         }; 
         } else {
             return (TestResult){
+            .pass = false,
             .message = "incorrect intersection found",
-            .pass = false
         };
         }
     }
@@ -106,18 +109,4 @@ TestResult intersect_vertices_last() {
 }
 
 
-// test('it correctly finds an intersection in the last triangle', () => {
-   
-//     const ray: Ray = {
-//     origin: [1, 0.5, 0],
-//     direction: [0, -1, 0]
-//     }
-
-//     const result = rayIntersectsVertices(ray, meshVertices)
-
-//     const expected: Intersection = { point: [1, 0.0, 0], triangleIdx: 1 }
-//     expect(result.length, "only one hit").toEqual(1)
-//     expect(result[0], "intersection is correct").toEqual(expected)
-
-// })
 

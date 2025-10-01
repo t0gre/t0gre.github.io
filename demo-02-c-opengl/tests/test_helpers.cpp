@@ -6,7 +6,7 @@
 
 typedef struct TestResult {
     bool pass;
-    char * message;
+    const char * message;
 } TestResult;
 
 
