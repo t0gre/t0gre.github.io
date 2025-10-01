@@ -1,8 +1,7 @@
 #ifndef MESH_H
 #define MESH_H
 
-#include "std_imports.h"
-
+#include <assert.h>
 #include "camera.h"
 #include "light.h"
 #include "vec.h"

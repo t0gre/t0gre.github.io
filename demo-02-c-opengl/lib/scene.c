@@ -1,3 +1,4 @@
+#include "stdlib.h"
 #include "scene.h"
 #include "mat4.h"
 #include "camera.h"
