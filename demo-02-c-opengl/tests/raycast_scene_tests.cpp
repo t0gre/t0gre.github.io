@@ -1,7 +1,11 @@
+#include <vector>
+
 #include "mesh.h"
 #include "scene.h"
-#include "test_helpers.c"
-#include <raycast.h>
+#include "test_helpers.cpp"
+#include "raycast.h"
+
+
 
 float pos_dat[18] = {
     -10.f, 0.f, -10.f, // back left
@@ -45,7 +49,7 @@ TestResult intersect_node_with_position_transform() {
         .local_transform = m4fromPositionAndEuler(
             (Vec3){ .x = -11.f, .y = 0.5f, .z = 0.f }, 
             (Vec3){  .x = 0.f, .y = -1.f, .z = 0.f }),
-        .children = initSceneNodeArray(1),
+        .children = std::vector<SceneNode>(),
     }; 
    
     const Ray ray = {

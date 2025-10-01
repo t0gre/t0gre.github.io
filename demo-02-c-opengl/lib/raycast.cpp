@@ -3,26 +3,7 @@
 #include "mesh.h"
 #include "vec.h"
 
-IntersectionArray *createIntersectionArray(size_t initial_capacity) {
-    IntersectionArray *arr = (IntersectionArray *)malloc(sizeof(IntersectionArray));
-    arr->size = 0;
-    arr->capacity = initial_capacity;
-    arr->array = (Intersection*)malloc(initial_capacity * sizeof(Intersection));
-    return arr;
-}
 
-void addIntersection(IntersectionArray *arr, Intersection value) {
-    if (arr->size >= arr->capacity) {
-        arr->capacity *= 2;
-        arr->array = (Intersection*)realloc(arr->array, arr->capacity * sizeof(Intersection));
-    }
-    arr->array[arr->size++] = value;
-}
-
-void freeIntersectionArray(IntersectionArray *arr) {
-    free(arr->array);
-    free(arr);
-}
 
 Vec3Result rayIntersectsTriangle(Ray ray, Triangle triangle) {
 
@@ -64,8 +45,9 @@ Vec3Result rayIntersectsTriangle(Ray ray, Triangle triangle) {
 }
 
 
-IntersectionArray * rayIntersectsVertices(Ray ray, Vertices vertices) {
-    IntersectionArray * intersections = createIntersectionArray(10);
+std::vector<Intersection> rayIntersectsVertices(Ray ray, Vertices vertices) {
+    
+    std::vector<Intersection> intersections;
 
     float * positions = vertices.positions;
 
@@ -87,7 +69,7 @@ IntersectionArray * rayIntersectsVertices(Ray ray, Vertices vertices) {
             .triangleIdx = i / 9
             };
            
-           addIntersection(intersections, intersection);
+           intersections.push_back(intersection);
 
         }
     }

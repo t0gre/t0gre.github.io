@@ -37,20 +37,20 @@ TestResult intersect_vertices_first() {
      .direction = {0.f, -1.f, 0.f}
     };
 
-    const IntersectionArray * result = rayIntersectsVertices(ray, meshVertices);
+    auto result = rayIntersectsVertices(ray, meshVertices);
 
     const Intersection expected = { 
         .point = { -1.f, 0.f, 0.f}, 
         .triangleIdx = 0 
     };
 
-    if (!result->size) {
+    if (result.empty()) {
         return (TestResult){
             .pass = false,
             .message = "no intersection found",
         };
     } else {
-        Intersection intersection_result = result->array[0];
+        Intersection intersection_result = result.at(0);
         if (vec3sAreEqual(expected.point, intersection_result.point) &&
             expected.triangleIdx == intersection_result.triangleIdx) {
            return (TestResult){
@@ -77,20 +77,20 @@ TestResult intersect_vertices_last() {
      .direction = {0.f, -1.f, 0.f}
     };
 
-    const IntersectionArray * result = rayIntersectsVertices(ray, meshVertices);
+    auto result = rayIntersectsVertices(ray, meshVertices);
 
     const Intersection expected = { 
         .point = { 1.f, 0.f, 0.f}, 
         .triangleIdx = 1 
     };
 
-    if (!result->size) {
+    if (result.empty()) {
         return (TestResult){
             .pass = false,
             .message = "no intersection found",
         };
     } else {
-        Intersection intersection_result = result->array[0];
+        Intersection intersection_result = result.at(0);
         if (vec3sAreEqual(expected.point, intersection_result.point) &&
             expected.triangleIdx == intersection_result.triangleIdx) {
            return (TestResult){
