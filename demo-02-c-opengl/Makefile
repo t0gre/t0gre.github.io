@@ -1,5 +1,5 @@
 build:
-	clang -o native -ggdb -std=c++17 index.cpp lib/*.cpp -Ilib/include \
+	clang++ -o native -ggdb -std=c++17 index.cpp lib/*.cpp -Ilib/include \
 	-I/usr/include/SDL2 \
 	-D_REENTRANT \
 	-lSDL2 \
@@ -26,7 +26,7 @@ clean:
 	rm a.out.wasm.map
 
 test:
-	clang -o test-run -ggdb -std=c++17 tests/tests.cpp \
+	clang++ -o test-run -ggdb -std=c++17 tests/tests.cpp \
 	lib/my_string.cpp \
 	lib/raycast.cpp \
 	lib/vec.cpp \

@@ -125,8 +125,8 @@ void draw(WindowState window, Camera camera, Scene* scene, RenderProgram render_
     glUniform1f(render_program.point_light_uniform.quadratic_location,scene->point_light.quadratic); 
 
 
-    for (size_t i = 0; i < scene->nodes->size; i++) {
-        SceneNode node = scene->nodes->array[i];
+    for (size_t i = 0; i < scene->nodes.size(); i++) {
+        SceneNode node = scene->nodes.at(i);
         drawSceneNode(
                 node, 
                 render_program, 
@@ -244,7 +244,7 @@ int main(int argc, char** argv)
             .shininess = 0.5f
         },
         .mesh = tree_mesh,
-        .children = initSceneNodeArray(1),
+        .children = std::vector<SceneNode>(),
     };
 
     SceneNode tree_shape1 = {
@@ -258,7 +258,7 @@ int main(int argc, char** argv)
             .shininess = 0.9f
         },
         .mesh = tree_mesh,
-        .children = initSceneNodeArray(1),
+        .children = std::vector<SceneNode>(),
     };
 
     SceneNode tree_shape2 = {
@@ -271,7 +271,8 @@ int main(int argc, char** argv)
             .specular_color = { .r = 0.2, .g = 0.2, .b = 0.2},
             .shininess = 0.9f
         },
-        .mesh = tree_mesh,      
+        .mesh = tree_mesh,   
+        .children = std::vector<SceneNode>(),
     };
 
     setParent(&tree_shape1, &tree_shape2);
@@ -319,10 +320,10 @@ int main(int argc, char** argv)
         .mesh = floor_mesh,
     };
 
-    SceneNodeArray * scene_nodes = initSceneNodeArray(3);
-    addToSceneNodeArray(tree_shape, &scene_nodes);
-    addToSceneNodeArray(floor_model, &scene_nodes);
-
+    auto scene_nodes = std::vector<SceneNode>();
+    scene_nodes.push_back(tree_shape);
+    scene_nodes.push_back(floor_model);
+    
     Scene scene =  { 
         .nodes = scene_nodes,
         .ambient_light = ambient_light,
