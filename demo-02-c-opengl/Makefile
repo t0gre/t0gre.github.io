@@ -27,7 +27,6 @@ clean:
 
 test:
 	clang++ -o test-run -ggdb -std=c++17 tests/tests.cpp \
-	lib/my_string.cpp \
 	lib/raycast.cpp \
 	lib/vec.cpp \
 	-Ilib/include \

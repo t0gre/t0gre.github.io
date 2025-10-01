@@ -2,10 +2,11 @@
 #define RAYCAST_H
 
 #include <vector>
+#include <string>
 
 #include "vec.h"
 #include "mesh.h"
-#include "my_string.h"
+
 
 typedef struct Triangle {
     Vec3 a;
@@ -20,7 +21,7 @@ typedef struct Ray {
 
 typedef struct Intersection {
     int meshId; // 0 if none
-    String nodeName; // empty if none
+    std::string nodeName; // empty if none
     Vec3 point;
     size_t triangleIdx;
 } Intersection;

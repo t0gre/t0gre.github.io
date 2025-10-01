@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <vector>
-#include "my_string.h"
+#include <string>
 
 #include "test_helpers.cpp" // include before tests
 #include "raycast_triangle_tests.cpp"
@@ -29,27 +29,25 @@ int main(int argc, char** argv) {
     // Print results
     for (size_t i = 0; i < results.size(); ++i) {
         total++;
-        String * result_message = createString(100);
+        std::string result_message;
         const char * test_message = results.at(i).message;
         bool test_result = results.at(i).pass;
 
-        char test_number_string[50];
-        snprintf(test_number_string, sizeof(test_number_string), "test result %d: ", total);
-        appendString(result_message, test_number_string);
-        appendString(result_message, test_message);
-        appendString(result_message, " -- ");
+        auto stringified_total = std::to_string(total);
+        
+        result_message = "test result " + stringified_total + test_message + " -- ";
         
         if (test_result) {
             passed++;
-            appendString(result_message, "PASS");
+            result_message += "PASS";
             printf("\033[0;32m"); // set the output color to green
         }else {
             failed++;
-            appendString(result_message, "FAIL");
+            result_message += "FAIL";
             printf("\033[0;31m"); // set the output color to red
 
         }
-        printf("%s\n", result_message->data);
+        printf("%s\n", result_message.c_str());
     }
 
     // set the output color to green
