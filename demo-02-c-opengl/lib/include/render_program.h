@@ -2,6 +2,9 @@
 #define RENDER_PROGRAM_H
 
 #include <GLES3/gl3.h>
+#include <vector>
+#include "scene.h"
+#include "mesh.h"
 
 typedef struct MaterialUniform {
       GLuint color_location;
@@ -39,5 +42,15 @@ typedef struct RenderProgram  {
 } RenderProgram;
 
 RenderProgram initShader(void);
+
+typedef struct GlState {
+    std::vector<GLuint> vaos;
+} GlState;
+
+
+Mesh initMesh(Vertices vertices, RenderProgram* render_program);
+
+void drawSceneNode(SceneNode scene_node, RenderProgram render_program);
+
 
 #endif //RENDER_PROGRAM_H

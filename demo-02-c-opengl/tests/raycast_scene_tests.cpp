@@ -1,5 +1,6 @@
 #include <vector>
 
+#include "render_program.h"
 #include "mesh.h"
 #include "scene.h"
 #include "test_helpers.cpp"
@@ -7,7 +8,7 @@
 
 
 
-float pos_dat[18] = {
+float positions[18] = {
     -10.f, 0.f, -10.f, // back left
     -10.f, 0.f, 10.f, // front left
      10.f, 0.f, -10.f, // back right
@@ -16,7 +17,7 @@ float pos_dat[18] = {
      10.f, 0.f, -10.f, // back right
      };
      
-float norm_dat[18] = {
+float normals[18] = {
         0.f,1.f, 0.f,
         0.f,1.f, 0.f,
         0.f,1.f, 0.f,
@@ -26,9 +27,10 @@ float norm_dat[18] = {
 };
 
 const Vertices vertices = {
-  .positions = pos_dat,
-  .normals = norm_dat,
-  .vertex_count = 6
+  .vertex_count = 6,
+  .positions = positions,
+  .normals = normals,
+  
 }; 
    
 const Material irrelevant = {
@@ -42,14 +44,17 @@ TestResult intersect_node_with_position_transform() {
     RenderProgram render_program = initShader();
     Mesh tree_mesh = createMesh(vertices, &render_program); 
 
+    Mat4 transform = m4fromPositionAndEuler(
+            (Vec3){ .x = -11.f, .y = 0.5f, .z = 0.f }, 
+            (Vec3){  .x = 0.f, .y = -1.f, .z = 0.f });
+
     SceneNode node = {
         .id = 1,
-        .mesh = tree_mesh,
+        .local_transform = transform,
+        .world_transform = transform,
         .material = irrelevant,
-        .local_transform = m4fromPositionAndEuler(
-            (Vec3){ .x = -11.f, .y = 0.5f, .z = 0.f }, 
-            (Vec3){  .x = 0.f, .y = -1.f, .z = 0.f }),
         .children = std::vector<SceneNode>(),
+        .mesh = tree_mesh,
     }; 
    
     const Ray ray = {
@@ -57,30 +62,33 @@ TestResult intersect_node_with_position_transform() {
      .direction = {0.f, -1.f, 0.f}
     };
 
-    const IntersectionArray * result = rayIntersectsSceneNode(ray, node);
+    auto result = rayIntersectsSceneNode(ray, node);
 
     const Intersection expected = { 
         .point = { -11.f, 0.f, 0.f}, 
         .triangleIdx = 0 
     };
 
-    if (!result->size) {
+    if (result.empty()) {
         return (TestResult){
+            .pass = false,
             .message = "no intersection found",
-            .pass = false
+           
         };
     } else {
-        Intersection intersection_result = result->array[0];
+        Intersection intersection_result = result[0];
         if (vec3sAreEqual(expected.point, intersection_result.point) &&
             expected.triangleIdx == intersection_result.triangleIdx) {
            return (TestResult){
+            .pass = true,
             .message = "correct intersection was found",
-            .pass = true
+            
         }; 
         } else {
             return (TestResult){
+            .pass = false,
             .message = "incorrect intersection found",
-            .pass = false
+          
         };
         }
     }

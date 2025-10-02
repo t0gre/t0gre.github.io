@@ -6,6 +6,7 @@
 
 #include "vec.h"
 #include "mesh.h"
+#include "scene.h"
 
 
 typedef struct Triangle {
@@ -20,7 +21,6 @@ typedef struct Ray {
 } Ray;
 
 typedef struct Intersection {
-    int meshId; // 0 if none
     std::string nodeName; // empty if none
     Vec3 point;
     size_t triangleIdx;
@@ -29,5 +29,7 @@ typedef struct Intersection {
 Vec3Result rayIntersectsTriangle(Ray ray, Triangle triangle);
 
 std::vector<Intersection> rayIntersectsVertices(Ray ray, Vertices vertices);
+
+std::vector<Intersection> rayIntersectsSceneNode(Ray ray, SceneNode node);
 
 #endif  

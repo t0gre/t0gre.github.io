@@ -124,14 +124,9 @@ void draw(WindowState window, Camera camera, Scene* scene, RenderProgram render_
     glUniform1f(render_program.point_light_uniform.linear_location,scene->point_light.linear);
     glUniform1f(render_program.point_light_uniform.quadratic_location,scene->point_light.quadratic); 
 
-
     for (size_t i = 0; i < scene->nodes.size(); i++) {
         SceneNode node = scene->nodes.at(i);
-        drawSceneNode(
-                node, 
-                render_program, 
-                m4fromPositionAndEuler((Vec3){0,0,0}, (Vec3){0,0,0})
-        );
+        drawSceneNode(node, render_program);
     }
     
 
@@ -190,7 +185,6 @@ void mainLoop(void* mainLoopArg)
 int main(int argc, char** argv)
 {
 
-    size_t next_node_id = 1;
 
     InputState input = {
         .pointer_down = false,
@@ -231,52 +225,50 @@ int main(int argc, char** argv)
         .normals = normals.data,
     };
 
-    Mesh tree_mesh = createMesh(vertices, &render_program);
-    
-    SceneNode tree_shape = {
-        .id = next_node_id++,  
-        .local_transform = m4fromPositionAndEuler(
+    SceneNode tree_shape = initSceneNode(m4fromPositionAndEuler(
             (Vec3){ .x = 0.f, .y = 0.f, .z = 0.f }, 
             (Vec3){  .x = 0.f, .y = PI / 2.f, .z = 0.f }),
-        .material = {
-            .color = { .r = 0.1, .g = 0.7, .b = 0.1},
-            .specular_color = { .r = 0.2, .g = 0.2, .b = 0.2},
-            .shininess = 0.5f
-        },
-        .mesh = tree_mesh,
-        .children = std::vector<SceneNode>(),
-    };
-
-    SceneNode tree_shape1 = {
-        .id = next_node_id++,
-        .local_transform = m4fromPositionAndEuler(
+            (Mesh){
+                .vertices =vertices,
+                .material = {
+                    .color = { .r = 0.1, .g = 0.7, .b = 0.1},
+                    .specular_color = { .r = 0.2, .g = 0.2, .b = 0.2},
+                    .shininess = 0.5f
+                },
+            },
+            "green tree"
+        );
+    
+    SceneNode tree_shape1 = initSceneNode(m4fromPositionAndEuler(
             (Vec3){ .x = 5.f, .y = 0.f, .z = 0.f }, 
             (Vec3){  .x = 0.f, .y = PI / 2.f, .z = 0.f }),
-        .material = {
-            .color = { .r = 0.8, .g = 0.8, .b = 0.8},
-            .specular_color = { .r = 0.2, .g = 0.2, .b = 0.2},
-            .shininess = 0.9f
-        },
-        .mesh = tree_mesh,
-        .children = std::vector<SceneNode>(),
-    };
-
-    SceneNode tree_shape2 = {
-        .id = next_node_id++,
-        .local_transform = m4fromPositionAndEuler(
+            (Mesh){
+                .vertices =vertices,
+                .material = {
+                    .color = { .r = 0.8, .g = 0.8, .b = 0.8},
+                    .specular_color = { .r = 0.2, .g = 0.2, .b = 0.2},
+                    .shininess = 0.9f
+                },
+            },
+            "blue tree"
+        );
+    
+    SceneNode tree_shape2 = initSceneNode(m4fromPositionAndEuler(
             (Vec3){ .x = 5.f, .y = 0.f, .z = 0.f }, 
             (Vec3){  .x = 0.f, .y = PI / 2.f, .z = 0.f }),
-        .material = {
-            .color = { .r = 0.1, .g = 0.5, .b = 0.8},
-            .specular_color = { .r = 0.2, .g = 0.2, .b = 0.2},
-            .shininess = 0.9f
-        },
-        .mesh = tree_mesh,   
-        .children = std::vector<SceneNode>(),
-    };
-
-    setParent(&tree_shape1, &tree_shape2);
-    setParent(&tree_shape2, &tree_shape);
+            (Mesh){
+                .vertices =vertices,
+                .material = {
+                    .color = { .r = 0.1, .g = 0.5, .b = 0.8},
+                    .specular_color = { .r = 0.2, .g = 0.2, .b = 0.2},
+                    .shininess = 0.9f
+                }, 
+            },
+            "grey tree"
+        );
+    
+    setParent(tree_shape1, &tree_shape2);
+    setParent(tree_shape2, &tree_shape);
 
 
     float floor_positions_data[18] = {
@@ -305,20 +297,19 @@ int main(int argc, char** argv)
         .normals = floor_normals_data,
     };
 
-    Mesh floor_mesh = createMesh(floor_vertices, &render_program);
-
-    SceneNode floor_model = {
-        .id = next_node_id++,
-        .local_transform = m4fromPositionAndEuler(
+    SceneNode floor_model = initSceneNode(m4fromPositionAndEuler(
             (Vec3){ .x = 0.f, .y = 0.1f, .z = 0.f }, 
             (Vec3) { .x = 0.f, .y = 0.f, .z = 0.f }),
-        .material = {
-            .color = { .r = 0.9, .g = 0.7, .b = 0.1},
-            .specular_color = { .r = 0.9, .g = 0.9, .b = 0.9},
-            .shininess = 10.f
-        },
-        .mesh = floor_mesh,
-    };
+            (Mesh){
+                .vertices =floor_vertices,
+                .material = {
+                    .color = { .r = 0.9, .g = 0.7, .b = 0.1},
+                    .specular_color = { .r = 0.9, .g = 0.9, .b = 0.9},
+                    .shininess = 10.f
+                },  
+            },
+            "floor"
+        );
 
     auto scene_nodes = std::vector<SceneNode>();
     scene_nodes.push_back(tree_shape);

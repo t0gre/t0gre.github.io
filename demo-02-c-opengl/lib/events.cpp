@@ -67,8 +67,10 @@ void processEvents(AppState* state)
                 SDL_MouseMotionEvent *e = (SDL_MouseMotionEvent*)&event;
                 if (state->input.pointer_down) {
                     
-                    // state->scene.models[0].rotation.y += e->xrel / 100.f;
-                    state->scene.nodes.at(0).local_transform = m4yRotate(state->scene.nodes.at(0).local_transform, e->xrel / 100.f);
+                    updateTransform(&state->scene.nodes.at(0),
+                                    m4yRotate(state->scene.nodes.at(0).local_transform, 
+                                            e->xrel / 100.f)
+                                    ) ;
                     Vec2 pointer_position = {
                     .x = static_cast<float>(e->x),
                     .y = static_cast<float>(e->y)

@@ -2,8 +2,17 @@
 #include "float.h"
 #include "mesh.h"
 #include "vec.h"
+#include "scene.h"
+#include <stack>
 
 
+Ray m4RayMultiply(Ray ray, Mat4 m) {
+    return (Ray){
+        .origin = m4PositionMultiply(ray.origin, m),
+        .direction = m4DirectionMultiply(ray.direction, m)
+        
+    };
+}
 
 Vec3Result rayIntersectsTriangle(Ray ray, Triangle triangle) {
 
@@ -71,6 +80,81 @@ std::vector<Intersection> rayIntersectsVertices(Ray ray, Vertices vertices) {
            
            intersections.push_back(intersection);
 
+        }
+    }
+
+    return intersections;
+}
+
+// std::vector<Intersection> rayIntersectsMesh(Ray ray, Mesh mesh) {
+
+//     auto intersections = rayIntersectsVertices(ray, mesh.vertices);
+
+//     // for (size_t i = 0; i < intersections.size(); i++) {
+//     //     Intersection intersection = intersections[i];
+//     //     intersection.meshId = mesh.id;
+//     //     intersections[i] = intersection;
+//     // }
+    
+//     return intersections;
+// }
+
+// ray is assumed to be in world space
+std::vector<Intersection> rayIntersectsSceneNode(Ray ray, SceneNode node) {
+    
+    std::vector<Intersection> intersections;
+    std::stack<SceneNode> node_stack;
+    
+    
+    node_stack.push(node);
+
+    while (node_stack.size() > 0) {
+
+        SceneNode nodeUnderTest = node_stack.top();
+        node_stack.pop();
+        
+        if (nodeUnderTest.mesh) {
+            // transform the ray into mesh space
+            auto inverseTransform = m4inverse(nodeUnderTest.world_transform);
+            auto meshSpaceOrigin = m4PositionMultiply(
+                ray.origin, 
+                inverseTransform);
+
+            auto meshSpaceDirection = m4DirectionMultiply(
+                ray.direction, 
+                inverseTransform);
+
+            
+            Ray newRay = {
+                .origin = meshSpaceOrigin ,
+                .direction = meshSpaceDirection
+            }; 
+            
+            auto rayNodeIntersections = rayIntersectsVertices(
+                newRay, 
+                nodeUnderTest.mesh.value().vertices);
+
+            if (!rayNodeIntersections.empty()) {
+                for (size_t i = 0; i < rayNodeIntersections.size(); i++) {
+                    auto intersection = rayNodeIntersections[i];
+                    // transform the interection back into world space
+                    auto worldSpaceIntersection = m4PositionMultiply(
+                        intersection.point, 
+                        nodeUnderTest.world_transform);
+
+                 
+                    intersections.push_back((Intersection){ 
+                        .nodeName = nodeUnderTest.name.value_or(""),
+                        .point = worldSpaceIntersection, 
+                        .triangleIdx = intersection.triangleIdx,
+                    });
+                }
+                
+            }
+        }
+        
+        for (auto& child: nodeUnderTest.children) {
+            node_stack.push(child);
         }
     }
 

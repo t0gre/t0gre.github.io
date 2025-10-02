@@ -1,12 +1,13 @@
 #ifndef MESH_H
 #define MESH_H
 
+#include <optional>
 #include <assert.h>
 #include "camera.h"
 #include "light.h"
 #include "vec.h"
-#include "render_program.h"
 #include "data_structures.h"
+#include "material.h"
 
 typedef struct Vertices {
   size_t vertex_count;
@@ -18,13 +19,10 @@ typedef struct Vertices {
 
 typedef struct Mesh {
   Vertices vertices;
-  RenderProgram* render_program;
-  GLuint vao;
+  Material material;
+  std::optional<int> id; // the vao id once the mesh has been inited
 } Mesh;
 
-
-
-Mesh createMesh(Vertices vertices, RenderProgram* render_program);
 
 
 #endif //MESH_H

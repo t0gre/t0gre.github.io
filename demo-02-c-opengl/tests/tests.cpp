@@ -8,6 +8,7 @@
 #include "test_helpers.cpp" // include before tests
 #include "raycast_triangle_tests.cpp"
 #include "raycast_vertices_tests.cpp"
+#include "raycast_scene_tests.cpp"
 
     
 int main(int argc, char** argv) {
@@ -18,9 +19,12 @@ int main(int argc, char** argv) {
     results.push_back(dont_intersect_because_origin());
     results.push_back(dont_intersect_because_direction());
     
-    // mesh.push_back(ests
+    // mesh tests
     results.push_back(intersect_vertices_first());
     results.push_back(intersect_vertices_last());
+
+    // scene tests
+    results.push_back(intersect_node_with_position_transform());
 
     int total = 0;
     int passed = 0;
@@ -35,7 +39,11 @@ int main(int argc, char** argv) {
 
         auto stringified_total = std::to_string(total);
         
-        result_message = "test result " + stringified_total + test_message + " -- ";
+        result_message = "test result " + 
+                            stringified_total + 
+                            ": " +
+                            test_message + 
+                            " -- ";
         
         if (test_result) {
             passed++;

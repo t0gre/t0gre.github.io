@@ -3,53 +3,68 @@
 #include "mat4.h"
 #include "camera.h"
 
-void setParent(SceneNode * node, SceneNode * parent) {
+
+size_t sceneNodeCounter = 0;
+
+void setParent(SceneNode node, SceneNode * parent) {
    
    // Remove node from its current parent's children array
-   if (node->parent && node->parent->id != parent->id) {
+   if (node.parent.has_value() && node.parent.value()->id != parent->id) {
     
+    auto oldParent = node.parent.value();
 
-    for (size_t i = 0; i < parent->children.size(); i++) {
+    for (size_t i = 0; i < oldParent->children.size(); i++) {
         
-        SceneNode existing_child = parent->children.at(i);
+        SceneNode existing_child = oldParent->children.at(i);
         
-        if (existing_child.id == node->id) {
-            parent->children.erase(parent->children.begin()+i);
+        if (existing_child.id == node.id) {
+            oldParent->children.erase(parent->children.begin()+i);
         }
     }
 
 }
-    // add to the new new parent
-    node->parent = parent;
-    node->parent->children.push_back(*node);
+    // add to the new parent
+    node.parent = parent;
+    parent->children.push_back(node); // a copy of the node
+    updateWorldTransform(parent);
 }
 
+void updateWorldTransform(SceneNode * node) {
 
+   // n.b. this assumes the parent world transform is always up-to-date so we must keep it that way
+   Mat4 parentWorldTransform;
 
-void drawSceneNode(SceneNode node, RenderProgram render_program, Mat4 parentWorldTransform) {
+   if (node->parent.has_value()) {
+    parentWorldTransform = node->parent.value()->world_transform;
+   } else {
+    parentWorldTransform = m4fromPositionAndEuler({0.f,0.f,0.f}, {0.f,0.f,0.f});
+   }
+   
+   node->world_transform = m4multiply(parentWorldTransform, node->local_transform);
 
+   for (auto& child: node->children) {
+    child.parent = node;
+    updateWorldTransform(&child);
+   }
 
-    // Mat4 world_matrix = scene_node.local_transform;
-    Mat4 world_matrix = m4multiply(parentWorldTransform, node.local_transform);
+}
 
-    glUseProgram(render_program.shader_program);
- 
-    glUniformMatrix4fv(render_program.world_matrix_uniform_location,1,0, &world_matrix.data[0][0]);
-    
-    glUniform3fv(render_program.material_uniform.color_location,1, node.material.color.data);
-    glUniform3fv(render_program.material_uniform.specular_color_location,1, node.material.specular_color.data);
-    glUniform1f(render_program.material_uniform.shininess_location, node.material.shininess);
+void updateTransform(SceneNode * node, Mat4 transform) {
+   node->local_transform = transform;
+   updateWorldTransform(node);
+}
 
+SceneNode initSceneNode(Mat4 transform, Mesh mesh, std::string name) {
+   SceneNode node = {
+   .id = sceneNodeCounter,
+   .local_transform = transform,
+   .world_transform = transform, // actually valid since there's no parent
+   .children = std::vector<SceneNode>(), // empty array if no children
+   .mesh = mesh,
+   .name = name
+};
 
-    glBindVertexArray(node.mesh.vao);
-    // Draw the vertex buffer
-    glDrawArrays(GL_TRIANGLES, 0, node.mesh.vertices.vertex_count);
-
-    
-    for (size_t i = 0; i < node.children.size(); i++) {
-               SceneNode child = node.children.at(i);
-               drawSceneNode(child, render_program, world_matrix);
-        
-     
-    }
+   sceneNodeCounter++;
+   updateWorldTransform(&node);
+   return node;
 }

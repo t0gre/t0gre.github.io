@@ -27,8 +27,14 @@ clean:
 
 test:
 	clang++ -o test-run -ggdb -std=c++17 tests/tests.cpp \
-	lib/raycast.cpp \
-	lib/vec.cpp \
+	lib/mesh.cpp \
+	lib/loaders.cpp \
+	lib/mat4.cpp \
+ 	lib/render_program.cpp \
+ 	lib/raycast.cpp \
+ 	lib/vec.cpp \
 	-Ilib/include \
 	-lm \
+	-lSDL2 \
+	-lGL \
 	&& ./test-run
