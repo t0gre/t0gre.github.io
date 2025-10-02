@@ -8,5 +8,6 @@ dist
 **/a.out.data
 **/a.out.wasm.map
 
-
+# native build artifacts
 native
+**/test-run
