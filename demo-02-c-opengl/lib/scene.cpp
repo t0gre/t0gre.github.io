@@ -54,7 +54,7 @@ void updateTransform(SceneNode * node, Mat4 transform) {
    updateWorldTransform(node);
 }
 
-SceneNode initSceneNode(Mat4 transform, Mesh mesh, std::string name) {
+SceneNode initSceneNode(Mat4 transform, std::optional<Mesh> mesh, std::string name) {
    SceneNode node = {
    .id = sceneNodeCounter,
    .local_transform = transform,

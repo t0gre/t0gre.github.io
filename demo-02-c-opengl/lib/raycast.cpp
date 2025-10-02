@@ -86,20 +86,7 @@ std::vector<Intersection> rayIntersectsVertices(Ray ray, Vertices vertices) {
     return intersections;
 }
 
-// std::vector<Intersection> rayIntersectsMesh(Ray ray, Mesh mesh) {
 
-//     auto intersections = rayIntersectsVertices(ray, mesh.vertices);
-
-//     // for (size_t i = 0; i < intersections.size(); i++) {
-//     //     Intersection intersection = intersections[i];
-//     //     intersection.meshId = mesh.id;
-//     //     intersections[i] = intersection;
-//     // }
-    
-//     return intersections;
-// }
-
-// ray is assumed to be in world space
 std::vector<Intersection> rayIntersectsSceneNode(Ray ray, SceneNode node) {
     
     std::vector<Intersection> intersections;

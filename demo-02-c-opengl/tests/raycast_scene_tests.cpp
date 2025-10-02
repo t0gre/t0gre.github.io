@@ -1,6 +1,5 @@
 #include <vector>
 
-#include "render_program.h"
 #include "mesh.h"
 #include "scene.h"
 #include "test_helpers.cpp"
@@ -41,21 +40,19 @@ const Material irrelevant = {
 
 TestResult intersect_node_with_position_transform() {
    
-    RenderProgram render_program = initShader();
-    Mesh tree_mesh = createMesh(vertices, &render_program); 
 
     Mat4 transform = m4fromPositionAndEuler(
-            (Vec3){ .x = -11.f, .y = 0.5f, .z = 0.f }, 
-            (Vec3){  .x = 0.f, .y = -1.f, .z = 0.f });
+            (Vec3){ .x = -2.f, .y = 0.f, .z = 0.f }, 
+            (Vec3){  .x = 0.f, .y = 0.f, .z = 0.f });
 
-    SceneNode node = {
-        .id = 1,
-        .local_transform = transform,
-        .world_transform = transform,
-        .material = irrelevant,
-        .children = std::vector<SceneNode>(),
-        .mesh = tree_mesh,
-    }; 
+    SceneNode node = initSceneNode(
+            transform,
+            (Mesh){
+                .vertices =vertices,
+                .material = irrelevant
+            },
+            "node"
+        );
    
     const Ray ray = {
      .origin = {-11.f, 0.5f, 0.f},
@@ -95,3 +92,120 @@ TestResult intersect_node_with_position_transform() {
 
 }
 
+TestResult intersect_node_with_multiple_position_transform() {
+   
+
+    Mat4 transform = m4fromPositionAndEuler(
+            (Vec3){ .x = -2.f, .y = 0.f, .z = 0.f }, 
+            (Vec3){  .x = 0.f, .y = 0.f, .z = 0.f });
+
+    SceneNode node = initSceneNode(
+            transform,
+            (Mesh){
+                .vertices =vertices,
+                .material = irrelevant
+            },
+            "node"
+        );
+   
+   
+    SceneNode parentNode = initSceneNode(
+            transform,
+            std::nullopt,
+            "parent"
+        );
+   
+    setParent(node, &parentNode);
+
+     const Ray ray = {
+     .origin = {-11.f, 0.5f, 0.f},
+     .direction = {0.f, -1.f, 0.f}
+    };
+
+
+    auto result = rayIntersectsSceneNode(ray, parentNode);
+
+    const Intersection expected = { 
+        .point = { -11.f, 0.f, 0.f}, 
+        .triangleIdx = 0 
+    };
+
+    if (result.empty()) {
+        return (TestResult){
+            .pass = false,
+            .message = "no intersection found",
+           
+        };
+    } else {
+        Intersection intersection_result = result[0];
+        if (vec3sAreEqual(expected.point, intersection_result.point) &&
+            expected.triangleIdx == intersection_result.triangleIdx) {
+           return (TestResult){
+            .pass = true,
+            .message = "correct intersection was found",
+            
+        }; 
+        } else {
+            return (TestResult){
+            .pass = false,
+            .message = "incorrect intersection found",
+          
+        };
+        }
+    }
+
+}
+
+TestResult intersect_node_with_roation_transform() {
+   
+
+    Mat4 transform = m4fromPositionAndEuler(
+            (Vec3){ .x = 0.f, .y = 0.f, .z = 0.f }, 
+            (Vec3){  .x = 0.f, .y = 0.f, .z = PI/4.f });
+
+    SceneNode node = initSceneNode(
+            transform,
+            (Mesh){
+                .vertices =vertices,
+                .material = irrelevant
+            },
+            "node"
+        );
+   
+    const Ray ray = {
+     .origin = {-1.f, 2.f, 0.f},
+     .direction = {0.f, -1.f, 0.f}
+    };
+
+    auto result = rayIntersectsSceneNode(ray, node);
+
+    const Intersection expected = { 
+        .point = { -1.f, -1.f, 0.f}, 
+        .triangleIdx = 0 
+    };
+
+    if (result.empty()) {
+        return (TestResult){
+            .pass = false,
+            .message = "no intersection found",
+           
+        };
+    } else {
+        Intersection intersection_result = result[0];
+        if (vec3sAreEqual(expected.point, intersection_result.point) &&
+            expected.triangleIdx == intersection_result.triangleIdx) {
+           return (TestResult){
+            .pass = true,
+            .message = "correct intersection was found",
+            
+        }; 
+        } else {
+            return (TestResult){
+            .pass = false,
+            .message = "incorrect intersection found",
+          
+        };
+        }
+    }
+
+}

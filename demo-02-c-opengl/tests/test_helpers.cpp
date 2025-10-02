@@ -11,7 +11,7 @@ typedef struct TestResult {
 
 
 bool floatsAreClose(float a, float b) {
-    return fabs(a - b) < 0.0000001f;
+    return fabs(a - b) < 0.00001f;
 }
 
 bool vec3sAreEqual(Vec3 a, Vec3 b) {

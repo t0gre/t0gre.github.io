@@ -25,6 +25,8 @@ int main(int argc, char** argv) {
 
     // scene tests
     results.push_back(intersect_node_with_position_transform());
+    results.push_back(intersect_node_with_multiple_position_transform());
+    results.push_back(intersect_node_with_roation_transform());
 
     int total = 0;
     int passed = 0;
