@@ -31,6 +31,7 @@ test:
  	lib/raycast.cpp \
  	lib/vec.cpp \
 	lib/scene.cpp \
+	lib/camera.cpp \
 	-Ilib/include \
 	-lm \
 	&& ./test-run
