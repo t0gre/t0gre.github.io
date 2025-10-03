@@ -15,17 +15,6 @@ Vec2 getPointerClickInClipSpace(int mouse_x, int mouse_y, int canvas_width, int 
     return { x, y };
 }
 
-Vec2 normalizeMousePosition(Vec2 mouse_position, Vec2 canvas_dims)
-{
-  float x_norm = mouse_position.x / canvas_dims.x * 2.0 - 1.0;
-  float y_norm = mouse_position.y / canvas_dims.y * -2.0 + 1.0;
-
-  return (Vec2){
-    .x = x_norm,
-    .y = y_norm,
-  };
-}
-
 Ray getWorldRayFromClipSpaceAndCamera(
     Vec2 clipSpacePoint, 
     Camera camera) {
@@ -45,12 +34,7 @@ Ray getWorldRayFromClipSpaceAndCamera(
 
     auto rayOrigin = worldNear;
 
-    // could be just subVectors?
-    const Vec3 rayDirection = {
-        worldFar.x - worldNear.x,
-        worldFar.y - worldNear.z,
-        worldFar.z - worldNear.z
-    };
+    const Vec3 rayDirection = subtractVectors(worldFar, worldNear);
 
     auto rayDirNorm = normalize(rayDirection);
 
@@ -125,8 +109,6 @@ void processEvents(AppState* state)
                     auto sortedHits = sortBySceneDepth(hits, state->camera);
 
                     auto clicked = sortedHits[0];
-
-                    printf("clicked: %s\n", clicked.nodeName.c_str());
 
                     // set the floor node to have the same color at the clicked thing
                     for (auto& node: state->scene.nodes) {
