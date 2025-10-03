@@ -1,7 +1,7 @@
 #ifndef VEC_H
 #define VEC_H
 #include <math.h>
-
+#include <stdbool.h>
 typedef union Vec2 { 
   struct {
     float x;
@@ -39,12 +39,24 @@ typedef union Vec4 {
 
 } Vec4;
 
+// result type for vec3
+typedef struct {
+    bool valid;   
+    Vec3 value; 
+} Vec3Result;
 
+Vec3 scaleVector(Vec3 vec, float scalar);
+
+Vec3 addVectors(Vec3 a, Vec3 b);
 
 Vec3 subtractVectors(Vec3 a, Vec3 b);
 
 Vec3 normalize(Vec3 v);
 
 Vec3 cross(Vec3 a, Vec3 b);
+
+float dot(Vec3 a, Vec3 b);
+
+float length(Vec3 v);
 
 #endif //VEC_H 

@@ -1,5 +1,5 @@
 build:
-	clang -o native -ggdb -std=c11 index.c lib/*.c -Ilib/include \
+	clang++ -o native -ggdb -std=c++17 index.cpp lib/*.cpp -Ilib/include \
 	-I/usr/include/SDL2 \
 	-D_REENTRANT \
 	-lSDL2 \
@@ -10,7 +10,7 @@ build:
 	# -Werror 
 
 build-en:
-	emcc -std=c11 index.c lib/*.c -Ilib/include \
+	emcc -std=c++17 index.cpp lib/*.cpp -Ilib/include \
 	-s MAX_WEBGL_VERSION=2 \
 	-s USE_SDL=2 \
 	-s FULL_ES3=1 \
@@ -24,3 +24,14 @@ build-en:
 clean:
 	rm a.out.data a.out.js a.out.wasm
 	rm a.out.wasm.map
+
+test:
+	clang++ -o test-run -ggdb -std=c++17 tests/tests.cpp \
+	lib/mat4.cpp \
+ 	lib/raycast.cpp \
+ 	lib/vec.cpp \
+	lib/scene.cpp \
+	lib/camera.cpp \
+	-Ilib/include \
+	-lm \
+	&& ./test-run

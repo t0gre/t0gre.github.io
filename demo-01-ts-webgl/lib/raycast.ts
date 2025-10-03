@@ -3,7 +3,7 @@ import { m4inverse, m4PositionMultiply, m4DirectionMultiply, m4multiply } from "
 import { Vertices } from "./mesh";
 import { Mesh } from "./mesh";
 import { SceneNode, Scene } from "./scene";
-import { addVectors, cross, dot, scaleVector, subtractVectors, Vec2, Vec3 } from "./vec";
+import { addVectors, cross, dot, normalize, scaleVector, subtractVectors, Vec2, Vec3 } from "./vec";
 
 export type Triangle = [Vec3, Vec3, Vec3]
 
@@ -127,7 +127,6 @@ export function rayIntersectsSceneNode(ray: Ray, node: SceneNode): Intersection[
                 direction: meshSpaceDirection
             } 
 
-            // console.log('newray', newRay)
             
             const rayNodeIntersections = rayIntersectsMesh(
                 newRay, 
@@ -192,13 +191,10 @@ export function getWorldRayFromClipSpaceAndCamera(
     const worldFar  = m4PositionMultiply(farPoint, viewProjInverse);
 
     const rayOrigin = worldNear
-    const rayDirection: Vec3 = [
-        worldFar[0] - worldNear[0],
-        worldFar[1] - worldNear[1],
-        worldFar[2] - worldNear[2]
-    ];
-    const len = Math.hypot(...rayDirection);
-    const rayDirNorm = rayDirection.map(v => v / len);
+
+    const rayDirection = subtractVectors(worldFar, worldNear);
+
+    const rayDirNorm = normalize(rayDirection);
 
     const worldRay: Ray = {
         origin: rayOrigin,

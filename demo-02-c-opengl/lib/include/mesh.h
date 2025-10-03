@@ -1,22 +1,28 @@
 #ifndef MESH_H
 #define MESH_H
 
-#include "std_imports.h"
-
+#include <optional>
+#include <assert.h>
 #include "camera.h"
 #include "light.h"
 #include "vec.h"
-#include "render_program.h"
 #include "data_structures.h"
+#include "material.h"
+
+typedef struct Vertices {
+  size_t vertex_count;
+  float * positions;
+  float * normals;
+  // add textcoords and indices
+} Vertices;
+
 
 typedef struct Mesh {
-  size_t vertex_count;
-  RenderProgram* render_program;
-  GLuint vao;
+  Vertices vertices;
+  Material material;
+  std::optional<int> id; // the vao id once the mesh has been inited
 } Mesh;
 
-
-Mesh createMesh(FloatData positions, FloatData normals, RenderProgram* render_program);
 
 
 #endif //MESH_H

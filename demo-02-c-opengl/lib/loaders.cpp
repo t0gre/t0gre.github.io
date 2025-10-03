@@ -23,7 +23,7 @@ char* get_shader_content(const char* fileName)
 
     /* Read File for Content */
     fp = fopen(fileName, "r");
-    shaderContent = memset(malloc(size), '\0', size);
+    shaderContent = (char*)memset(malloc(size), '\0', size);
     fread(shaderContent, 1, size-1, fp);
     fclose(fp);
 
@@ -45,7 +45,7 @@ FloatData read_csv(const char* filename) {
     
   number_of_floats++;
   size_t number = number_of_floats;
-  float* floats = malloc(sizeof(float)*number);
+  float* floats = (float *)malloc(sizeof(float)*number);
 
   size_t float_cursor = 0;
   char number_string[10] = { 0 }; // it wont be longer than this

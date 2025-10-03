@@ -6,11 +6,11 @@
 ### tests
 
 - for typescript tests: `yarn test`
-- for c: none yet :scream:   
+- for c++: run `make test` from inside demo-02-cpp-opengl
 
-### building c
+### building c++
 
-to work on the c code, some extra steps are required, consult the [readme for that](./demo-02-c-opengl/README.md)
+to work on the c++ code, some extra steps are required, consult the [readme for that](./demo-02-c-opengl/README.md)
 
 ## assets
 

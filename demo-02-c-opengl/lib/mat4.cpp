@@ -257,3 +257,40 @@ Mat4 m4fromPositionAndEuler(Vec3 position, Vec3 euler) {
 Vec3 getPositionVector(Mat4 transform) {
     return (Vec3){ .x = transform.m30, .y = transform.m31, .z = transform.m32};
 }
+
+Vec3 m4PositionMultiply(Vec3 v, Mat4 m) {
+        Vec4 v1 = {
+            .x = v.x,
+            .y = v.y,
+            .z = v.z,
+            .w = 1.f
+        };
+
+        Vec4 dst = {0.f,0.f,0.f,0.f};
+        for (size_t i = 0; i < 4; ++i) {
+            for (size_t j = 0; j < 4; ++j) {
+                dst.data[i] += v1.data[j] * m.data[j][i]; 
+            }
+        }
+        return (Vec3){ dst.x/dst.w,dst.y/dst.w,dst.z/dst.w};
+    }
+
+Vec3 m4DirectionMultiply(Vec3 v, Mat4 m) {
+         Vec4 v1 = {
+            .x = v.x,
+            .y = v.y,
+            .z = v.z,
+            .w = 0.f
+        };
+
+        Vec4 dst = {0.f,0.f,0.f,0.f};
+
+        for (size_t i = 0; i < 4; ++i) {
+            for (size_t j = 0; j < 4; ++j) {
+                dst.data[i] += v1.data[j] * m.data[j][i]; 
+            }
+        }
+
+        return (Vec3){dst.x,dst.y,dst.z};
+    }
+

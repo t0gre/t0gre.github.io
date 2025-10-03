@@ -5,12 +5,12 @@ import { Vec3 } from 'demo-01-ts-webgl/lib/vec';
 
 
 const meshPositionsData = new Float32Array([
-            -10 ,0, -10, // back left
-            -10 ,0, 10, // front left
-            10  ,0, -10, // back right
-            -10 ,0, 10, // front left
-             10  ,0, 10, // front right
-             10  ,0, -10, // back right
+            -10, 0, -10, // back left
+            -10, 0, 10, // front left
+             10, 0, -10, // back right
+            -10, 0, 10, // front left
+             10, 0, 10, // front right
+             10, 0, -10, // back right
             ])
 
            

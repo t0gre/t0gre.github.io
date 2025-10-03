@@ -1,6 +1,20 @@
 #include <math.h>
 #include "vec.h"
 
+Vec3 scaleVector(Vec3 vec, float scalar) {
+   
+    return (Vec3){
+        .x = vec.x * scalar, 
+        .y = vec.y * scalar, 
+        .z = vec.z * scalar};
+}
+
+Vec3 addVectors(Vec3 a, Vec3 b) {
+    return (Vec3){
+        .x = a.x + b.x, 
+        .y = a.y + b.y, 
+        .z = a.z + b.z};
+}
 
 Vec3 subtractVectors(Vec3 a, Vec3 b) {
     return (Vec3){
@@ -31,3 +45,10 @@ Vec3 cross(Vec3 a, Vec3 b) {
         };
 }
 
+float dot(Vec3 a, Vec3 b) {
+    return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
+float length(Vec3 v) {
+    return sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+}
