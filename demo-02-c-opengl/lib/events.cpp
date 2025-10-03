@@ -109,7 +109,6 @@ void processEvents(AppState* state)
                         e->x, e->y, state->window.width, state->window.height
                     );
                     
-                    // printf("clip x %f : clip y %f\n", pointer_clip.x, pointer_clip.y);
 
                     // create ray
                     Ray worldRay = getWorldRayFromClipSpaceAndCamera(
@@ -128,9 +127,15 @@ void processEvents(AppState* state)
                     auto clicked = sortedHits[0].nodeName;
 
                     printf("clicked: %s\n", clicked.c_str());
-                    
 
-                }
+                    // set the floor node to have the same color at the clicked thing
+                    for (auto& node: state->scene.nodes) {
+                        if (node.name == "floor") {
+                            auto floor = &node;
+                            floor->mesh.value().material.color = {0.1f, 0.1f, 0.1f};
+                        }
+                    }
+                 }
                 break;
             }
             case SDL_MOUSEMOTION:
