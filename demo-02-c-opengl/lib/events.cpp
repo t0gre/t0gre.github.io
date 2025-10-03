@@ -2,10 +2,18 @@
 #include <SDL.h>
 #include <GLES3/gl3.h>
 #include <stdbool.h>
+#include "math.h"
 
 #include "events.h"
 #include "mat4.h"
+#include "raycast.h"
 
+Vec2 getPointerClickInClipSpace(int mouse_x, int mouse_y, int canvas_width, int canvas_height) {
+    // Convert from window coordinates to normalized device coordinates (clip space)
+    float x = (float)mouse_x / (float)canvas_width * 2.0f - 1.0f;
+    float y = (float)mouse_y / (float)canvas_height * -2.0f + 1.0f;
+    return { x, y };
+}
 
 Vec2 normalizeMousePosition(Vec2 mouse_position, Vec2 canvas_dims)
 {
@@ -16,6 +24,42 @@ Vec2 normalizeMousePosition(Vec2 mouse_position, Vec2 canvas_dims)
     .x = x_norm,
     .y = y_norm,
   };
+}
+
+Ray getWorldRayFromClipSpaceAndCamera(
+    Vec2 clipSpacePoint, 
+    Camera camera) {
+
+    float x = clipSpacePoint.x;
+    float y = clipSpacePoint.y;
+
+    Vec3 nearPoint  = {x, y, -1.f};
+    Vec3 farPoint  = {x, y,  1};
+
+    const Mat4 viewMatrix = m4inverse(camera.transform);
+    const Mat4 projectionMatrix = getProjectionMatrix(camera);
+    const Mat4 viewProjInverse = m4inverse(m4multiply(projectionMatrix, viewMatrix));
+
+    const Vec3 worldNear = m4PositionMultiply(nearPoint, viewProjInverse);
+    const Vec3 worldFar  = m4PositionMultiply(farPoint, viewProjInverse);
+
+    auto rayOrigin = worldNear;
+
+    // could be just subVectors?
+    const Vec3 rayDirection = {
+        worldFar.x - worldNear.x,
+        worldFar.y - worldNear.z,
+        worldFar.z - worldNear.z
+    };
+
+    auto rayDirNorm = normalize(rayDirection);
+
+    Ray worldRay = {
+        .origin = rayOrigin,
+        .direction = rayDirNorm
+    };
+
+    return worldRay;
 }
 
 void processEvents(AppState* state)
@@ -35,7 +79,8 @@ void processEvents(AppState* state)
                 if (event.window.windowID == state->window.id
                     && event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
                 {
-                    int width = event.window.data1, height = event.window.data2;
+                    int width = event.window.data1; 
+                    int height = event.window.data2;
                     glViewport(0, 0, width, height);
 
                     state->camera.aspect = (float)width / (float)height;
@@ -58,6 +103,32 @@ void processEvents(AppState* state)
                     };
                     
                     state->input.pointer_position = pointer_position;
+
+                    // get mouse position ndc
+                    Vec2 pointer_clip = getPointerClickInClipSpace(
+                        e->x, e->y, state->window.width, state->window.height
+                    );
+                    
+                    // printf("clip x %f : clip y %f\n", pointer_clip.x, pointer_clip.y);
+
+                    // create ray
+                    Ray worldRay = getWorldRayFromClipSpaceAndCamera(
+                        pointer_clip,
+                        state->camera
+                    );
+
+                    // intersect scene
+                    auto hits = rayIntersectsScene(worldRay, state->scene);
+
+                    if (hits.empty()) break;
+                        
+                    // update floor with color of first hit
+                    auto sortedHits = sortBySceneDepth(hits, state->camera);
+
+                    auto clicked = sortedHits[0].nodeName;
+
+                    printf("clicked: %s\n", clicked.c_str());
+                    
 
                 }
                 break;

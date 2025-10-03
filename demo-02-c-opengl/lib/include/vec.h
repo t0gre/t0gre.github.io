@@ -57,4 +57,6 @@ Vec3 cross(Vec3 a, Vec3 b);
 
 float dot(Vec3 a, Vec3 b);
 
+float length(Vec3 v);
+
 #endif //VEC_H 

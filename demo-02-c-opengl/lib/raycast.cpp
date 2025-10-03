@@ -4,6 +4,7 @@
 #include "vec.h"
 #include "scene.h"
 #include <stack>
+#include <algorithm>
 
 
 Ray m4RayMultiply(Ray ray, Mat4 m) {
@@ -146,4 +147,41 @@ std::vector<Intersection> rayIntersectsSceneNode(Ray ray, SceneNode node) {
     }
 
     return intersections;
+}
+
+std::vector<Intersection> rayIntersectsScene(Ray ray, Scene scene) {
+    std::vector<Intersection> intersections;
+    
+    for (auto& node: scene.nodes) {
+        auto rayNodeIntersections = rayIntersectsSceneNode(ray, node);
+        if (!rayNodeIntersections.empty()) {
+                for (auto& intersection: rayNodeIntersections) {
+                     intersections.push_back(intersection);
+                }
+            }
+        }
+
+    return intersections;
+}
+
+
+std::vector<Intersection> sortBySceneDepth(
+    std::vector<Intersection> intersections,
+    Camera camera
+) {
+    auto result = intersections; // not yet sorted but we will sort in-place
+
+    sort(result.begin(),result.end(), [camera](Intersection &a, Intersection &b){
+        auto viewMatrix = m4inverse(camera.transform);
+        auto projectionMatrix = getProjectionMatrix(camera);
+        auto viewProj = m4multiply(projectionMatrix, viewMatrix);
+        auto glPosA = m4PositionMultiply(a.point, viewProj);
+        auto glPosB = m4PositionMultiply(b.point, viewProj);
+
+        return   glPosA.z < glPosB.z;
+
+
+    });
+
+    return result;
 }

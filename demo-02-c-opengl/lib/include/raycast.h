@@ -32,4 +32,11 @@ std::vector<Intersection> rayIntersectsVertices(Ray ray, Vertices vertices);
 
 std::vector<Intersection> rayIntersectsSceneNode(Ray ray, SceneNode node);
 
+std::vector<Intersection> rayIntersectsScene(Ray ray, Scene scene);
+
+std::vector<Intersection> sortBySceneDepth(
+    std::vector<Intersection> intersections,
+    Camera camera
+);
+
 #endif  

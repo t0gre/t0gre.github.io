@@ -250,7 +250,7 @@ int main(int argc, char** argv)
                     .shininess = 0.9f
                 },
             },
-            "blue tree"
+            "grey tree"
         );
     
     SceneNode tree_shape2 = initSceneNode(m4fromPositionAndEuler(
@@ -264,7 +264,7 @@ int main(int argc, char** argv)
                     .shininess = 0.9f
                 }, 
             },
-            "grey tree"
+            "blue tree"
         );
     
     setParent(tree_shape1, &tree_shape2);
