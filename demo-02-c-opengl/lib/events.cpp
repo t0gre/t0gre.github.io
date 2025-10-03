@@ -124,15 +124,15 @@ void processEvents(AppState* state)
                     // update floor with color of first hit
                     auto sortedHits = sortBySceneDepth(hits, state->camera);
 
-                    auto clicked = sortedHits[0].nodeName;
+                    auto clicked = sortedHits[0];
 
-                    printf("clicked: %s\n", clicked.c_str());
+                    printf("clicked: %s\n", clicked.nodeName.c_str());
 
                     // set the floor node to have the same color at the clicked thing
                     for (auto& node: state->scene.nodes) {
                         if (node.name == "floor") {
                             auto floor = &node;
-                            floor->mesh.value().material.color = {0.1f, 0.1f, 0.1f};
+                            floor->mesh.value().material.color = clicked.meshInfo.value().material.color;
                         }
                     }
                  }

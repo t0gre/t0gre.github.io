@@ -20,10 +20,18 @@ typedef struct Ray {
     Vec3 direction; 
 } Ray;
 
+typedef struct MeshInfo {
+    Material material;
+    std::optional<int> id;
+} MeshInfo;
+
+
 typedef struct Intersection {
     std::string nodeName; // empty if none
     Vec3 point;
     size_t triangleIdx;
+    std::optional<MeshInfo> meshInfo;
+
 } Intersection;
 
 Vec3Result rayIntersectsTriangle(Ray ray, Triangle triangle);

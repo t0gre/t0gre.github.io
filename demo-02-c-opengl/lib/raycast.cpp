@@ -125,7 +125,7 @@ std::vector<Intersection> rayIntersectsSceneNode(Ray ray, SceneNode node) {
             if (!rayNodeIntersections.empty()) {
                 for (size_t i = 0; i < rayNodeIntersections.size(); i++) {
                     auto intersection = rayNodeIntersections[i];
-                    // transform the interection back into world space
+                    // transform the intersection back into world space
                     auto worldSpaceIntersection = m4PositionMultiply(
                         intersection.point, 
                         nodeUnderTest.world_transform);
@@ -135,6 +135,10 @@ std::vector<Intersection> rayIntersectsSceneNode(Ray ray, SceneNode node) {
                         .nodeName = nodeUnderTest.name.value_or(""),
                         .point = worldSpaceIntersection, 
                         .triangleIdx = intersection.triangleIdx,
+                        .meshInfo = (MeshInfo){ 
+                            .material = nodeUnderTest.mesh.value().material,
+                            .id = nodeUnderTest.mesh.value().id 
+                        }
                     });
                 }
                 
