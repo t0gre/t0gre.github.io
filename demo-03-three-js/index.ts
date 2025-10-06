@@ -10,14 +10,15 @@ import {
     PlaneGeometry,
     MeshStandardMaterial,
     Fog,
-    Color} from "three";
+    Color,
+    AnimationMixer} from "three";
 
 import { GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
-import { scaleVector } from "demo-01-ts-webgl/lib/vec";
+
 
 const CAMERA_START = new Vector3(0, 3.5, 10);
-const MODEL_PIVOT = new Vector3(0, 2, -5);
+
 
 export async function main(canvas: HTMLCanvasElement) {
 
@@ -61,7 +62,17 @@ export async function main(canvas: HTMLCanvasElement) {
         controls.target.set(0,CAMERA_START.y/2, 0)
         controls.update()
         scene.add(model)
+
+        const mixer = new AnimationMixer( model );
+
+        gltf.animations.forEach( ( clip ) => {
+          
+            mixer.clipAction( clip ).play();
+          
+        } );
     });
+
+    
 
     const ambientLight = new AmbientLight(0xffffff, 0.1);
     const directionalLight = new DirectionalLight(0xffffff, 0.8);
@@ -76,6 +87,8 @@ export async function main(canvas: HTMLCanvasElement) {
     directionalLight.shadow.mapSize.width = 2048
     directionalLight.shadow.mapSize.height = 2048
     directionalLight.translateZ(4);
+    
+
     
 
     const floor = new Mesh(new PlaneGeometry(400, 400), new MeshStandardMaterial({color: 0xffee55}))
