@@ -6,18 +6,18 @@ import {
     WebGLRenderer, 
     Mesh,
     Group,
-    MeshPhongMaterial,
-    Color,
     Vector3,
     PlaneGeometry,
-    MeshStandardMaterial} from "three";
+    MeshStandardMaterial,
+    Fog,
+    Color} from "three";
 
-import {OBJLoader} from 'three/examples/jsm/loaders/OBJLoader';
+import { GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
+import { scaleVector } from "demo-01-ts-webgl/lib/vec";
 
 const CAMERA_START = new Vector3(0, 3.5, 10);
-const DIRECTIONAL_LIGHT_MOTION_RANGE = 0.02;
-const DIRECTIONAL_LIGHT_MOTION_FREQUENCY = 1/700;
+const MODEL_PIVOT = new Vector3(0, 2, -5);
 
 export async function main(canvas: HTMLCanvasElement) {
 
@@ -32,40 +32,40 @@ export async function main(canvas: HTMLCanvasElement) {
    
 
     const controls = new OrbitControls(camera, canvas);
+    controls.maxPolarAngle = Math.PI / 2
 
     camera.position.copy(CAMERA_START);
     
     
 
     let model: Group | undefined = undefined;
-    const modelColor = new Color(0.2, 0.9, 1.0);
     
-    const objLoader = new OBJLoader();
-    objLoader.load('/rainbowtree.obj', (root: Group) => {
-        root.children.forEach((child: Mesh) => {
+    const gltfLoader = new GLTFLoader();
+    gltfLoader.load('/striped-seabream.glb', (gltf: GLTF) => {
+
         
-            if (Array.isArray(child.material)) {
-                child.material.forEach((material: MeshPhongMaterial) => material.color = modelColor)
-            }  else {
-                // @ts-ignore this is just true for the rainbow model, probably unsafe for others
-                const material: MeshPhongMaterial = child.material; 
-                material.color  = modelColor;
-            }    
+        gltf.scene.traverse((child: Mesh) => {
+        
+            
             child.castShadow = true;   
-            child.receiveShadow = true;
+            // child.receiveShadow = true;
     })
-        root.castShadow = true;
-        root.receiveShadow = true;
-        model = root;
+        // root.children.forEach()
+        // root.castShadow = true;
+        // root.receiveShadow = true;
+        model = gltf.scene;
     
         model.rotateY(Math.PI/2)
-        controls.target.set(0,CAMERA_START.y, 0)
+        model.translateY(2)
+        model.scale.multiplyScalar(30)
+        controls.target.set(0,CAMERA_START.y/2, 0)
+        controls.update()
         scene.add(model)
     });
 
     const ambientLight = new AmbientLight(0xffffff, 0.1);
     const directionalLight = new DirectionalLight(0xffffff, 0.8);
-    directionalLight.translateY(1);
+    directionalLight.translateY(5);
     directionalLight.castShadow =true;
     // these values are pure trial an error 
     directionalLight.shadow.camera.far = 50
@@ -78,22 +78,22 @@ export async function main(canvas: HTMLCanvasElement) {
     directionalLight.translateZ(4);
     
 
-    const floor = new Mesh(new PlaneGeometry(40, 40), new MeshStandardMaterial({color: 0xffffff}))
+    const floor = new Mesh(new PlaneGeometry(400, 400), new MeshStandardMaterial({color: 0xffee55}))
     floor.rotateX(-Math.PI/2)
     floor.receiveShadow = true;
 
+    scene.background = new Color(0xccccff);
     scene.add(ambientLight, directionalLight, camera, floor);
+    scene.fog = new Fog( 0xccccff, 10, 15 );
 
     let oldTimestamp = 0;
     function animate(newTimestamp: number): void {
         if (!oldTimestamp) {
             oldTimestamp = newTimestamp;
         } else {
-            directionalLight.translateX(DIRECTIONAL_LIGHT_MOTION_RANGE*Math.cos(newTimestamp*DIRECTIONAL_LIGHT_MOTION_FREQUENCY)); // move light
-            if (model) {
-                directionalLight.lookAt(model.position)
-            }
-           
+            
+            
+            // model.po
             renderer.render(scene, camera);
             oldTimestamp = newTimestamp;
         }
