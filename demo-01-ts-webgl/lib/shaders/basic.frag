@@ -66,6 +66,9 @@
         vec3 normal = normalize(v_normal);  
         vec3 view_dir = normalize(u_view_position - frag_world_position);
 
+        float world_distance = distance(u_view_position, frag_world_position);
+        float fog_factor = smoothstep(0.0, 20.0, world_distance);
+
         // ambient
         vec3 ambient_color = u_ambient_light.color * u_material.color;                           
 
@@ -97,4 +100,5 @@
                       1.0);  
              
         outColor.rgb = min(outColor.rgb, vec3(1.0));
+        outColor.rgb = mix(outColor.rgb, vec3(0.1, 0.1, 0.1), fog_factor);
     }

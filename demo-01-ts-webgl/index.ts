@@ -1,4 +1,4 @@
-import { initSceneNode, setParent, updateTransform } from './lib/scene'
+import { initSceneNode, setParent } from './lib/scene'
 import { degToRad } from './lib/mathUtils'
 import { Vertices } from './lib/mesh'
 import { DirectionalLight, AmbientLight, PointLight } from './lib/light'
@@ -6,11 +6,11 @@ import { Camera } from './lib/camera'
 import { initRenderProgram, drawScene } from './lib/BasicRenderProgram'
 import { loadObj } from './lib/loaders/ObjLoader'
 import { InputState } from './lib/input'
-import { m4fromPositionAndEuler, m4vectorMultiply, m4yRotate, m4yRotation } from './lib/mat4'
+import { m4fromPositionAndEuler, m4lookAt, m4vectorMultiply, m4yRotation } from './lib/mat4'
 import { initGlState } from './lib/gl'
 import { getWorldRayFromClipSpaceAndCamera, rayIntersectsScene, sortBySceneDepth } from './lib/raycast'
 import { getPointerClickInClipSpace } from './lib/events'
-import { Vec3, Vec4 } from './lib/vec'
+import { Vec3, Vec4, calculateOrbitPosition } from './lib/vec'
 
 
 type NodeName = "yellow tree" | "orange tree" | "green tree" | "floor";
@@ -22,6 +22,11 @@ const meshColorMap: Record<NodeName, Vec3> = {
   "floor": [0.2, 0.2, 0.4]
 };
 
+let azimuth = 3 * Math.PI / 4 ; // horizontal angle, in radians
+let elevation = 3 * Math.PI / 4 ; // vertical angle, in radians
+const orbitRadius = 15;
+const orbitTarget: Vec3 = [-3, 2, -2]; // Change as needed
+const orbitSensitivity = 0.01; // Adjust for speed
 
 export async function main(canvas: HTMLCanvasElement): Promise<1> {
 
@@ -46,6 +51,8 @@ gl.enable(gl.CULL_FACE);
 
 // Enable the depth buffer
 gl.enable(gl.DEPTH_TEST);
+
+gl.clearColor(0.1, 0.1, 0.1 ,1);
 
 
 const basicRenderProgram = initRenderProgram(gl)
@@ -99,12 +106,12 @@ if (!yellowTree) {
 }
 
 const floorPositionsData = new Float32Array([
--10 ,0, -10, // back left
--10 ,0, 10, // front left
-10  ,0, -10, // back right
--10 ,0, 10, // front left
-    10  ,0, 10, // front right
-    10  ,0, -10, // back right
+-1000 ,0, -1000, // back left
+-1000 ,0, 1000, // front left
+1000  ,0, -1000, // back right
+-1000 ,0, 1000, // front left
+    1000  ,0, 1000, // front right
+    1000  ,0, -1000, // back right
 ])
 
 
@@ -156,20 +163,24 @@ const pointLight: PointLight = {
         quadratic: 0.032
     };
 
-
+const cameraPosition = calculateOrbitPosition(azimuth, elevation, orbitTarget, orbitRadius);
+const up: Vec3 = [0, 1, 0]
 const camera: Camera = {
     fieldOfViewRadians:  degToRad(60), 
     aspect: canvas.clientWidth / canvas.clientHeight,
     near: 1, 
     far:2000, 
-    up: [0, 1, 0], 
-    transform: m4fromPositionAndEuler([0, 3.5, 10], [0,0,0])
+    up, 
+    transform: m4lookAt(cameraPosition, orbitTarget, up)
 } 
+
 
 
 const input: InputState = {
     pointerPosition: [0,0]
 }
+
+
 
 canvas.addEventListener('pointerdown', (e) => {
     
@@ -197,15 +208,17 @@ canvas.addEventListener('pointerdown', (e) => {
 canvas.addEventListener('pointerdown', () => {
     const handler = (e: PointerEvent) => {
        
-        // rotate the shapes transform
-        // shape.pose.rotation[1] += e.movementX / 100;
-        updateTransform(yellowTree, m4yRotate(yellowTree._localTransform, e.movementX / 100));
+        azimuth += -e.movementX * orbitSensitivity;
+        elevation -= e.movementY * orbitSensitivity; 
+
+        const newCameraPosition = calculateOrbitPosition(azimuth, elevation, orbitTarget, orbitRadius);
+
+        camera.transform = m4lookAt(newCameraPosition, orbitTarget, camera.up);
 
         input.pointerPosition = getPointerClickInClipSpace(canvas, e, gl!);
     }
     canvas.addEventListener('pointerup', () => {
         canvas.removeEventListener('pointermove', handler)
-        // input.pointerPosition = [0,0] N.B this is also omitted in  the C version
     })
     canvas.addEventListener('pointermove', handler )
 })

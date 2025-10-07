@@ -33,3 +33,20 @@ export function cross(a: Vec3, b: Vec3): Vec3 {
 export function dot(a: Vec3, b: Vec3): number {
     return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 }
+
+export function calculateOrbitPosition(
+    azimuth: number, 
+    elevation: number, 
+    orbitTarget: Vec3,
+    orbitRadius: number
+): Vec3 {
+    // Clamp elevation to avoid flipping
+    elevation = Math.max(0.01, Math.min(Math.PI / 2 - 0.01, elevation));
+
+    // Spherical to Cartesian
+    const x = orbitTarget[0] + orbitRadius * Math.sin(elevation) * Math.sin(azimuth);
+    const y = orbitTarget[1] + orbitRadius * Math.cos(elevation);
+    const z = orbitTarget[2] + orbitRadius * Math.sin(elevation) * Math.cos(azimuth);
+
+    return [x,y,z]
+}

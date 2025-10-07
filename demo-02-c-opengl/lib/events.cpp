@@ -125,10 +125,22 @@ void processEvents(AppState* state)
                 SDL_MouseMotionEvent *e = (SDL_MouseMotionEvent*)&event;
                 if (state->input.pointer_down) {
                     
-                    updateTransform(&state->scene.nodes.at(0),
-                                    m4yRotate(state->scene.nodes.at(0).local_transform, 
-                                            e->xrel / 100.f)
-                                    ) ;
+                    float orbitSensitivity = state->camera.orbit.sensitivity;
+                    Vec3 orbitTarget = state->camera.orbit.target;
+                    float orbitRadius = state->camera.orbit.radius;
+
+                    state->camera.orbit.azimuth -= e->xrel * orbitSensitivity;
+                    state->camera.orbit.elevation -= e->yrel * orbitSensitivity;
+
+                    Vec3 newCameraPosition = calculateOrbitPosition(
+                        state->camera.orbit.azimuth,
+                        state->camera.orbit.elevation,
+                        orbitTarget,
+                        orbitRadius
+                    );
+
+                    state->camera.transform = m4lookAt(newCameraPosition, orbitTarget, state->camera.up);
+
                     Vec2 pointer_position = {
                     .x = static_cast<float>(e->x),
                     .y = static_cast<float>(e->y)

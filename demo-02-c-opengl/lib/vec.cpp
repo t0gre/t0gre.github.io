@@ -1,5 +1,7 @@
 #include <math.h>
 #include "vec.h"
+#include "math_utils.h"
+#include <algorithm>
 
 Vec3 scaleVector(Vec3 vec, float scalar) {
    
@@ -51,4 +53,21 @@ float dot(Vec3 a, Vec3 b) {
 
 float length(Vec3 v) {
     return sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+}
+
+Vec3 calculateOrbitPosition(
+    float azimuth, 
+    float elevation, 
+    Vec3 orbitTarget,
+    float orbitRadius
+) {
+    // Clamp elevation to avoid flipping
+    elevation = std::max(0.001f, std::min(PI / 2.0f - 0.001f, elevation));
+
+    // Spherical to Cartesian
+    float x = orbitTarget.x + orbitRadius * sin(elevation) * sin(azimuth);
+    float y = orbitTarget.y + orbitRadius * cos(elevation);
+    float z = orbitTarget.z + orbitRadius * sin(elevation) * cos(azimuth);
+
+    return {x,y,z};
 }
