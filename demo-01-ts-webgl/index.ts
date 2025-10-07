@@ -2,7 +2,7 @@ import { initSceneNode, setParent } from './lib/scene'
 import { degToRad } from './lib/mathUtils'
 import { Vertices } from './lib/mesh'
 import { DirectionalLight, AmbientLight, PointLight } from './lib/light'
-import { calculateOrbitPosition, Camera } from './lib/camera'
+import { Camera } from './lib/camera'
 import { initRenderProgram, drawScene } from './lib/BasicRenderProgram'
 import { loadObj } from './lib/loaders/ObjLoader'
 import { InputState } from './lib/input'
@@ -10,7 +10,7 @@ import { m4fromPositionAndEuler, m4lookAt, m4vectorMultiply, m4yRotation } from 
 import { initGlState } from './lib/gl'
 import { getWorldRayFromClipSpaceAndCamera, rayIntersectsScene, sortBySceneDepth } from './lib/raycast'
 import { getPointerClickInClipSpace } from './lib/events'
-import { Vec3, Vec4 } from './lib/vec'
+import { Vec3, Vec4, calculateOrbitPosition } from './lib/vec'
 
 
 type NodeName = "yellow tree" | "orange tree" | "green tree" | "floor";
@@ -207,7 +207,7 @@ canvas.addEventListener('pointerdown', () => {
     const handler = (e: PointerEvent) => {
        
         azimuth += -e.movementX * orbitSensitivity;
-        elevation -= e.movementY * orbitSensitivity; // invert Y for natural feel
+        elevation -= e.movementY * orbitSensitivity; 
 
         const newCameraPosition = calculateOrbitPosition(azimuth, elevation, orbitTarget, orbitRadius);
 
@@ -217,7 +217,6 @@ canvas.addEventListener('pointerdown', () => {
     }
     canvas.addEventListener('pointerup', () => {
         canvas.removeEventListener('pointermove', handler)
-        // input.pointerPosition = [0,0] N.B this is also omitted in  the C version
     })
     canvas.addEventListener('pointermove', handler )
 })

@@ -59,4 +59,11 @@ float dot(Vec3 a, Vec3 b);
 
 float length(Vec3 v);
 
+Vec3 calculateOrbitPosition(
+    float azimuth, 
+    float elevation, 
+    Vec3 orbitTarget,
+    float orbitRadius
+);
+
 #endif //VEC_H 

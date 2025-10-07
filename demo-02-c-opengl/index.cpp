@@ -272,12 +272,12 @@ int main(int argc, char** argv)
 
 
     float floor_positions_data[18] = {
-            -10.f ,0.f, -10.f, // back left
-            -10.f ,0.f, 10.f, // front left
-            10.f ,0.f, -10.f, // back right
-            -10.f ,0.f, 10.f, // front left
-            10.f ,0.f, 10.f, // front right
-            10.f ,0.f, -10.f, // back right
+            -1000.f ,0.f, -1000.f, // back left
+            -1000.f ,0.f, 1000.f, // front left
+            1000.f ,0.f, -1000.f, // back right
+            -1000.f ,0.f, 1000.f, // front left
+            1000.f ,0.f, 1000.f, // front right
+            1000.f ,0.f, -1000.f, // back right
         };
 
     
@@ -305,7 +305,7 @@ int main(int argc, char** argv)
                 .material = {
                     .color = { .r = 0.9, .g = 0.7, .b = 0.1},
                     .specular_color = { .r = 0.9, .g = 0.9, .b = 0.9},
-                    .shininess = 10.f
+                    .shininess = 1000.f
                 },  
             },
             "floor"
@@ -323,16 +323,31 @@ int main(int argc, char** argv)
         };
 
 
+    Vec3 up = { .x = 0.f, .y = 1.f, .z = 0.f };
+    Orbit orbit = {
+        .azimuth = 3.f * PI / 4.f,
+        .elevation = 3.f * PI / 4.f,
+        .sensitivity = 0.01f,
+        .radius = 15.f,
+        .target = {-3.f, 2.f, -2.f}
+    };
+
+    Vec3 cameraPosition = calculateOrbitPosition(
+        orbit.azimuth, 
+        orbit.elevation,
+        orbit.target,   
+        orbit.radius
+    );
+
     // create a camera
     const Camera camera = {
         .field_of_view_radians = 1.f,
         .aspect = (float)window.width / (float)window.height, 
         .near = 1.f,
         .far = 2000.f, 
-        .up = { .x = 0.f, .y = 1.f, .z = 0.f }, 
-        .transform = m4fromPositionAndEuler(
-            (Vec3){ .x = 0.f, .y = 3.5f, .z = 10.f },
-            (Vec3){ .x = 0.f, .y = 0.f, .z = 0.f })
+        .up = up, 
+        .transform = m4lookAt(cameraPosition, orbit.target, up),
+        .orbit = orbit
         };
 
     Uint64 now = SDL_GetPerformanceCounter();
