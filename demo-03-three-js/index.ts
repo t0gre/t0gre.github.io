@@ -6,18 +6,24 @@ import {
     WebGLRenderer, 
     Mesh,
     Group,
-    MeshPhongMaterial,
-    Color,
     Vector3,
     PlaneGeometry,
-    MeshStandardMaterial} from "three";
+    MeshStandardMaterial,
+    Fog,
+    Color,
+    Bone} from "three";
 
-import {OBJLoader} from 'three/examples/jsm/loaders/OBJLoader';
+import { GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
+import { isSkinnedMesh } from "./helpers";
+import { lerp } from "three/src/math/MathUtils";
+
 
 const CAMERA_START = new Vector3(0, 3.5, 10);
-const DIRECTIONAL_LIGHT_MOTION_RANGE = 0.02;
-const DIRECTIONAL_LIGHT_MOTION_FREQUENCY = 1/700;
+const BACKGROUND_COLOR = 0x444488
+const fishSpineRange: [number, number] = [-0.1, 0.1]
+const fishJawRange: [number, number] = [0, 0.2]
+
 
 export async function main(canvas: HTMLCanvasElement) {
 
@@ -32,40 +38,57 @@ export async function main(canvas: HTMLCanvasElement) {
    
 
     const controls = new OrbitControls(camera, canvas);
+    controls.maxPolarAngle = Math.PI / 2
 
     camera.position.copy(CAMERA_START);
     
     
 
     let model: Group | undefined = undefined;
-    const modelColor = new Color(0.2, 0.9, 1.0);
+    let fishSpineBone: Bone | undefined = undefined
+    let fishJawBone: Bone | undefined = undefined
     
-    const objLoader = new OBJLoader();
-    objLoader.load('/rainbowtree.obj', (root: Group) => {
-        root.children.forEach((child: Mesh) => {
+    const gltfLoader = new GLTFLoader();
+    gltfLoader.load('/striped-seabream.glb', (gltf: GLTF) => {
+
         
-            if (Array.isArray(child.material)) {
-                child.material.forEach((material: MeshPhongMaterial) => material.color = modelColor)
-            }  else {
-                // @ts-ignore this is just true for the rainbow model, probably unsafe for others
-                const material: MeshPhongMaterial = child.material; 
-                material.color  = modelColor;
-            }    
+        gltf.scene.traverse((child: Mesh) => {
+        
             child.castShadow = true;   
-            child.receiveShadow = true;
+          
     })
-        root.castShadow = true;
-        root.receiveShadow = true;
-        model = root;
-    
+        
+      
+        model = gltf.scene;
+          
+        const fishMesh =  model.children[0]!.children[1]!
+
+        if (!isSkinnedMesh(fishMesh)) {
+            return
+        }
+
+        // console.log(fishMesh.skeleton.bones)
+        fishJawBone = fishMesh.skeleton.bones[5]!
+        fishSpineBone = fishMesh.skeleton.bones[10]!
+
+        if (!fishSpineBone) {
+             console.log("something went wrong on loading, fish spine bone not found")
+        }
+
         model.rotateY(Math.PI/2)
-        controls.target.set(0,CAMERA_START.y, 0)
+        model.translateY(2)
+        model.scale.multiplyScalar(30)
+        controls.target.set(0,CAMERA_START.y/2, 0)
+        controls.update()
         scene.add(model)
+
     });
+
+    
 
     const ambientLight = new AmbientLight(0xffffff, 0.1);
     const directionalLight = new DirectionalLight(0xffffff, 0.8);
-    directionalLight.translateY(1);
+    directionalLight.translateY(5);
     directionalLight.castShadow =true;
     // these values are pure trial an error 
     directionalLight.shadow.camera.far = 50
@@ -78,22 +101,37 @@ export async function main(canvas: HTMLCanvasElement) {
     directionalLight.translateZ(4);
     
 
-    const floor = new Mesh(new PlaneGeometry(40, 40), new MeshStandardMaterial({color: 0xffffff}))
+    
+
+    const floor = new Mesh(new PlaneGeometry(400, 400), new MeshStandardMaterial({color: 0xffee55}))
     floor.rotateX(-Math.PI/2)
     floor.receiveShadow = true;
 
+    scene.background = new Color(BACKGROUND_COLOR);
     scene.add(ambientLight, directionalLight, camera, floor);
+    scene.fog = new Fog( BACKGROUND_COLOR, 10, 15 );
 
     let oldTimestamp = 0;
     function animate(newTimestamp: number): void {
         if (!oldTimestamp) {
             oldTimestamp = newTimestamp;
         } else {
-            directionalLight.translateX(DIRECTIONAL_LIGHT_MOTION_RANGE*Math.cos(newTimestamp*DIRECTIONAL_LIGHT_MOTION_FREQUENCY)); // move light
-            if (model) {
-                directionalLight.lookAt(model.position)
+            
+            const dt = newTimestamp/oldTimestamp
+            // animate the fish 
+            if (!(fishSpineBone && fishJawBone)) {
+                // hasn't loaded yet
+            } else {
+
+                const spineRotation = lerp(fishSpineRange[0], fishSpineRange[1], (Math.sin(newTimestamp/(dt*200)) + 1)/2)
+                fishSpineBone.rotation.set(0,0,spineRotation)
+
+                const jawRotation = lerp(fishJawRange[0], fishJawRange[1], (Math.sin(newTimestamp/(dt*1000)) + 1)/2)
+                fishJawBone.rotation.set(jawRotation - 0.9, 0, 0)
+                 
             }
-           
+
+            
             renderer.render(scene, camera);
             oldTimestamp = newTimestamp;
         }
