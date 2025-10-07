@@ -22,6 +22,7 @@ import { lerp } from "three/src/math/MathUtils";
 const CAMERA_START = new Vector3(0, 3.5, 10);
 const BACKGROUND_COLOR = 0x444488
 const fishSpineRange: [number, number] = [-0.1, 0.1]
+const fishJawRange: [number, number] = [0, 0.2]
 
 
 export async function main(canvas: HTMLCanvasElement) {
@@ -45,6 +46,7 @@ export async function main(canvas: HTMLCanvasElement) {
 
     let model: Group | undefined = undefined;
     let fishSpineBone: Bone | undefined = undefined
+    let fishJawBone: Bone | undefined = undefined
     
     const gltfLoader = new GLTFLoader();
     gltfLoader.load('/striped-seabream.glb', (gltf: GLTF) => {
@@ -66,6 +68,7 @@ export async function main(canvas: HTMLCanvasElement) {
         }
 
         // console.log(fishMesh.skeleton.bones)
+        fishJawBone = fishMesh.skeleton.bones[5]!
         fishSpineBone = fishMesh.skeleton.bones[10]!
 
         if (!fishSpineBone) {
@@ -116,15 +119,17 @@ export async function main(canvas: HTMLCanvasElement) {
             
             const dt = newTimestamp/oldTimestamp
             // animate the fish 
-            if (!fishSpineBone) {
+            if (!(fishSpineBone && fishJawBone)) {
                 // hasn't loaded yet
             } else {
 
-                const currentRotation = lerp(fishSpineRange[0], fishSpineRange[1], (Math.sin(newTimestamp/(dt*100)) + 1)/2)
-                fishSpineBone.rotation.set(0,0,currentRotation)
+                const spineRotation = lerp(fishSpineRange[0], fishSpineRange[1], (Math.sin(newTimestamp/(dt*200)) + 1)/2)
+                fishSpineBone.rotation.set(0,0,spineRotation)
+
+                const jawRotation = lerp(fishJawRange[0], fishJawRange[1], (Math.sin(newTimestamp/(dt*1000)) + 1)/2)
+                fishJawBone.rotation.set(jawRotation - 0.9, 0, 0)
                  
             }
-
 
             
             renderer.render(scene, camera);
