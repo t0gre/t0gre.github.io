@@ -78,7 +78,7 @@ WindowState initWindow(const char* title)
     #endif
 
     
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClearColor(0.01f, 0.05f, 0.05f, 1.0f);
     glEnable(GL_DEPTH_TEST);
 
     // Initialize viewport
@@ -207,7 +207,7 @@ int main(int argc, char** argv)
     };
 
     PointLight point_light = {
-        .color = { .r = 0.2f, .g = 0.2f, .b = 0.2f},
+        .color = { .r = 0.3f, .g = 0.3f, .b = 0.3f},
         .position = { .x = 0.f, .y = 5.0f, .z = 5.f },
         .constant = 1.0f,
         .linear = 0.009f,
@@ -325,7 +325,7 @@ int main(int argc, char** argv)
 
     Vec3 up = { .x = 0.f, .y = 1.f, .z = 0.f };
     Orbit orbit = {
-        .azimuth = 3.f * PI / 4.f,
+        .azimuth = - PI * 0.2f,
         .elevation = 3.f * PI / 4.f,
         .sensitivity = 0.01f,
         .radius = 15.f,

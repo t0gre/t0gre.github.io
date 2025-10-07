@@ -52,6 +52,8 @@ gl.enable(gl.CULL_FACE);
 // Enable the depth buffer
 gl.enable(gl.DEPTH_TEST);
 
+gl.clearColor(0.1, 0.1, 0.1 ,1);
+
 
 const basicRenderProgram = initRenderProgram(gl)
 
