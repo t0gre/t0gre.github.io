@@ -11,13 +11,17 @@ import {
     MeshStandardMaterial,
     Fog,
     Color,
-    AnimationMixer} from "three";
+    Bone} from "three";
 
 import { GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
+import { isSkinnedMesh } from "./helpers";
+import { lerp } from "three/src/math/MathUtils";
 
 
 const CAMERA_START = new Vector3(0, 3.5, 10);
+const BACKGROUND_COLOR = 0x444488
+const fishSpineRange: [number, number] = [-0.1, 0.1]
 
 
 export async function main(canvas: HTMLCanvasElement) {
@@ -40,6 +44,7 @@ export async function main(canvas: HTMLCanvasElement) {
     
 
     let model: Group | undefined = undefined;
+    let fishSpineBone: Bone | undefined = undefined
     
     const gltfLoader = new GLTFLoader();
     gltfLoader.load('/striped-seabream.glb', (gltf: GLTF) => {
@@ -47,15 +52,26 @@ export async function main(canvas: HTMLCanvasElement) {
         
         gltf.scene.traverse((child: Mesh) => {
         
-            
             child.castShadow = true;   
-            // child.receiveShadow = true;
+          
     })
-        // root.children.forEach()
-        // root.castShadow = true;
-        // root.receiveShadow = true;
+        
+      
         model = gltf.scene;
-    
+          
+        const fishMesh =  model.children[0]!.children[1]!
+
+        if (!isSkinnedMesh(fishMesh)) {
+            return
+        }
+
+        // console.log(fishMesh.skeleton.bones)
+        fishSpineBone = fishMesh.skeleton.bones[10]!
+
+        if (!fishSpineBone) {
+             console.log("something went wrong on loading, fish spine bone not found")
+        }
+
         model.rotateY(Math.PI/2)
         model.translateY(2)
         model.scale.multiplyScalar(30)
@@ -63,13 +79,6 @@ export async function main(canvas: HTMLCanvasElement) {
         controls.update()
         scene.add(model)
 
-        const mixer = new AnimationMixer( model );
-
-        gltf.animations.forEach( ( clip ) => {
-          
-            mixer.clipAction( clip ).play();
-          
-        } );
     });
 
     
@@ -95,9 +104,9 @@ export async function main(canvas: HTMLCanvasElement) {
     floor.rotateX(-Math.PI/2)
     floor.receiveShadow = true;
 
-    scene.background = new Color(0xccccff);
+    scene.background = new Color(BACKGROUND_COLOR);
     scene.add(ambientLight, directionalLight, camera, floor);
-    scene.fog = new Fog( 0xccccff, 10, 15 );
+    scene.fog = new Fog( BACKGROUND_COLOR, 10, 15 );
 
     let oldTimestamp = 0;
     function animate(newTimestamp: number): void {
@@ -105,8 +114,19 @@ export async function main(canvas: HTMLCanvasElement) {
             oldTimestamp = newTimestamp;
         } else {
             
+            const dt = newTimestamp/oldTimestamp
+            // animate the fish 
+            if (!fishSpineBone) {
+                // hasn't loaded yet
+            } else {
+
+                const currentRotation = lerp(fishSpineRange[0], fishSpineRange[1], (Math.sin(newTimestamp/(dt*100)) + 1)/2)
+                fishSpineBone.rotation.set(0,0,currentRotation)
+                 
+            }
+
+
             
-            // model.po
             renderer.render(scene, camera);
             oldTimestamp = newTimestamp;
         }
