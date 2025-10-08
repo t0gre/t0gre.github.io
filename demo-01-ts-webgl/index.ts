@@ -22,11 +22,20 @@ const meshColorMap: Record<NodeName, Vec3> = {
   "floor": [0.2, 0.2, 0.4]
 };
 
-let azimuth = 3 * Math.PI / 4 ; // horizontal angle, in radians
-let elevation = 3 * Math.PI / 4 ; // vertical angle, in radians
-const orbitRadius = 15;
-const orbitTarget: Vec3 = [-3, 2, -2]; // Change as needed
-const orbitSensitivity = 0.01; // Adjust for speed
+type Orbit = {
+    azimuth: number
+    elevation: number
+    radius: number 
+    target: Vec3
+    sensitivity: number
+}
+const orbit: Orbit = {
+    azimuth: Math.PI * -0.2,  // horizontal angle, in radians
+    elevation: 3 * Math.PI / 4,  // vertical angle, in radians
+    radius: 15,
+    target: [-3, 2, -2],
+    sensitivity: 0.01,
+} 
 
 export async function main(canvas: HTMLCanvasElement): Promise<1> {
 
@@ -163,7 +172,13 @@ const pointLight: PointLight = {
         quadratic: 0.032
     };
 
-const cameraPosition = calculateOrbitPosition(azimuth, elevation, orbitTarget, orbitRadius);
+const cameraPosition = calculateOrbitPosition(
+        orbit.azimuth, 
+        orbit.elevation, 
+        orbit.target, 
+        orbit.radius
+    );
+
 const up: Vec3 = [0, 1, 0]
 const camera: Camera = {
     fieldOfViewRadians:  degToRad(60), 
@@ -171,7 +186,7 @@ const camera: Camera = {
     near: 1, 
     far:2000, 
     up, 
-    transform: m4lookAt(cameraPosition, orbitTarget, up)
+    transform: m4lookAt(cameraPosition, orbit.target, up)
 } 
 
 
@@ -208,12 +223,17 @@ canvas.addEventListener('pointerdown', (e) => {
 canvas.addEventListener('pointerdown', () => {
     const handler = (e: PointerEvent) => {
        
-        azimuth += -e.movementX * orbitSensitivity;
-        elevation -= e.movementY * orbitSensitivity; 
+        orbit.azimuth += -e.movementX * orbit.sensitivity;
+        orbit.elevation -= e.movementY * orbit.sensitivity; 
 
-        const newCameraPosition = calculateOrbitPosition(azimuth, elevation, orbitTarget, orbitRadius);
+        const newCameraPosition = calculateOrbitPosition(
+        orbit.azimuth, 
+        orbit.elevation, 
+        orbit.target, 
+        orbit.radius
+    );
 
-        camera.transform = m4lookAt(newCameraPosition, orbitTarget, camera.up);
+        camera.transform = m4lookAt(newCameraPosition, orbit.target, camera.up);
 
         input.pointerPosition = getPointerClickInClipSpace(canvas, e, gl!);
     }
