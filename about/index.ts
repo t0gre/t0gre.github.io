@@ -70,3 +70,6 @@ export const updateTimes = () => {
         updateXandersAge()
     }, 10)
 }
+
+
+
