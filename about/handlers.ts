@@ -80,7 +80,7 @@ const quotes: Quote[] = [
 }        
 ]
 
-export let quotesList = "<div id='quotes-list' style='display: none>"
+export let quotesList = "<div id='quotes-list' style='display: none'>"
 
 for (const quote of quotes) {
  const li = `
