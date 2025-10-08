@@ -98,7 +98,7 @@ for (const quote of quotes) {
 
 quotesList += "</div>" 
 
-function toggleQuotes() {
+export function toggleQuotes() {
     const quoteDiv = document.getElementById("quotes")
     const quotetoggle = document.getElementById("quote-toggle")
 

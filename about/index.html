@@ -138,10 +138,13 @@
 
     <script type="module">
         import { updateTimes } from "./index.ts"
+        import { toggleQuotes } from "./handlers.ts"
+
         updateTimes()
         
+        window.toggleQuotes = toggleQuotes
+        
     </script>
-    <script src="handlers.ts" type="text/javascript"></script>
 </body>
 
 </html>
