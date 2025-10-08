@@ -139,11 +139,16 @@
 
     <script type="module">
         import { updateTimes } from "./index.ts"
-        import { toggleQuotes } from "./handlers.ts"
+        import { toggleQuotes,quotesList } from "./handlers.ts"
 
         updateTimes()
         
-        window.toggleQuotes = toggleQuotes
+        window.quotesList = quotesList
+        const quoteDiv = document.getElementById("quotes")
+        quoteDiv.innerHTML = quotesList
+        const list = document.getElementById("quotes-list")
+        list.style.display = 'none'
+        window.toggleQuotes = () => toggleQuotes(list)
         
     </script>
 </body>

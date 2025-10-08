@@ -80,7 +80,7 @@ const quotes: Quote[] = [
 }        
 ]
 
-let quotesList = "<div>"
+export let quotesList = "<div id='quotes-list' style='display: none>"
 
 for (const quote of quotes) {
  const li = `
@@ -98,22 +98,22 @@ for (const quote of quotes) {
 
 quotesList += "</div>" 
 
-export function toggleQuotes() {
-    const quoteDiv = document.getElementById("quotes")
+export function toggleQuotes(div: HTMLDivElement) {
+    
     const quotetoggle = document.getElementById("quote-toggle")
 
-    if (!(quoteDiv && quotetoggle)) {
+    if (!quotetoggle) {
         console.log("failed to get dom nodes")
         return
     } 
 
     if (quotetoggle.innerHTML !== "show") {
-        quoteDiv.innerHTML = ""
         quotetoggle.innerHTML = "show"
+        div.style.display = 'none'
+        
     } else {
-        
-        
-        quoteDiv.innerHTML = quotesList
         quotetoggle.innerHTML = "hide"
+        div.style.display = 'block'
     }
 }
+
