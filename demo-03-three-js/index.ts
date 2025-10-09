@@ -10,7 +10,8 @@ import {
     PlaneGeometry,
     MeshStandardMaterial,
     Fog,
-    Color} from "three";
+    Color,
+    Object3D} from "three";
 
 import { GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
@@ -18,7 +19,7 @@ import { clone as cloneSkeleton } from "three/examples/jsm/utils/SkeletonUtils";
 import { isSkinnedMesh } from "./helpers";
 import { lerp } from "three/src/math/MathUtils";
 
-function updateFish(fishGtlf: Group, newTimestamp: number, dt: number) {
+function updateFish(fishGtlf: Object3D, newTimestamp: number, dt: number) {
     const fishMesh =  fishGtlf.children[0]!.children[1]!
 
         if (!isSkinnedMesh(fishMesh)) {
@@ -87,7 +88,10 @@ export async function main(canvas: HTMLCanvasElement) {
         
 
         littleFish.scale.multiplyScalar(5)
+        littleFish.rotateY(-Math.PI/2)
+        littleFish.translateY(0.5)
         littleFishes.add(littleFish)
+      
         
 
         fish.rotateY(Math.PI/2)
@@ -139,6 +143,10 @@ export async function main(canvas: HTMLCanvasElement) {
             } else {
 
                updateFish(fish, newTimestamp, dt)
+               
+               for (const littleFish of littleFishes.children) {
+                updateFish(littleFish, newTimestamp, dt/10)
+               }
                  
             }
 
