@@ -18,6 +18,28 @@ import { OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
 import { isSkinnedMesh } from "./helpers";
 import { lerp } from "three/src/math/MathUtils";
 
+function updateFish(fishGtlf: Group, newTimestamp: number, dt: number) {
+    const fishMesh =  fishGtlf.children[0]!.children[1]!
+
+        if (!isSkinnedMesh(fishMesh)) {
+            return
+        }
+
+        const fishJawBone = fishMesh.skeleton.bones[5]!
+        const fishSpineBone = fishMesh.skeleton.bones[10]!
+
+        if (!fishSpineBone) {
+             console.log("something went wrong on loading, fish spine bone not found")
+        }
+    
+
+        const spineRotation = lerp(fishSpineRange[0], fishSpineRange[1], (Math.sin(newTimestamp/(dt*200)) + 1)/2)
+        fishSpineBone.rotation.set(0,0,spineRotation)
+
+        const jawRotation = lerp(fishJawRange[0], fishJawRange[1], (Math.sin(newTimestamp/(dt*1000)) + 1)/2)
+        fishJawBone.rotation.set(jawRotation - 0.9, 0, 0)
+}
+
 
 const CAMERA_START = new Vector3(0, 3.5, 10);
 const BACKGROUND_COLOR = 0x444488
@@ -44,9 +66,9 @@ export async function main(canvas: HTMLCanvasElement) {
     
     
 
-    let model: Group | undefined = undefined;
-    let fishSpineBone: Bone | undefined = undefined
-    let fishJawBone: Bone | undefined = undefined
+    let fish: Group | undefined = undefined;
+    let littleFishes: Group = new Group()
+    scene.add(littleFishes)
     
     const gltfLoader = new GLTFLoader();
     gltfLoader.load('/striped-seabream.glb', (gltf: GLTF) => {
@@ -59,28 +81,21 @@ export async function main(canvas: HTMLCanvasElement) {
     })
         
       
-        model = gltf.scene;
+        fish = gltf.scene;
           
-        const fishMesh =  model.children[0]!.children[1]!
+        const littleFish = fish.clone()
+        
 
-        if (!isSkinnedMesh(fishMesh)) {
-            return
-        }
 
-        // console.log(fishMesh.skeleton.bones)
-        fishJawBone = fishMesh.skeleton.bones[5]!
-        fishSpineBone = fishMesh.skeleton.bones[10]!
+        // littleFishes.add()
+        
 
-        if (!fishSpineBone) {
-             console.log("something went wrong on loading, fish spine bone not found")
-        }
-
-        model.rotateY(Math.PI/2)
-        model.translateY(2)
-        model.scale.multiplyScalar(30)
+        fish.rotateY(Math.PI/2)
+        fish.translateY(2)
+        fish.scale.multiplyScalar(30)
         controls.target.set(0,CAMERA_START.y/2, 0)
         controls.update()
-        scene.add(model)
+        scene.add(fish)
 
     });
 
@@ -119,15 +134,11 @@ export async function main(canvas: HTMLCanvasElement) {
             
             const dt = newTimestamp/oldTimestamp
             // animate the fish 
-            if (!(fishSpineBone && fishJawBone)) {
+            if (!fish) {
                 // hasn't loaded yet
             } else {
 
-                const spineRotation = lerp(fishSpineRange[0], fishSpineRange[1], (Math.sin(newTimestamp/(dt*200)) + 1)/2)
-                fishSpineBone.rotation.set(0,0,spineRotation)
-
-                const jawRotation = lerp(fishJawRange[0], fishJawRange[1], (Math.sin(newTimestamp/(dt*1000)) + 1)/2)
-                fishJawBone.rotation.set(jawRotation - 0.9, 0, 0)
+               updateFish(fish, newTimestamp, dt)
                  
             }
 
