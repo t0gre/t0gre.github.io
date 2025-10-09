@@ -19,6 +19,20 @@ import { clone as cloneSkeleton } from "three/examples/jsm/utils/SkeletonUtils";
 import { isSkinnedMesh } from "./helpers";
 import { lerp } from "three/src/math/MathUtils";
 
+
+const SPAWN_LOCATIONS = [
+    new Vector3(0, 0.5, 0),
+    new Vector3(0, 4, 0),
+    new Vector3(0, 2, 3),
+    new Vector3(0, 2, 6),
+    new Vector3(0, 2, -2),
+    new Vector3(0, 0.7, 5),
+    new Vector3(0, 4, -3),
+]
+
+
+
+
 function updateFish(fishGtlf: Object3D, newTimestamp: number, dt: number) {
     const fishMesh =  fishGtlf.children[0]!.children[1]!
 
@@ -41,6 +55,17 @@ function updateFish(fishGtlf: Object3D, newTimestamp: number, dt: number) {
         fishJawBone.rotation.set(jawRotation - 0.9, 0, 0)
 }
 
+function spawnLittleFish(fish: Group, littleFishes: Group) {
+    const littleFish = cloneSkeleton(fish)
+     
+    const spawnLocationIdx = Math.round(Math.random() * 7)
+    const spawnLocation = SPAWN_LOCATIONS[spawnLocationIdx]!
+
+    littleFish.scale.multiplyScalar(5)
+    littleFish.rotateY(-Math.PI/2)
+    littleFish.position.copy(spawnLocation)
+    littleFishes.add(littleFish)
+}
 
 const CAMERA_START = new Vector3(0, 3.5, 10);
 const BACKGROUND_COLOR = 0x444488
@@ -80,17 +105,10 @@ export async function main(canvas: HTMLCanvasElement) {
             child.castShadow = true;   
           
     })
-        
       
         fish = gltf.scene;
           
-        const littleFish = cloneSkeleton(fish)
-        
-
-        littleFish.scale.multiplyScalar(5)
-        littleFish.rotateY(-Math.PI/2)
-        littleFish.translateY(0.5)
-        littleFishes.add(littleFish)
+        spawnLittleFish(fish, littleFishes)
       
         
 
@@ -143,6 +161,11 @@ export async function main(canvas: HTMLCanvasElement) {
             } else {
 
                updateFish(fish, newTimestamp, dt)
+            
+            
+               if (Math.abs(Math.sin(newTimestamp)) < 0.01) {
+                console.log("spawn", Math.abs(Math.sin(newTimestamp)))
+               }
                
                for (const littleFish of littleFishes.children) {
                 updateFish(littleFish, newTimestamp, dt/10)
