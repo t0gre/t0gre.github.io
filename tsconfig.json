@@ -26,7 +26,9 @@
         "noUncheckedIndexedAccess": true, // accessing index must always check for undefined
         "noUnusedLocals": true, // Report errors on unused local variables.
         "noUnusedParameters": true, // Report errors on unused parameters in functions
-        "skipLibCheck": true // because vite types are bad
+        "skipLibCheck": true, // because vite types are bad
+        //
+        "module": "es2022"
     },
     "exclude": [
         "node_modules/**/*"
