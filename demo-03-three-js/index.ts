@@ -24,14 +24,22 @@ import { lerp } from "three/src/math/MathUtils";
 const SPAWN_LOCATIONS = [
     new Vector3(9, 0.5, 0),
     new Vector3(9, 4, 0),
-    new Vector3(9, 2, 3),
+    new Vector3(9, 2, -3),
     new Vector3(9, 2, 6),
+    new Vector3(9, 3, -3),
+    
+    new Vector3(9, 1, 6),
     new Vector3(9, 2, -2),
-    new Vector3(9, 0.7, 5),
+    new Vector3(9, 1.5, 5),
     new Vector3(9, 4, -3),
+    new Vector3(9, 4.2, -4),
 ]
 
-
+type Range = {max: number, min: number}
+const CAMERA_START = new Vector3(0, 3.5, 10);
+const BACKGROUND_COLOR = 0x444488
+const fishSpineRange: Range = { min: -0.1, max: 0.2 }
+const fishJawRange: Range = { min: 0, max: 0.2 }
 
 
 function updateFish(fishGtlf: Object3D, newTimestamp: number, dt: number) {
@@ -48,11 +56,13 @@ function updateFish(fishGtlf: Object3D, newTimestamp: number, dt: number) {
              console.log("something went wrong on loading, fish spine bone not found")
         }
     
+        // console.log(Math.sin(newTimestamp/(dt*200)))
 
-        const spineRotation = lerp(fishSpineRange[0], fishSpineRange[1], (Math.sin(newTimestamp/(dt*200)) + 1)/2)
+        const spineRotation = lerp(fishSpineRange.min, fishSpineRange.max, (Math.sin(newTimestamp/(dt*200)) + 1)/2)
+        
         fishSpineBone.rotation.set(0,0,spineRotation)
 
-        const jawRotation = lerp(fishJawRange[0], fishJawRange[1], (Math.sin(newTimestamp/(dt*1000)) + 1)/2)
+        const jawRotation = lerp(fishJawRange.min, fishJawRange.max, (Math.sin(newTimestamp/(dt*1000)) + 1)/2)
         fishJawBone.rotation.set(jawRotation - 0.9, 0, 0)
 }
 
@@ -83,7 +93,7 @@ function cleanUpLittleFishes(littleFishes: Group) {
 function spawnLittleFish(fish: Group, littleFishes: Group) {
     const littleFish = cloneSkeleton(fish)
      
-    const spawnLocationIdx = Math.round(Math.random() * 6)
+    const spawnLocationIdx = Math.round(Math.random() * 9)
     const spawnLocation = SPAWN_LOCATIONS[spawnLocationIdx]!
 
     littleFish.scale.multiplyScalar(0.1)
@@ -91,11 +101,6 @@ function spawnLittleFish(fish: Group, littleFishes: Group) {
     littleFish.position.copy(spawnLocation)
     littleFishes.add(littleFish)
 }
-
-const CAMERA_START = new Vector3(0, 3.5, 10);
-const BACKGROUND_COLOR = 0x444488
-const fishSpineRange: [number, number] = [-0.1, 0.1]
-const fishJawRange: [number, number] = [0, 0.2]
 
 
 export async function main(canvas: HTMLCanvasElement) {
@@ -112,10 +117,12 @@ export async function main(canvas: HTMLCanvasElement) {
 
     const controls = new OrbitControls(camera, canvas);
     controls.maxPolarAngle = Math.PI / 2
+    controls.maxDistance = 13
+    controls.minDistance = 3.5
+    controls.enablePan = false
 
     camera.position.copy(CAMERA_START);
-    
-    
+ 
 
     let fish: Group | undefined = undefined;
     let littleFishes: Group = new Group()
