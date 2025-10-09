@@ -11,23 +11,24 @@ import {
     MeshStandardMaterial,
     Fog,
     Color,
-    Object3D} from "three";
+    Object3D,
+    SkinnedMesh} from "three";
 
 import { GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
 import { clone as cloneSkeleton } from "three/examples/jsm/utils/SkeletonUtils";
-import { isSkinnedMesh } from "./helpers";
+import { disposeMaterial, isSkinnedMesh } from "./helpers";
 import { lerp } from "three/src/math/MathUtils";
 
 
 const SPAWN_LOCATIONS = [
-    new Vector3(0, 0.5, 0),
-    new Vector3(0, 4, 0),
-    new Vector3(0, 2, 3),
-    new Vector3(0, 2, 6),
-    new Vector3(0, 2, -2),
-    new Vector3(0, 0.7, 5),
-    new Vector3(0, 4, -3),
+    new Vector3(9, 0.5, 0),
+    new Vector3(9, 4, 0),
+    new Vector3(9, 2, 3),
+    new Vector3(9, 2, 6),
+    new Vector3(9, 2, -2),
+    new Vector3(9, 0.7, 5),
+    new Vector3(9, 4, -3),
 ]
 
 
@@ -55,14 +56,38 @@ function updateFish(fishGtlf: Object3D, newTimestamp: number, dt: number) {
         fishJawBone.rotation.set(jawRotation - 0.9, 0, 0)
 }
 
+function updateLittleFish(fishGtlf: Object3D, newTimestamp: number, dt: number) {
+    updateFish(fishGtlf, newTimestamp, dt)
+
+    // move it
+    fishGtlf.translateZ(0.05)
+
+    
+}
+
+function cleanUpLittleFishes(littleFishes: Group) {
+
+    for (const fishGtlf of littleFishes.children) {
+         if (fishGtlf.position.x < - 10) {
+        littleFishes.remove(fishGtlf)
+        fishGtlf.visible = false
+        const fishMesh =  fishGtlf.children[0]!.children[1]! as SkinnedMesh
+        
+        disposeMaterial(fishMesh.material)
+    }
+    }
+   
+   
+}
+
 function spawnLittleFish(fish: Group, littleFishes: Group) {
     const littleFish = cloneSkeleton(fish)
      
-    const spawnLocationIdx = Math.round(Math.random() * 7)
+    const spawnLocationIdx = Math.round(Math.random() * 6)
     const spawnLocation = SPAWN_LOCATIONS[spawnLocationIdx]!
 
-    littleFish.scale.multiplyScalar(5)
-    littleFish.rotateY(-Math.PI/2)
+    littleFish.scale.multiplyScalar(0.1)
+    littleFish.rotateY(Math.PI)
     littleFish.position.copy(spawnLocation)
     littleFishes.add(littleFish)
 }
@@ -107,10 +132,6 @@ export async function main(canvas: HTMLCanvasElement) {
     })
       
         fish = gltf.scene;
-          
-        spawnLittleFish(fish, littleFishes)
-      
-        
 
         fish.rotateY(Math.PI/2)
         fish.translateY(2)
@@ -164,12 +185,15 @@ export async function main(canvas: HTMLCanvasElement) {
             
             
                if (Math.abs(Math.sin(newTimestamp)) < 0.01) {
-                console.log("spawn", Math.abs(Math.sin(newTimestamp)))
+                // console.log("spawn", Math.abs(Math.sin(newTimestamp)))
+                spawnLittleFish(fish, littleFishes)
                }
                
                for (const littleFish of littleFishes.children) {
-                updateFish(littleFish, newTimestamp, dt/10)
+                updateLittleFish(littleFish, newTimestamp, dt/10)
                }
+
+               cleanUpLittleFishes(littleFishes)
                  
             }
 
