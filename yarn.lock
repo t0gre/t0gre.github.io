@@ -95,11 +95,6 @@
     enabled "2.0.x"
     kuler "^2.0.0"
 
-"@dimforge/rapier3d@^0.19.1":
-  version "0.19.1"
-  resolved "https://registry.yarnpkg.com/@dimforge/rapier3d/-/rapier3d-0.19.1.tgz#17a2acaff23068605fb3c9ca6ca0f248be1845eb"
-  integrity sha512-pvAJXeeMtEif6OlmS4f+gJ5pj3qnLHTkJaIqiVhqDnqJPanwSkXd4DU12x4BcBPXc16pABr+cA7j17Cj86x1kw==
-
 "@esbuild/aix-ppc64@0.25.6":
   version "0.25.6"
   resolved "https://registry.yarnpkg.com/@esbuild/aix-ppc64/-/aix-ppc64-0.25.6.tgz#164b19122e2ed54f85469df9dea98ddb01d5e79e"
@@ -3064,6 +3059,11 @@ join-path@^1.1.1:
     as-array "^2.0.0"
     url-join "0.0.1"
     valid-url "^1"
+
+jolt-physics@^0.38.0:
+  version "0.38.0"
+  resolved "https://registry.yarnpkg.com/jolt-physics/-/jolt-physics-0.38.0.tgz#a3a47121156bdc186ac01b60a76adc6818ac1ecd"
+  integrity sha512-TzkRmz1owsLMsZvkpONfyL/ry0NFVrgcHLRWrSXH3HizNdGHq9Z+bbOO5QiAmMaX68gqZeachp6j8T6YXYHkFg==
 
 js-tokens@^9.0.1:
   version "9.0.1"

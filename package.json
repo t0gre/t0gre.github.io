@@ -26,8 +26,8 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
-    "@dimforge/rapier3d": "^0.19.1",
     "@types/three": "^0.163.0",
+    "jolt-physics": "^0.38.0",
     "three": "^0.163.0",
     "yarn": "^1.22.22"
   }

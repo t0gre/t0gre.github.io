@@ -1,5 +1,7 @@
 import { AmbientLight, Color, DirectionalLight, Fog, Mesh, MeshStandardMaterial, PerspectiveCamera, PlaneGeometry, Scene, Vector3, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import initJolt from "jolt-physics";
+import joltWasmUrl from "jolt-physics/jolt-physics.wasm.wasm?url";
 
 
 const CAMERA_START = new Vector3(0, 3.5, 10);
@@ -7,11 +9,13 @@ const BACKGROUND_COLOR = 0x7799ff
 
 export async function main(canvas: HTMLCanvasElement) {
 
-    const RAPIER = await import('@dimforge/rapier3d')
+    const Jolt = await initJolt({
+        locateFile: () => joltWasmUrl,
+        });
 
+    console.log(Jolt.AABox)
     let gravity = { x: 0.0, y: -9.81, z: 0.0 };
-    let world = new RAPIER.World(gravity);
-    
+
     canvas.width = canvas.clientWidth;
     canvas.height = canvas.clientHeight;
 
