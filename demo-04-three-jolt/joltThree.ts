@@ -7,7 +7,7 @@ import { GeometryUnion,
     isSphereGeometry } from '../three-helpers/helpers';
 
 import initJolt from "jolt-physics";
-import joltWasmUrl from "jolt-physics/jolt-physics.wasm.wasm?url";
+import joltWasmUrl from "jolt-physics/jolt-physics.wasm.wasm?url"; //@
 
 const frameRate = 60;
 const UNIT_QUATERNION = new Quaternion()
@@ -196,21 +196,21 @@ async function JoltPhysics() {
 
     }
 
-    function setMeshVelocity( mesh: Mesh, velocity: number, index = 0 ) {
+    // function setMeshVelocity( mesh: Mesh, velocity: number, index = 0 ) {
 
-        /*
-        let body = meshMap.get( mesh );
+    //     /*
+    //     let body = meshMap.get( mesh );
 
-        if ( mesh.isInstancedMesh ) {
+    //     if ( mesh.isInstancedMesh ) {
 
-            body = body[ index ];
+    //         body = body[ index ];
 
-        }
+    //     }
 
-        body.setLinvel( velocity );
-        */
+    //     body.setLinvel( velocity );
+    //     */
 
-    }
+    // }
 
     //
 
@@ -316,7 +316,7 @@ async function JoltPhysics() {
         setMeshPosition: setMeshPosition,
 
         // NOOP
-        setMeshVelocity: setMeshVelocity
+        // setMeshVelocity: setMeshVelocity
     };
 
 }

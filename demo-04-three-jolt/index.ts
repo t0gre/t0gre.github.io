@@ -31,8 +31,6 @@ export async function main(canvas: HTMLCanvasElement) {
     const physics = await JoltPhysics()
     const position = new Vector3()
 
-    let gravity = { x: 0.0, y: -9.81, z: 0.0 };
-
     canvas.width = canvas.clientWidth;
     canvas.height = canvas.clientHeight;
 
@@ -131,7 +129,7 @@ export async function main(canvas: HTMLCanvasElement) {
             oldTimestamp = newTimestamp;
         } else {
             
-            const dt = newTimestamp - oldTimestamp
+            // const dt = newTimestamp - oldTimestamp
             
             
             renderer.render(scene, camera);
