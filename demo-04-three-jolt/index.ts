@@ -97,6 +97,31 @@ export async function main(canvas: HTMLCanvasElement) {
     boxes.userData.physics = { mass: 1 };
     scene.add( boxes );
 
+    for ( let i = 0; i < boxes.count; i ++ ) {
+
+					matrix.setPosition( Math.random() - 0.5, Math.random() * 2, Math.random() - 0.5 );
+					boxes.setMatrixAt( i, matrix );
+					boxes.setColorAt( i, color.setHex( 0xffffff * Math.random() ) );
+
+				}
+
+    // Spheres
+
+	const geometrySphere = new THREE.IcosahedronGeometry( 0.05, 4 );
+	const spheres = new THREE.InstancedMesh( geometrySphere, material, 400 );
+	spheres.instanceMatrix.setUsage( THREE.DynamicDrawUsage ); // will be updated every frame
+	spheres.castShadow = true;
+	spheres.receiveShadow = true;
+	spheres.userData.physics = { mass: 1 };
+	scene.add( spheres)
+
+	for ( let i = 0; i < spheres.count; i ++ ) {
+		matrix.setPosition( Math.random() - 0.5, Math.random() * 2, Math.random() - 0.5 );
+		spheres.setMatrixAt( i, matrix );
+		spheres.setColorAt( i, color.setHex( 0xffffff * Math.random() ) )
+	}
+
+
     physics.addScene( scene );
 
     setInterval( () => {
@@ -108,10 +133,10 @@ export async function main(canvas: HTMLCanvasElement) {
 
 					//
 
-					// index = Math.floor( Math.random() * spheres.count );
+					index = Math.floor( Math.random() * spheres.count );
 
-					// position.set( 0, Math.random() + 1, 0 );
-					// physics.setMeshPosition( spheres, position, index );
+					position.set( 0, Math.random() + 1, 0 );
+					physics.setMeshPosition( spheres, position, index );
 
 				}, 1000 / 60 );
 
