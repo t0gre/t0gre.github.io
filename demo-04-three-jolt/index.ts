@@ -19,9 +19,8 @@ import  {
 
 import * as THREE from 'three';
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { JoltPhysics } from 'three/examples/jsm/physics/JoltPhysics'
-import initJolt from "jolt-physics";
-import joltWasmUrl from "jolt-physics/jolt-physics.wasm.wasm?url";
+import { JoltPhysics } from './joltThree'
+
 
 
 const CAMERA_START = new Vector3(0, 3.5, 10);
@@ -29,11 +28,9 @@ const BACKGROUND_COLOR = 0x7799ff
 
 export async function main(canvas: HTMLCanvasElement) {
 
-    const Jolt = await initJolt({
-        locateFile: () => joltWasmUrl,
-        });
+    const physics = await JoltPhysics()
+    const position = new Vector3()
 
-    console.log(Jolt.AABox)
     let gravity = { x: 0.0, y: -9.81, z: 0.0 };
 
     canvas.width = canvas.clientWidth;
@@ -102,6 +99,8 @@ export async function main(canvas: HTMLCanvasElement) {
     boxes.userData.physics = { mass: 1 };
     scene.add( boxes );
 
+    physics.addScene( scene );
+
     setInterval( () => {
 
 					let index = Math.floor( Math.random() * boxes.count );
@@ -111,10 +110,10 @@ export async function main(canvas: HTMLCanvasElement) {
 
 					//
 
-					index = Math.floor( Math.random() * spheres.count );
+					// index = Math.floor( Math.random() * spheres.count );
 
-					position.set( 0, Math.random() + 1, 0 );
-					physics.setMeshPosition( spheres, position, index );
+					// position.set( 0, Math.random() + 1, 0 );
+					// physics.setMeshPosition( spheres, position, index );
 
 				}, 1000 / 60 );
 

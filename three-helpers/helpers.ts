@@ -3,7 +3,34 @@ import { Material,
     MeshStandardMaterial, 
     MeshPhysicalMaterial,
     Object3D, 
-    SkinnedMesh } from "three"
+    Mesh,
+    SkinnedMesh, 
+    InstancedMesh,
+    BoxGeometry,
+    IcosahedronGeometry,
+    SphereGeometry} from "three"
+
+export type GeometryUnion = BoxGeometry | SphereGeometry | IcosahedronGeometry
+
+export function isBoxGeometry(geometry: GeometryUnion): geometry is BoxGeometry {
+    return geometry.type === "BoxGeometry"
+}
+
+export function isSphereGeometry(geometry: GeometryUnion): geometry is SphereGeometry {
+    return geometry.type === "SphereGeometry"
+}
+
+export function isIcosahedronGeometry(geometry: GeometryUnion): geometry is IcosahedronGeometry {
+    return geometry.type === "IcosahedronGeometry"
+}
+
+export function isMesh(object3d: Object3D): object3d is Mesh {
+    return (object3d as Mesh).isMesh === true
+}
+
+export function isInstancedMesh(object3d: Object3D): object3d is InstancedMesh {
+    return (object3d as InstancedMesh).isInstancedMesh === true
+}
 
 export function isSkinnedMesh(object3d: Object3D): object3d is SkinnedMesh {
     return (object3d as SkinnedMesh).isSkinnedMesh === true

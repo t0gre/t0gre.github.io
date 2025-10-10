@@ -17,7 +17,7 @@ import {
 import { GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
 import { clone as cloneSkeleton } from "three/examples/jsm/utils/SkeletonUtils";
-import { disposeMaterial, isSkinnedMesh } from "./helpers";
+import { disposeMaterial, isSkinnedMesh } from "../three-helpers/helpers";
 import { lerp } from "three/src/math/MathUtils";
 
 
