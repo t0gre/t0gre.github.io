@@ -26,9 +26,9 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
-    "@types/three": "^0.163.0",
+    "@types/three": "^0.180.0",
     "jolt-physics": "^0.38.0",
-    "three": "^0.163.0",
+    "three": "^0.180.0",
     "yarn": "^1.22.22"
   }
 }
