@@ -18,8 +18,7 @@ import  {
 import * as THREE from 'three';
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { JoltPhysics } from './joltThree'
-
-
+import { getPointerClickInClipSpace } from "../three-helpers/helpers";
 
 const CAMERA_START = new Vector3(0, 3.5, 10);
 const BACKGROUND_COLOR = 0x7799ff
@@ -44,6 +43,60 @@ export async function main(canvas: HTMLCanvasElement) {
     controls.maxDistance = 13
     controls.minDistance = 3.5
     controls.enablePan = false
+
+    const rayCaster = new THREE.Raycaster()
+
+
+    function pickableObjectSelected(e: PointerEvent): THREE.Object3D | undefined {
+        const clip = getPointerClickInClipSpace(e, canvas)
+        
+        rayCaster.setFromCamera(clip, camera)
+        const hits = rayCaster.intersectObject(scene)
+
+        if (hits.length > 0 && hits[0]) {
+
+            const hitObject = hits[0].object
+
+            if (hitObject.name == 'pickable') {
+                
+                return hitObject
+
+            }
+        }
+
+        return undefined
+    }
+
+        
+
+
+    let pickableObjectIsSelected: THREE.Object3D | null = null
+    canvas.addEventListener('pointerdown', (e) => {
+        
+        const pickable = pickableObjectSelected(e)
+        if (pickable) {
+            pickableObjectIsSelected = pickable
+            controls.enabled = false
+        }
+        
+    })
+
+    canvas.addEventListener('pointerup', (_) => {
+        
+        pickableObjectIsSelected = null
+        controls.enabled = true
+
+    })
+    
+    canvas.addEventListener('pointermove', (e) => {
+        
+        if (!pickableObjectIsSelected) return
+
+        console.log(e.movementX, e.movementY)
+
+        const direction = new physics.jolt.Vec3(e.movementX, 0, e.movementY)
+        physics.applyForce(pickableObjectIsSelected as Mesh, direction)
+    })
 
     camera.position.copy(CAMERA_START);
  
@@ -76,7 +129,7 @@ export async function main(canvas: HTMLCanvasElement) {
 					new MeshStandardMaterial( { color: 0xddcc99 } )
 				);
 				floorCollider.position.y = floorVerticalPosition;
-				floorCollider.userData.physics = { mass: 0 };
+				floorCollider.userData.physics = { mass: 0 }; // stops it from falling
                 floorCollider.receiveShadow = true
 				scene.add( floorCollider );
 
@@ -86,8 +139,9 @@ export async function main(canvas: HTMLCanvasElement) {
 					new MeshStandardMaterial( { color: 0xddcc99 } )
 				);
 		        cubeCollider.position.y = floorThickness / 2 + cubeSideLength / 2 + floorVerticalPosition;
-		        cubeCollider.userData.physics = { mass: 0 };
+		        cubeCollider.userData.physics = { mass: 2 };
                 cubeCollider.receiveShadow = true
+                cubeCollider.name = "pickable"
 				scene.add( cubeCollider );
 
     camera.lookAt(floorCollider.position)
@@ -140,14 +194,14 @@ export async function main(canvas: HTMLCanvasElement) {
 					let index = Math.floor( Math.random() * boxes.count );
 
 					position.set( 0, Math.random() + 1, 0 );
-					physics.setMeshPosition( boxes, position, index );
+					physics.respawnMesh( boxes, position, index );
 
 					//
 
 					index = Math.floor( Math.random() * spheres.count );
 
 					position.set( 0, Math.random() + 1, 0 );
-					physics.setMeshPosition( spheres, position, index );
+					physics.respawnMesh( spheres, position, index );
 
 				}, 1000 / 60 );
 

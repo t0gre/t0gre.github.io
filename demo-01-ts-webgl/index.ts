@@ -199,7 +199,7 @@ const input: InputState = {
 
 canvas.addEventListener('pointerdown', (e) => {
     
-    const clickPoint = getPointerClickInClipSpace(canvas, e, gl!)
+    const clickPoint = getPointerClickInClipSpace(canvas, e)
 
     // calculate ray in world space
     const worldRay = getWorldRayFromClipSpaceAndCamera(clickPoint, camera)
@@ -235,7 +235,7 @@ canvas.addEventListener('pointerdown', () => {
 
         camera.transform = m4lookAt(newCameraPosition, orbit.target, camera.up);
 
-        input.pointerPosition = getPointerClickInClipSpace(canvas, e, gl!);
+        input.pointerPosition = getPointerClickInClipSpace(canvas, e);
     }
     canvas.addEventListener('pointerup', () => {
         canvas.removeEventListener('pointermove', handler)

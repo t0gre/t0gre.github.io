@@ -122,12 +122,10 @@ async function JoltPhysics() {
             ? createInstancedBody( mesh, mass, restitution, shape )
             : createBody( mesh.position, mesh.quaternion, mass, restitution, shape );
 
-        if ( mass > 0 ) {
-
+    
             meshes.push( mesh );
             meshMap.set( mesh, body );
 
-        }
 
     }
 
@@ -170,7 +168,7 @@ async function JoltPhysics() {
 
     }
 
-    function setMeshPosition( mesh: Mesh, position: Vector3, index = 0 ) {
+    function respawnMesh( mesh: Mesh, position: Vector3, index = 0 ) {
 
         if (isInstancedMesh(mesh)) {
 
@@ -181,10 +179,15 @@ async function JoltPhysics() {
             bodyInterface.RemoveBody( body.GetID() );
             bodyInterface.DestroyBody( body.GetID() );
 
-            const physics = mesh.userData.physics;
+            const bodyPhysicsProps = mesh.userData.physics;
 
             const shape = body.GetShape();
-            const body2 = createBody( position, UNIT_QUATERNION, physics.mass, physics.restitution, shape );
+            const body2 = createBody( 
+                position, 
+                UNIT_QUATERNION, 
+                bodyPhysicsProps.mass, 
+                bodyPhysicsProps.restitution, 
+                shape );
 
             bodies[ index ] = body2;
 
@@ -194,6 +197,26 @@ async function JoltPhysics() {
 
         }
 
+    }
+
+    function addImpulse(mesh: Mesh, direction: initJolt.Vec3, index = 0) {
+        if (isInstancedMesh(mesh)) {
+
+            const bodies = meshMap.get( mesh );
+
+            const body = bodies[ index ];
+
+            bodyInterface.AddImpulse( body.GetID(), direction );
+           
+
+        } else {
+
+            const body = meshMap.get( mesh );
+
+            console.log(body, direction)
+            bodyInterface.AddImpulse( body.GetID(), direction );
+
+        }
     }
 
     // function setMeshVelocity( mesh: Mesh, velocity: number, index = 0 ) {
@@ -313,10 +336,13 @@ async function JoltPhysics() {
          * @param {Vector3} position - The new position.
          * @param {number} [index=0] - If the mesh is instanced, the index represents the instanced ID.
          */
-        setMeshPosition: setMeshPosition,
+        respawnMesh: respawnMesh,
 
         // NOOP
         // setMeshVelocity: setMeshVelocity
+        applyForce: addImpulse,
+
+        jolt: jolt
     };
 
 }
