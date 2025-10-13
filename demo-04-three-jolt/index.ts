@@ -68,14 +68,27 @@ export async function main(canvas: HTMLCanvasElement) {
     scene.add(ambientLight, directionalLight, camera);
     scene.fog = new Fog( BACKGROUND_COLOR, 10, 100 );
 
+    const floorThickness = 0.1
+    const floorVerticalPosition = - 0.5
+
     const floorCollider = new Mesh(
-					new BoxGeometry( 3, 0.1, 3 ),
+					new BoxGeometry( 3, floorThickness, 3 ),
 					new MeshStandardMaterial( { color: 0xddcc99 } )
 				);
-				floorCollider.position.y = -0.5;
+				floorCollider.position.y = floorVerticalPosition;
 				floorCollider.userData.physics = { mass: 0 };
                 floorCollider.receiveShadow = true
 				scene.add( floorCollider );
+
+    const cubeSideLength = 0.9
+    const cubeCollider = new Mesh(
+					new BoxGeometry( cubeSideLength, cubeSideLength, cubeSideLength ),
+					new MeshStandardMaterial( { color: 0xddcc99 } )
+				);
+		        cubeCollider.position.y = floorThickness / 2 + cubeSideLength / 2 + floorVerticalPosition;
+		        cubeCollider.userData.physics = { mass: 0 };
+                cubeCollider.receiveShadow = true
+				scene.add( cubeCollider );
 
     camera.lookAt(floorCollider.position)
     controls.target.copy(floorCollider.position)
