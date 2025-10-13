@@ -6,12 +6,10 @@ import  {
     Fog, 
     InstancedMesh, 
     Matrix4, 
-    Mesh, 
-    MeshBasicMaterial, 
+    Mesh,  
     MeshLambertMaterial, 
     MeshStandardMaterial, 
     PerspectiveCamera, 
-    PlaneGeometry, 
     Scene, 
     Vector3, 
     WebGLRenderer 
@@ -64,24 +62,24 @@ export async function main(canvas: HTMLCanvasElement) {
     directionalLight.shadow.mapSize.width = 2048
     directionalLight.shadow.mapSize.height = 2048
     directionalLight.translateZ(4);
-  
 
-    const floor = new Mesh(new PlaneGeometry(4, 4), new MeshStandardMaterial({color: 0xddcc99}))
-    floor.rotateX(-Math.PI/2)
-    floor.receiveShadow = true;
 
     scene.background = new Color(BACKGROUND_COLOR);
-    scene.add(ambientLight, directionalLight, camera, floor);
+    scene.add(ambientLight, directionalLight, camera);
     scene.fog = new Fog( BACKGROUND_COLOR, 10, 100 );
 
     const floorCollider = new Mesh(
-					new BoxGeometry( 4, 5, 4 ),
-					new MeshBasicMaterial( { color: 0x666666 } )
+					new BoxGeometry( 3, 0.1, 3 ),
+					new MeshStandardMaterial( { color: 0xddcc99 } )
 				);
-				floorCollider.position.y = - 2.5;
+				floorCollider.position.y = -0.5;
 				floorCollider.userData.physics = { mass: 0 };
-				floorCollider.visible = false;
+                floorCollider.receiveShadow = true
 				scene.add( floorCollider );
+
+    camera.lookAt(floorCollider.position)
+    controls.target.copy(floorCollider.position)
+
 
     const matrix = new Matrix4();
 	const color = new Color();

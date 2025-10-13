@@ -17,8 +17,6 @@ const UNIT_QUATERNION = new Quaternion()
 function getShape( geometry: GeometryUnion, Jolt: typeof initJolt ) {
 
 
-    // TODO change type to is*
-
     if (isBoxGeometry(geometry)) {
 
         const sx = geometry.parameters.width / 2;
@@ -36,6 +34,8 @@ function getShape( geometry: GeometryUnion, Jolt: typeof initJolt ) {
 
         return new Jolt.SphereShape( radius, undefined );
 
+    // } else {
+    //     return new Jolt.MeshShape()
     }
 
     return null;
