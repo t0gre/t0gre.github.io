@@ -14,7 +14,7 @@ const UNIT_QUATERNION = new Quaternion()
 
 
 
-function getShape( geometry: GeometryUnion, Jolt: typeof initJolt ) {
+function getShape( geometry: GeometryUnion, jolt: typeof initJolt ) {
 
 
     if (isBoxGeometry(geometry)) {
@@ -23,8 +23,8 @@ function getShape( geometry: GeometryUnion, Jolt: typeof initJolt ) {
         const sy = geometry.parameters.height / 2;
         const sz = geometry.parameters.depth / 2;
 
-        return new Jolt.BoxShape( 
-            new Jolt.Vec3( sx, sy, sz ), 
+        return new jolt.BoxShape( 
+            new jolt.Vec3( sx, sy, sz ), 
             0.05 * Math.min( sx, sy, sz ), 
             undefined);
 
@@ -32,10 +32,10 @@ function getShape( geometry: GeometryUnion, Jolt: typeof initJolt ) {
 
         const radius = geometry.parameters.radius !== undefined ? geometry.parameters.radius : 1;
 
-        return new Jolt.SphereShape( radius, undefined );
+        return new jolt.SphereShape( radius, undefined );
 
     // } else {
-    //     return new Jolt.MeshShape()
+    //     return new jolt.MeshShape()
     }
 
     return null;
@@ -70,17 +70,17 @@ function setupCollisionFiltering( settings: initJolt.JoltSettings, Jolt: typeof 
 
 async function JoltPhysics() {
 
-    const Jolt = await initJolt({
+    const jolt = await initJolt({
         locateFile: () => joltWasmUrl,
         });
 
-    const settings = new Jolt.JoltSettings();
-    setupCollisionFiltering( settings, Jolt );
+    const settings = new jolt.JoltSettings();
+    setupCollisionFiltering( settings, jolt );
 
-    const jolt = new Jolt.JoltInterface( settings );
-    Jolt.destroy( settings );
+    const joltInterface = new jolt.JoltInterface( settings );
+    jolt.destroy( settings );
 
-    const physicsSystem = jolt.GetPhysicsSystem();
+    const physicsSystem = joltInterface.GetPhysicsSystem();
     const bodyInterface = physicsSystem.GetBodyInterface();
 
     const meshes: Mesh[] = [];
@@ -114,7 +114,7 @@ async function JoltPhysics() {
 
     function addMesh( mesh: Mesh, mass = 0, restitution = 0 ) {
 
-        const shape = getShape( mesh.geometry as GeometryUnion, Jolt );
+        const shape = getShape( mesh.geometry as GeometryUnion, jolt );
 
         if ( shape === null ) return;
 
@@ -151,20 +151,20 @@ async function JoltPhysics() {
 
     function createBody( position: Vector3, rotation: Quaternion, mass: number, restitution: number, shape: initJolt.Shape ) {
 
-        const pos = new Jolt.RVec3( position.x, position.y, position.z );
-        const rot = new Jolt.Quat( rotation.x, rotation.y, rotation.z, rotation.w );
+        const pos = new jolt.RVec3( position.x, position.y, position.z );
+        const rot = new jolt.Quat( rotation.x, rotation.y, rotation.z, rotation.w );
 
-        const motion = mass > 0 ? Jolt.EMotionType_Dynamic : Jolt.EMotionType_Static;
+        const motion = mass > 0 ? jolt.EMotionType_Dynamic : jolt.EMotionType_Static;
         const layer = mass > 0 ? LAYER_MOVING : LAYER_NON_MOVING;
 
-        const creationSettings = new Jolt.BodyCreationSettings( shape, pos, rot, motion, layer ); // pos is RVec3
+        const creationSettings = new jolt.BodyCreationSettings( shape, pos, rot, motion, layer ); // pos is RVec3
         creationSettings.mRestitution = restitution;
 
         const body = bodyInterface.CreateBody( creationSettings );
 
-        bodyInterface.AddBody( body.GetID(), Jolt.EActivation_Activate );
+        bodyInterface.AddBody( body.GetID(), jolt.EActivation_Activate );
 
-        Jolt.destroy( creationSettings );
+        jolt.destroy( creationSettings );
 
         return body;
 
@@ -227,7 +227,7 @@ async function JoltPhysics() {
         const numSteps = deltaTime > 1.0 / 55.0 ? 2 : 1;
 
         // Step the physics world
-        jolt.Step( deltaTime, numSteps );
+        joltInterface.Step( deltaTime, numSteps );
 
         //
 
