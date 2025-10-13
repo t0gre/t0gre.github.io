@@ -189,6 +189,8 @@ async function JoltPhysics() {
                 bodyPhysicsProps.restitution, 
                 shape );
 
+            // body2.AddImpulse(new jolt.Vec3(1,0,1))
+
             bodies[ index ] = body2;
 
         } else {
@@ -340,7 +342,7 @@ async function JoltPhysics() {
 
         // NOOP
         // setMeshVelocity: setMeshVelocity
-        applyForce: addImpulse,
+        addImpulse: addImpulse,
 
         jolt: jolt
     };

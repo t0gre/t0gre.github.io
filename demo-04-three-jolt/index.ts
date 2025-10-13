@@ -67,9 +67,7 @@ export async function main(canvas: HTMLCanvasElement) {
         return undefined
     }
 
-        
-
-
+ 
     let pickableObjectIsSelected: THREE.Object3D | null = null
     canvas.addEventListener('pointerdown', (e) => {
         
@@ -92,16 +90,12 @@ export async function main(canvas: HTMLCanvasElement) {
         
         if (!pickableObjectIsSelected) return
 
-        console.log(e.movementX, e.movementY)
-
-        const direction = new physics.jolt.Vec3(e.movementX, 0, e.movementY)
-        physics.applyForce(pickableObjectIsSelected as Mesh, direction)
+        const direction = new physics.jolt.Vec3(e.movementX * 100, 0, e.movementY * 100)
+        physics.addImpulse(pickableObjectIsSelected as Mesh, direction)
     })
 
     camera.position.copy(CAMERA_START);
  
-
-   
     const ambientLight = new AmbientLight(0xffffff, 0.1);
     const directionalLight = new DirectionalLight(0xffffff, 0.8);
     directionalLight.translateY(5);
@@ -125,7 +119,7 @@ export async function main(canvas: HTMLCanvasElement) {
     const floorVerticalPosition = - 0.5
 
     const floorCollider = new Mesh(
-					new BoxGeometry( 3, floorThickness, 3 ),
+					new BoxGeometry( 6, floorThickness, 6 ),
 					new MeshStandardMaterial( { color: 0xddcc99 } )
 				);
 				floorCollider.position.y = floorVerticalPosition;
@@ -136,7 +130,7 @@ export async function main(canvas: HTMLCanvasElement) {
     const cubeSideLength = 0.9
     const cubeCollider = new Mesh(
 					new BoxGeometry( cubeSideLength, cubeSideLength, cubeSideLength ),
-					new MeshStandardMaterial( { color: 0xddcc99 } )
+					new MeshStandardMaterial( { color: 0xff4422 } )
 				);
 		        cubeCollider.position.y = floorThickness / 2 + cubeSideLength / 2 + floorVerticalPosition;
 		        cubeCollider.userData.physics = { mass: 2 };
