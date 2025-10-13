@@ -66,7 +66,7 @@ export async function main(canvas: HTMLCanvasElement) {
     directionalLight.translateZ(4);
   
 
-    const floor = new Mesh(new PlaneGeometry(400, 400), new MeshStandardMaterial({color: 0xddcc99}))
+    const floor = new Mesh(new PlaneGeometry(4, 4), new MeshStandardMaterial({color: 0xddcc99}))
     floor.rotateX(-Math.PI/2)
     floor.receiveShadow = true;
 
@@ -75,7 +75,7 @@ export async function main(canvas: HTMLCanvasElement) {
     scene.fog = new Fog( BACKGROUND_COLOR, 10, 100 );
 
     const floorCollider = new Mesh(
-					new BoxGeometry( 10, 5, 10 ),
+					new BoxGeometry( 4, 5, 4 ),
 					new MeshBasicMaterial( { color: 0x666666 } )
 				);
 				floorCollider.position.y = - 2.5;
