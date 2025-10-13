@@ -47,23 +47,23 @@ const LAYER_NON_MOVING = 0;
 const LAYER_MOVING = 1;
 const NUM_OBJECT_LAYERS = 2;
 
-function setupCollisionFiltering( settings: initJolt.JoltSettings, Jolt: typeof initJolt ) {
+function setupCollisionFiltering( settings: initJolt.JoltSettings, jolt: typeof initJolt ) {
 
-    const objectFilter = new Jolt.ObjectLayerPairFilterTable( NUM_OBJECT_LAYERS );
+    const objectFilter = new jolt.ObjectLayerPairFilterTable( NUM_OBJECT_LAYERS );
     objectFilter.EnableCollision( LAYER_NON_MOVING, LAYER_MOVING );
     objectFilter.EnableCollision( LAYER_MOVING, LAYER_MOVING );
 
-    const BP_LAYER_NON_MOVING = new Jolt.BroadPhaseLayer( 0 );
-    const BP_LAYER_MOVING = new Jolt.BroadPhaseLayer( 1 );
+    const BP_LAYER_NON_MOVING = new jolt.BroadPhaseLayer( 0 );
+    const BP_LAYER_MOVING = new jolt.BroadPhaseLayer( 1 );
     const NUM_BROAD_PHASE_LAYERS = 2;
 
-    const bpInterface = new Jolt.BroadPhaseLayerInterfaceTable( NUM_OBJECT_LAYERS, NUM_BROAD_PHASE_LAYERS );
+    const bpInterface = new jolt.BroadPhaseLayerInterfaceTable( NUM_OBJECT_LAYERS, NUM_BROAD_PHASE_LAYERS );
     bpInterface.MapObjectToBroadPhaseLayer( LAYER_NON_MOVING, BP_LAYER_NON_MOVING );
     bpInterface.MapObjectToBroadPhaseLayer( LAYER_MOVING, BP_LAYER_MOVING );
 
     settings.mObjectLayerPairFilter = objectFilter;
     settings.mBroadPhaseLayerInterface = bpInterface;
-    settings.mObjectVsBroadPhaseLayerFilter = new Jolt.ObjectVsBroadPhaseLayerFilterTable( settings.mBroadPhaseLayerInterface, NUM_BROAD_PHASE_LAYERS, settings.mObjectLayerPairFilter, NUM_OBJECT_LAYERS );
+    settings.mObjectVsBroadPhaseLayerFilter = new jolt.ObjectVsBroadPhaseLayerFilterTable( settings.mBroadPhaseLayerInterface, NUM_BROAD_PHASE_LAYERS, settings.mObjectLayerPairFilter, NUM_OBJECT_LAYERS );
 
 }
 
