@@ -215,7 +215,6 @@ async function JoltPhysics() {
 
             const body = meshMap.get( mesh );
 
-            console.log(body, direction)
             bodyInterface.AddImpulse( body.GetID(), direction );
 
         }

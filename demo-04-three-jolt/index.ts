@@ -90,7 +90,10 @@ export async function main(canvas: HTMLCanvasElement) {
         
         if (!pickableObjectIsSelected) return
 
-        const direction = new physics.jolt.Vec3(e.movementX * 100, 0, e.movementY * 100)
+        // convert movement to world space
+        const worldDirection = new Vector3(e.movementX * 40, 0, e.movementY * 40).applyMatrix4(camera.matrixWorld)
+        const direction = new physics.jolt.Vec3(worldDirection.x, worldDirection.y, worldDirection.z)
+
         physics.addImpulse(pickableObjectIsSelected as Mesh, direction)
     })
 
