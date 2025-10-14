@@ -100,18 +100,23 @@ export async function main(canvas: HTMLCanvasElement) {
     camera.position.copy(CAMERA_START);
  
     const ambientLight = new AmbientLight(0xffffff, 0.1);
-    const directionalLight = new DirectionalLight(0xffffff, 0.8);
-    directionalLight.translateY(5);
+    const directionalLight = new DirectionalLight(0xffffff);
+
     directionalLight.castShadow =true;
-    // these values are pure trial an error 
-    directionalLight.shadow.camera.far = 50
-    directionalLight.shadow.camera.bottom = 0
-    directionalLight.shadow.camera.top = 50
-    directionalLight.shadow.camera.near = 0.1
-    directionalLight.shadow.camera.zoom = 1
-    directionalLight.shadow.mapSize.width = 2048
-    directionalLight.shadow.mapSize.height = 2048
-    directionalLight.translateZ(4);
+    
+    directionalLight.rotateX(Math.PI/ 4)
+    directionalLight.shadow.camera.far = 11
+    directionalLight.shadow.camera.left = -8
+    directionalLight.shadow.camera.right = 6
+    directionalLight.shadow.camera.bottom = -6
+    directionalLight.shadow.camera.top = 8
+    directionalLight.shadow.camera.near = 2
+    directionalLight.shadow.mapSize.width = 4096 
+    directionalLight.shadow.mapSize.height = 4096 
+    directionalLight.position.set(5,5,0)
+
+    // const helper = new THREE.CameraHelper( directionalLight.shadow.camera );
+    // scene.add( helper );
 
 
     scene.background = new Color(BACKGROUND_COLOR);
@@ -122,7 +127,7 @@ export async function main(canvas: HTMLCanvasElement) {
     const floorVerticalPosition = - 0.5
 
     const floorCollider = new Mesh(
-					new BoxGeometry( 6, floorThickness, 6 ),
+					new BoxGeometry( 8, floorThickness, 8 ),
 					new MeshStandardMaterial( { color: 0xddcc99 } )
 				);
 				floorCollider.position.y = floorVerticalPosition;
@@ -133,12 +138,14 @@ export async function main(canvas: HTMLCanvasElement) {
     const cubeSideLength = 0.9
     const cubeCollider = new Mesh(
 					new BoxGeometry( cubeSideLength, cubeSideLength, cubeSideLength ),
-					new MeshStandardMaterial( { color: 0xff4422 } )
+					new MeshStandardMaterial( { color: 0xffffff } )
 				);
 		        cubeCollider.position.y = floorThickness / 2 + cubeSideLength / 2 + floorVerticalPosition;
 		        cubeCollider.userData.physics = { mass: 2 };
                 cubeCollider.receiveShadow = true
+                cubeCollider.castShadow = true
                 cubeCollider.name = "pickable"
+                
 				scene.add( cubeCollider );
 
     camera.lookAt(floorCollider.position)
