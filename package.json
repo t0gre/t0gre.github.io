@@ -21,11 +21,14 @@
     "jsdom": "^27.0.0",
     "typescript": "^5.2.2",
     "vite": "^4.5.0",
+    "vite-plugin-top-level-await": "^1.6.0",
+    "vite-plugin-wasm": "^3.5.0",
     "vitest": "^3.2.4"
   },
   "dependencies": {
-    "@types/three": "^0.163.0",
-    "three": "^0.163.0",
+    "@types/three": "^0.180.0",
+    "jolt-physics": "^0.38.0",
+    "three": "^0.180.0",
     "yarn": "^1.22.22"
   }
 }
