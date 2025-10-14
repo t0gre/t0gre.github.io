@@ -188,17 +188,31 @@ export async function main(canvas: HTMLCanvasElement) {
 
     setInterval( () => {
 
-					let index = Math.floor( Math.random() * boxes.count );
+					
+                    // get the shapes which is 10m below the floor and respawn them
 
-					position.set( 0, Math.random() + 1, 0 );
-					physics.respawnMesh( boxes, position, index );
+                    const shapeMatrix = new Matrix4()
+                    const shapePosition = new Vector3()
 
-					//
+                    for (let i = 0; i < boxes.count; i++) {
+                        
+                        boxes.getMatrixAt(i, shapeMatrix)
+                        shapePosition.setFromMatrixPosition(shapeMatrix)
+                        if (shapePosition.y < -10) {
+                            position.set( 0, Math.random() + 1, 0 );
+					        physics.respawnMesh( boxes, position, i );
+                        }
+                    }
 
-					index = Math.floor( Math.random() * spheres.count );
-
-					position.set( 0, Math.random() + 1, 0 );
-					physics.respawnMesh( spheres, position, index );
+					for (let i = 0; i < boxes.count; i++) {
+                        
+                        spheres.getMatrixAt(i, shapeMatrix)
+                        shapePosition.setFromMatrixPosition(shapeMatrix)
+                        if (shapePosition.y < -10) {
+                            position.set( 0, Math.random() + 1, 0 );
+					        physics.respawnMesh( spheres, position, i );
+                        }
+                    }
 
 				}, 1000 / 60 );
 
