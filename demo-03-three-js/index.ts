@@ -97,6 +97,7 @@ function spawnLittleFish(fish: Group, littleFishes: Group) {
     const spawnLocation = SPAWN_LOCATIONS[spawnLocationIdx]!
 
     littleFish.scale.multiplyScalar(0.1)
+    littleFish.castShadow = true
     littleFish.rotateY(Math.PI)
     littleFish.position.copy(spawnLocation)
     littleFishes.add(littleFish)
@@ -156,16 +157,20 @@ export async function main(canvas: HTMLCanvasElement) {
     directionalLight.translateY(5);
     directionalLight.castShadow =true;
     // these values are pure trial an error 
-    directionalLight.shadow.camera.far = 50
-    directionalLight.shadow.camera.bottom = 0
-    directionalLight.shadow.camera.top = 50
+    directionalLight.shadow.camera.far = 10
+    directionalLight.shadow.camera.bottom = -5
+    directionalLight.shadow.camera.top = 7
+    directionalLight.shadow.camera.left = -8
+    directionalLight.shadow.camera.right = 8
     directionalLight.shadow.camera.near = 0.1
     directionalLight.shadow.camera.zoom = 1
     directionalLight.shadow.mapSize.width = 2048
     directionalLight.shadow.mapSize.height = 2048
+    directionalLight.shadow.radius = 5
     directionalLight.translateZ(4);
     
-
+    // const helper = new CameraHelper( directionalLight.shadow.camera );
+    // scene.add( helper );
     
 
     const floor = new Mesh(new PlaneGeometry(400, 400), new MeshStandardMaterial({color: 0xffee55}))
