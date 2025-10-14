@@ -22,11 +22,16 @@ import { getPointerClickInClipSpace } from "../three-helpers/helpers";
 
 const CAMERA_START = new Vector3(0, 3.5, 10);
 const BACKGROUND_COLOR = 0x7799ff
+const JITTER_STRENGTH = 1
 
 export async function main(canvas: HTMLCanvasElement) {
 
     const physics = await JoltPhysics()
     const position = new Vector3()
+
+    const spawnShapeMatrix = new Matrix4()
+    const spawnShapePosition = new Vector3()
+    const spawnImpulseDirection = new physics.jolt.Vec3()
 
     canvas.width = canvas.clientWidth;
     canvas.height = canvas.clientHeight;
@@ -168,11 +173,11 @@ export async function main(canvas: HTMLCanvasElement) {
 
     for ( let i = 0; i < boxes.count; i ++ ) {
 
-					matrix.setPosition( Math.random() - 0.5, Math.random() * 2, Math.random() - 0.5 );
-					boxes.setMatrixAt( i, matrix );
-					boxes.setColorAt( i, color.setHex( 0xffffff * Math.random() ) );
+        matrix.setPosition( Math.random() - 0.5, Math.random() * 2, Math.random() - 0.5 );
+        boxes.setMatrixAt( i, matrix );
+        boxes.setColorAt( i, color.setHex( 0xffffff * Math.random() ) );
 
-				}
+    }
 
     // Spheres
 
@@ -198,26 +203,32 @@ export async function main(canvas: HTMLCanvasElement) {
 					
                     // get the shapes which is 10m below the floor and respawn them
 
-                    const shapeMatrix = new Matrix4()
-                    const shapePosition = new Vector3()
+                    
 
                     for (let i = 0; i < boxes.count; i++) {
                         
-                        boxes.getMatrixAt(i, shapeMatrix)
-                        shapePosition.setFromMatrixPosition(shapeMatrix)
-                        if (shapePosition.y < -10) {
+                        boxes.getMatrixAt(i, spawnShapeMatrix)
+                        spawnShapePosition.setFromMatrixPosition(spawnShapeMatrix)
+                        if (spawnShapePosition.y < -10) {
                             position.set( 0, Math.random() + 1, 0 );
 					        physics.respawnMesh( boxes, position, i );
+                            
                         }
                     }
 
 					for (let i = 0; i < boxes.count; i++) {
                         
-                        spheres.getMatrixAt(i, shapeMatrix)
-                        shapePosition.setFromMatrixPosition(shapeMatrix)
-                        if (shapePosition.y < -10) {
+                        spheres.getMatrixAt(i, spawnShapeMatrix)
+                        spawnShapePosition.setFromMatrixPosition(spawnShapeMatrix)
+                        if (spawnShapePosition.y < -10) {
+                            
+                            spawnImpulseDirection.Set(
+                                (Math.random() - 0.5) * JITTER_STRENGTH , 
+                                (Math.random() - 0.5) * JITTER_STRENGTH, 
+                                (Math.random() - 0.5) * JITTER_STRENGTH)
                             position.set( 0, Math.random() + 1, 0 );
 					        physics.respawnMesh( spheres, position, i );
+                            physics.addImpulse(spheres, spawnImpulseDirection, i)
                         }
                     }
 
