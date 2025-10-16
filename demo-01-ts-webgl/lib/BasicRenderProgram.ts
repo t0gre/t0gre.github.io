@@ -515,6 +515,10 @@ type ShadowMap = {
 }
 export function createShadowMap(gl: WebGL2RenderingContext, size = 2048): ShadowMap {
     const depthTexture = gl.createTexture();
+
+    if (!depthTexture) {
+         throw new Error("failed to create depth texture")
+    }
     gl.bindTexture(gl.TEXTURE_2D, depthTexture);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT24, size, size, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
@@ -523,11 +527,18 @@ export function createShadowMap(gl: WebGL2RenderingContext, size = 2048): Shadow
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
     const framebuffer = gl.createFramebuffer();
+
+    if (!framebuffer) {
+         throw new Error("failed to create frame buffer")
+    }
+
+    
     gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, depthTexture, 0);
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
+    
     return { framebuffer, depthTexture, size };
 }
 
