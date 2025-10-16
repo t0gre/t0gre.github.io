@@ -3,7 +3,7 @@ import { degToRad } from './lib/mathUtils'
 import { Vertices } from './lib/mesh'
 import { DirectionalLight, AmbientLight, PointLight } from './lib/light'
 import { Camera } from './lib/camera'
-import { initRenderProgram, drawScene } from './lib/BasicRenderProgram'
+import { initBasicRenderProgram, drawScene, createShadowMap, initShadowRenderProgram } from './lib/BasicRenderProgram'
 import { loadObj } from './lib/loaders/ObjLoader'
 import { InputState } from './lib/input'
 import { m4fromPositionAndEuler, m4lookAt, m4vectorMultiply, m4yRotation } from './lib/mat4'
@@ -64,12 +64,17 @@ gl.enable(gl.DEPTH_TEST);
 gl.clearColor(0.1, 0.1, 0.1 ,1);
 
 
-const basicRenderProgram = initRenderProgram(gl)
+const basicRenderProgram = initBasicRenderProgram(gl)
+
+ // Shadow map setup
+const shadowMap = createShadowMap(gl, 1024);
+const shadowRenderProgram = initShadowRenderProgram(gl);
 
 if (!basicRenderProgram) {
      alert('failed to compile shader')
     return 1;
 }
+
 
 const vertices = await loadObj('/rainbowtree.obj');
 
@@ -253,6 +258,9 @@ function animate(time: DOMHighResTimeStamp) {
     updateLight(pointLight, dt)
     resizeCanvasToDisplaySize(canvas);
     camera.aspect = canvas.clientWidth / canvas.clientHeight;
+
+    
+
     const drawError = drawScene(
         glState, 
         scene, 
@@ -260,7 +268,10 @@ function animate(time: DOMHighResTimeStamp) {
         directionalLight,
         pointLight, 
         camera, 
-        basicRenderProgram!);
+        basicRenderProgram!,
+        shadowMap,
+        shadowRenderProgram
+    );
     if (drawError) {
         console.log('draw error')
     }

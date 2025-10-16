@@ -60,6 +60,19 @@
 
     }
 
+    uniform sampler2D u_shadowMap;
+    uniform mat4 u_lightViewProj;
+
+    float getShadow(vec3 worldPos) {
+        vec4 lightSpacePos = u_lightViewProj * vec4(worldPos, 1.0);
+        vec3 projCoords = lightSpacePos.xyz / lightSpacePos.w;
+        projCoords = projCoords * 0.5 + 0.5; // to [0,1]
+        float closestDepth = texture(u_shadowMap, projCoords.xy).r;
+        float currentDepth = projCoords.z;
+        float bias = 0.005;
+        return currentDepth - bias > closestDepth ? 0.5 : 1.0; // 0.5 shadow, 1.0 lit
+    }
+
     void main()                                  
     {                
 
@@ -69,6 +82,8 @@
         float world_distance = distance(u_view_position, frag_world_position);
         float fog_factor = smoothstep(0.0, 20.0, world_distance);
 
+        float shadow = getShadow(frag_world_position);  
+
         // ambient
         vec3 ambient_color = u_ambient_light.color * u_material.color;                           
 
@@ -76,7 +91,7 @@
           u_directional_light.color,
           normalize(-u_directional_light.rotation),
           view_dir,
-          normal
+          normal  
         );
 
         LightColorComponents point_components = calculateLightComponents(
@@ -101,4 +116,5 @@
              
         outColor.rgb = min(outColor.rgb, vec3(1.0));
         outColor.rgb = mix(outColor.rgb, vec3(0.1, 0.1, 0.1), fog_factor);
+        outColor.rgb *= shadow;
     }

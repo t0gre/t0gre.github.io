@@ -39,6 +39,22 @@ export function m4perspective(fieldOfViewInRadians: number, aspect: number, near
             0, 0, near * far * rangeInv * 2, 0
         ];
     }
+
+
+
+export function m4orthographic(left: number, right: number, bottom: number, top: number, near: number, far: number): Mat4 {
+    const lr = 1 / (left - right);
+    const bt = 1 / (bottom - top);
+    const nf = 1 / (near - far);
+
+    return [
+        -2 * lr, 0, 0, 0,
+        0, -2 * bt, 0, 0,
+        0, 0, 2 * nf, 0,
+        (left + right) * lr, (top + bottom) * bt, (far + near) * nf, 1
+    ];
+}
+
 export function m4projection(width: number, height: number, depth: number): Mat4 {
         // Note: This matrix flips the Y axis so 0 is at the top.
         return [
