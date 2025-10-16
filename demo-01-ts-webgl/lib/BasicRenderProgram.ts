@@ -452,7 +452,7 @@ export function drawScene(
     gl.viewport(0, 0, shadowMap.size, shadowMap.size);
     gl.clear(gl.DEPTH_BUFFER_BIT);
 
-    drawShadowScene(glState, scene, shadowRenderProgram, lightViewProjectionMatrix);
+    drawShadowScene(glState, scene, renderProgram, shadowRenderProgram, lightViewProjectionMatrix);
 
     // 2. Render main scene
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -524,6 +524,7 @@ export function initShadowRenderProgram(gl: WebGL2RenderingContext): ShadowRende
 
     const attribBindings: AttributeBinding[] = [
         { name: "a_position", location: 0}
+
     ]
     const program = createProgramFromRaw(gl, shadowVertexSource, shadowFragmentSource, attribBindings);
 
@@ -542,6 +543,7 @@ export function initShadowRenderProgram(gl: WebGL2RenderingContext): ShadowRende
 export function drawShadowScene(
     glState: GlState,
     scene: SceneNode[],
+    renderProgram: MainRenderProgram,
     shadowProgram: ShadowRenderProgram,
     lightViewProj: Mat4
 ) {
@@ -550,18 +552,33 @@ export function drawShadowScene(
     gl.useProgram(shadowProgram.program);
     scene.forEach(node => {
         if (node.mesh) {
-            const vao = glState.vaos.get(node.mesh._id!)!;
-            gl.bindVertexArray(vao);
-            gl.uniformMatrix4fv(shadowProgram.u_model, false, node._worldTransform);
-            gl.uniformMatrix4fv(shadowProgram.u_lightViewProj, false, lightViewProj);
-            if (node.mesh.vertices.indices) {
-                gl.drawElements(gl.TRIANGLES, node.mesh.vertices.indices.length, gl.UNSIGNED_SHORT, 0);
-            } else {
-                gl.drawArrays(gl.TRIANGLES, 0, node.mesh.vertices.positions.length / 3);
+
+            const drawInitializedMesh = (mesh: Mesh) => {
+                const vao = glState.vaos.get(mesh._id!)!;
+                gl.bindVertexArray(vao);
+                gl.uniformMatrix4fv(shadowProgram.u_model, false, node._worldTransform);
+                gl.uniformMatrix4fv(shadowProgram.u_lightViewProj, false, lightViewProj);
+                if (mesh.vertices.indices) {
+                    gl.drawElements(gl.TRIANGLES, mesh.vertices.indices.length, gl.UNSIGNED_SHORT, 0);
+                } else {
+                    gl.drawArrays(gl.TRIANGLES, 0, mesh.vertices.positions.length / 3);
+                }
             }
+
+
+
+             if (!node.mesh._id) {
+            // initialise the mesh 
+            initMesh(node.mesh, glState, renderProgram, shadowProgram)
+            drawInitializedMesh(node.mesh)
+        } else {
+            // alre
+            drawInitializedMesh(node.mesh)
+        }
+          
         }
         if (node.children) {
-            node.children.forEach(child => drawShadowScene(glState, [child], shadowProgram, lightViewProj));
+            node.children.forEach(child => drawShadowScene(glState, [child], renderProgram, shadowProgram, lightViewProj));
         }
     });
 }
