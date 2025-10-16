@@ -1,6 +1,6 @@
 import { AttributeBinding, createProgramFromRaw } from "./shaderUtils"
 import { AmbientLight, DirectionalLight, PointLight } from "./light";
-import {  m4fromPositionAndEuler, m4inverse, m4lookAt, m4multiply, m4orthographic, m4perspective, Mat4 } from "./mat4";
+import {  m4fromPositionAndEuler, m4inverse, m4multiply, m4orthographic, m4perspective, Mat4 } from "./mat4";
 import { Camera } from "./camera";
 import { InputState } from "./input";
 
@@ -14,7 +14,6 @@ import shadowFragmentSource from "./shaders/depth-only.frag?raw"
 import { GlState } from "./gl";
 import { Mesh } from "./mesh";
 import { SceneNode } from "./scene";
-import { Vec3 } from "./vec";
 
 function guaranteeUniformLocation(
     gl: WebGL2RenderingContext, 
@@ -224,7 +223,6 @@ export function drawMesh(
     mesh: Mesh, 
     glState: GlState, 
     renderProgram: MainRenderProgram, 
-    shadowProgram: ShadowRenderProgram,
     ambientLight: AmbientLight,
     directionalLight: DirectionalLight,
     pointLight: PointLight, 
@@ -261,7 +259,7 @@ export function drawMesh(
 
         if (!mesh._id) {
             // initialise the mesh 
-            initMesh(mesh, glState, renderProgram, shadowProgram)
+            initMesh(mesh, glState, renderProgram)
             drawInitializedMesh(mesh)
         } else {
             // alre
@@ -275,7 +273,6 @@ export function initMesh(
         mesh: Mesh,
         glState: GlState,
         renderProgram: MainRenderProgram,
-        shadowProgram: ShadowRenderProgram
     ): Mesh | undefined {
     
     if (mesh._id) {
@@ -400,7 +397,6 @@ export function drawSceneNode(
             node.mesh, 
             glState, 
             renderProgram, 
-            shadowProgram,
             ambientLight,
             directionalLight,
             pointLight, 
@@ -580,7 +576,7 @@ export function drawShadowScene(
 
              if (!node.mesh._id) {
             // initialise the mesh 
-            initMesh(node.mesh, glState, renderProgram, shadowProgram)
+            initMesh(node.mesh, glState, renderProgram)
             drawInitializedMesh(node.mesh)
         } else {
             // alre
