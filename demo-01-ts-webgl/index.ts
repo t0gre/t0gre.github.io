@@ -67,7 +67,7 @@ gl.clearColor(0.1, 0.1, 0.1 ,1);
 const basicRenderProgram = initBasicRenderProgram(gl)
 
  // Shadow map setup
-const shadowMap = createShadowMap(gl, 1024);
+const shadowMap = createShadowMap(gl);
 const shadowRenderProgram = initShadowRenderProgram(gl);
 
 if (!basicRenderProgram) {
@@ -166,7 +166,7 @@ const ambientLight: AmbientLight = {
 
 const directionalLight: DirectionalLight = {
         rotation : [ 0.0,  -0.8 , -0.5],
-        color : [0.5,  0.5,  0.5],
+        color : [0.6,  0.6,  0.6],
     };
 
 const pointLight: PointLight = {
@@ -256,6 +256,7 @@ function animate(time: DOMHighResTimeStamp) {
     const dt = time - lastTime;
     lastTime = time;
     updateLight(pointLight, dt)
+    // updateDirectionalLight(directionalLight, time)
     resizeCanvasToDisplaySize(canvas);
     camera.aspect = canvas.clientWidth / canvas.clientHeight;
 
@@ -301,6 +302,14 @@ function resizeCanvasToDisplaySize(canvas: HTMLCanvasElement): void {
     }
 
 }
+// function updateDirectionalLight(light: DirectionalLight, time: number) {
+    
+//     const oldRotation = light.rotation
+      
+   
+//     light.rotation = [oldRotation[0], Math.sin(time), oldRotation[2]]
+    
+// }
 
 function updateLight(pointLight: PointLight, dt: number) {
       const rotator = m4yRotation(Math.PI / (dt * 10000));

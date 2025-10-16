@@ -1,6 +1,6 @@
 import { AttributeBinding, createProgramFromRaw } from "./shaderUtils"
 import { AmbientLight, DirectionalLight, PointLight } from "./light";
-import {  m4fromPositionAndEuler, m4inverse, m4multiply, m4orthographic, m4perspective, Mat4 } from "./mat4";
+import {  m4fromPositionAndEuler, m4inverse, m4multiply, m4orthographic, m4perspective, m4PositionMultiply, m4xRotation, Mat4 } from "./mat4";
 import { Camera } from "./camera";
 import { InputState } from "./input";
 
@@ -14,6 +14,7 @@ import shadowFragmentSource from "./shaders/depth-only.frag?raw"
 import { GlState } from "./gl";
 import { Mesh } from "./mesh";
 import { SceneNode } from "./scene";
+import { Vec3 } from "./vec";
 
 function guaranteeUniformLocation(
     gl: WebGL2RenderingContext, 
@@ -441,7 +442,18 @@ export function drawScene(
     
     // Example: look from above, orthographic
     // You may want to use your own matrix utilities here
-    const lightView = m4fromPositionAndEuler([-5, 10, -10], directionalLight.rotation);
+    const [x,y,z] = directionalLight.rotation
+
+    const xMatrix = m4xRotation(x)
+    const yMatrix = m4xRotation(y)
+    const zMatrix = m4xRotation(z)
+
+    const imaginaryCameraPosition: Vec3 = [10,10,10]
+    let effectiveCameraPosition = m4PositionMultiply(imaginaryCameraPosition,xMatrix)
+    effectiveCameraPosition = m4PositionMultiply(effectiveCameraPosition,yMatrix)
+    effectiveCameraPosition = m4PositionMultiply(effectiveCameraPosition,zMatrix)
+
+    const lightView = m4fromPositionAndEuler(effectiveCameraPosition, directionalLight.rotation);
     // const lightPosition: Vec3 = [100, 100, 100];
     // const target: Vec3 = [0, 0, 0]; // or your scene's center
     // const up: Vec3 = [0, 1, 0];
@@ -501,7 +513,7 @@ type ShadowMap = {
     size: number
 
 }
-export function createShadowMap(gl: WebGL2RenderingContext, size = 1024): ShadowMap {
+export function createShadowMap(gl: WebGL2RenderingContext, size = 2048): ShadowMap {
     const depthTexture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, depthTexture);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT24, size, size, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null);

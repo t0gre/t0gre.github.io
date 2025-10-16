@@ -74,7 +74,7 @@
           return 1.0; // fully lit if outside shadow map
         float closestDepth = texture(u_shadowMap, projCoords.xy).r;
         float currentDepth = projCoords.z;
-        float bias = 0.005;
+        float bias = 0.002;
         return currentDepth - bias > closestDepth ? 0.5 : 1.0; // 0.5 shadow, 1.0 lit
     }
 
@@ -112,14 +112,13 @@
         point_components.diffuse *= attenuation;
         point_components.specular *= attenuation;
                                                                                                                                      
-        outColor = vec4(ambient_color 
-                      + directional_components.diffuse
-                      + directional_components.specular
-                      + point_components.diffuse
-                      + point_components.specular, 
+        outColor = vec4(ambient_color
+                      + directional_components.diffuse * shadow
+                      + directional_components.specular * shadow
+                      + point_components.diffuse / 1000.0  * shadow
+                      + point_components.specular / 1000.0  * shadow, 
                       1.0);  
              
-        outColor.rgb = min(outColor.rgb, vec3(1.0));
+        outColor.rgb = min(outColor.rgb, vec3(1.0) );
         outColor.rgb = mix(outColor.rgb, vec3(0.1, 0.1, 0.1), fog_factor);
-        outColor.rgb *= shadow;
     }
