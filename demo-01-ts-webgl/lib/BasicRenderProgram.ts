@@ -1,6 +1,6 @@
 import { AttributeBinding, createProgramFromRaw } from "./shaderUtils"
 import { AmbientLight, DirectionalLight, PointLight } from "./light";
-import {  m4fromPositionAndEuler, m4inverse, m4multiply, m4orthographic, m4perspective, Mat4 } from "./mat4";
+import {  m4fromPositionAndEuler, m4inverse, m4lookAt, m4multiply, m4orthographic, m4perspective, Mat4 } from "./mat4";
 import { Camera } from "./camera";
 import { InputState } from "./input";
 
@@ -14,6 +14,7 @@ import shadowFragmentSource from "./shaders/depth-only.frag?raw"
 import { GlState } from "./gl";
 import { Mesh } from "./mesh";
 import { SceneNode } from "./scene";
+import { Vec3 } from "./vec";
 
 function guaranteeUniformLocation(
     gl: WebGL2RenderingContext, 
@@ -94,6 +95,7 @@ export function updateUniforms(
 
         const gl = glState.gl;
         gl.useProgram(renderProgram.program)
+        
         // update camera uniforms
         const viewMatrix = m4inverse(camera.transform);
         const projectionMatrix = m4perspective(
@@ -443,7 +445,11 @@ export function drawScene(
     
     // Example: look from above, orthographic
     // You may want to use your own matrix utilities here
-    const lightView = m4fromPositionAndEuler([100, 100, 100], directionalLight.rotation);
+    const lightView = m4fromPositionAndEuler([-5, 10, -10], directionalLight.rotation);
+    // const lightPosition: Vec3 = [100, 100, 100];
+    // const target: Vec3 = [0, 0, 0]; // or your scene's center
+    // const up: Vec3 = [0, 1, 0];
+    // const lightView = m4lookAt(lightPosition, target, up);
     const lightProj = m4orthographic(-20, 20, -20, 20, 1, 100);
     const lightViewProjectionMatrix = m4multiply(lightProj, lightView);
     
@@ -458,6 +464,11 @@ export function drawScene(
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    // Bind shadow map texture to texture unit 0
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, shadowMap.depthTexture);
+
     // Pass shadowMap.depthTexture and getLightViewProj() to your main render program
 
     // Tell WebGL how to convert from clip space to pixels
@@ -548,7 +559,7 @@ export function drawShadowScene(
     lightViewProj: Mat4
 ) {
     const gl = glState.gl;
-    // gl.bindFramebuffer(shadowProgram.)
+    
     gl.useProgram(shadowProgram.program);
     scene.forEach(node => {
         if (node.mesh) {

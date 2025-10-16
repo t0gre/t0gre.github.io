@@ -64,9 +64,14 @@
     uniform mat4 u_lightViewProj;
 
     float getShadow(vec3 worldPos) {
+
+      
         vec4 lightSpacePos = u_lightViewProj * vec4(worldPos, 1.0);
         vec3 projCoords = lightSpacePos.xyz / lightSpacePos.w;
         projCoords = projCoords * 0.5 + 0.5; // to [0,1]
+
+        if(projCoords.x < 0.0 || projCoords.x > 1.0 ||  projCoords.y < 0.0 || projCoords.y > 1.0)
+          return 1.0; // fully lit if outside shadow map
         float closestDepth = texture(u_shadowMap, projCoords.xy).r;
         float currentDepth = projCoords.z;
         float bias = 0.005;
