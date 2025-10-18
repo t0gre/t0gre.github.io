@@ -1,5 +1,8 @@
 #include "render_program.h"
 #include "loaders.h"
+#include "mesh.h"
+
+#include <vector>
 #include <stddef.h>
 #include <assert.h>
 #include <stdio.h>
@@ -71,7 +74,6 @@ RenderProgram initShader(void)
     }; 
 }
 
-#include "mesh.h"
 
 
 Mesh initMesh(Mesh mesh, RenderProgram* render_program) {
@@ -109,7 +111,7 @@ Mesh initMesh(Mesh mesh, RenderProgram* render_program) {
 
     // Specify the layout of the shader vertex data (normals only, 3 floats)
     GLint normAttrib = glGetAttribLocation(render_program->shader_program, "a_normal");
-    assert(posAttrib != -1); // fail on error
+    assert(normAttrib != -1); // fail on error
 
     glEnableVertexAttribArray(normAttrib);
     glVertexAttribPointer(normAttrib, 3, GL_FLOAT, GL_TRUE, 0, 0);
@@ -172,4 +174,125 @@ void drawSceneNode(SceneNode node, RenderProgram render_program) {
         
      
     }
+}
+
+
+///////// shadows
+
+ShadowMap createShadowMap() {
+
+    int size = 2048;
+    GLuint depthTexture;
+    glGenTextures(1, &depthTexture);
+
+    if (!depthTexture) {
+         throw "failed to create depth texture";
+    }
+    
+    glBindTexture(GL_TEXTURE_2D, depthTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, size, size, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    GLuint framebuffer;
+    glGenFramebuffers(1, &framebuffer);
+
+    if (!framebuffer) {
+         throw "failed to create frame buffer";
+    }
+
+    
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture, 0);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    
+    return { framebuffer, depthTexture, size };
+}
+
+ShadowRenderProgram initShadowRenderProgram() {
+
+    std::vector<AttributeBinding> attribBindings;
+    
+    attribBindings.push_back({ .name = "a_position", .location = 0});
+
+    #ifdef __EMSCRIPTEN__
+    const GLchar* vertexSource = get_shader_content("depth-only.vert");
+    const GLchar* fragmentSource = get_shader_content("depth-only.frag");
+    #else 
+    const GLchar* vertexSource = get_shader_content("./lib/shaders/depth-only.vert");
+    const GLchar* fragmentSource = get_shader_content("./lib/shaders/depth-only.frag");
+    #endif
+
+    // Create and compile vertex shader
+    const GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertexShader, 1, &vertexSource, NULL);
+    glCompileShader(vertexShader);
+
+    // Create and compile fragment shader
+    const GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
+    glCompileShader(fragmentShader);
+
+    // Link vertex and fragment shader into shader program and use it
+    const GLuint program = glCreateProgram();
+    glAttachShader(program, vertexShader);
+    glAttachShader(program, fragmentShader);
+    glLinkProgram(program);
+
+     if (program == -1) {
+        throw "failed to create shadow render program";
+    }
+
+    return (ShadowRenderProgram){
+        .program = program,
+        .u_model = guaranteeUniformLocation(program, "u_model"),
+        .u_lightViewProj = guaranteeUniformLocation(program, "u_lightViewProj"),
+    };
+}
+
+void drawSceneNodeShadow(
+    SceneNode node,
+    RenderProgram renderProgram,
+    ShadowRenderProgram shadowProgram,
+    Mat4 lightViewProj
+) {
+      
+   
+    if (node.mesh.has_value()) {
+
+        
+        // check if the mesh has been initialized and init if not
+        if (node.mesh.value().id.has_value()) {
+            // draw this mesh
+            glUseProgram(shadowProgram.program);
+        
+            glUniformMatrix4fv(shadowProgram.u_lightViewProj,1,0, &node.world_transform.data[0][0]);
+            glUniformMatrix4fv(shadowProgram.u_model,1,0, &lightViewProj.data[0][0]);
+
+            glBindVertexArray(node.mesh.value().id.value());
+            // Draw the vertex buffer
+            glDrawArrays(GL_TRIANGLES, 0, node.mesh.value().vertices.vertex_count);
+        } else {
+            auto initedMesh = initMesh(node.mesh.value(), &renderProgram);
+            // draw initedMesh
+            glUseProgram(shadowProgram.program);
+        
+            glUniformMatrix4fv(shadowProgram.u_lightViewProj,1,0, &node.world_transform.data[0][0]);
+            glUniformMatrix4fv(shadowProgram.u_model,1,0, &lightViewProj.data[0][0]);
+  
+            glBindVertexArray(initedMesh.id.value());
+            // Draw the vertex buffer
+            glDrawArrays(GL_TRIANGLES, 0, node.mesh.value().vertices.vertex_count);
+        }
+    }
+    
+    for (size_t i = 0; i < node.children.size(); i++) {
+               SceneNode child = node.children.at(i);
+               drawSceneNodeShadow(child, renderProgram, shadowProgram, lightViewProj);
+    }
+
 }

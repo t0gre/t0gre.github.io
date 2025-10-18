@@ -25,6 +25,8 @@ typedef struct AppState  {
     InputState input;
     RenderProgram render_program;
     Scene scene;
+    ShadowRenderProgram shadow_render_program;
+    ShadowMap shadow_map;
 
 } AppState;
 

@@ -58,7 +58,7 @@ function updateFish(fishGtlf: Object3D, newTimestamp: number, dt: number) {
     
         // console.log(Math.sin(newTimestamp/(dt*200)))
 
-        const spineRotation = lerp(fishSpineRange.min, fishSpineRange.max, (Math.sin(newTimestamp/(dt*200)) + 1)/2)
+        const spineRotation = lerp(fishSpineRange.min, fishSpineRange.max, (Math.sin(newTimestamp/(dt*100)) + 1)/2)
         
         fishSpineBone.rotation.set(0,0,spineRotation)
 

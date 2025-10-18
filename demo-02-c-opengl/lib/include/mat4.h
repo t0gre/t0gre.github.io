@@ -20,6 +20,8 @@ Mat4 m4lookAt(Vec3 camera_position, Vec3 target, Vec3 up);
 
 Mat4 m4perspective(float field_of_view_in_radians, float aspect, float near, float far);
 
+Mat4 m4orthographic(int left, int right, int bottom, int top, int near, int far);
+
 Mat4 m4projection(float width, float height, float depth);
 
 Mat4 m4multiply(Mat4 a, Mat4 b);

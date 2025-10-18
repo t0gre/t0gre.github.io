@@ -439,9 +439,6 @@ export function drawScene(
 
 
     // Compute light's view-projection matrix (for directional light)
-    
-    // Example: look from above, orthographic
-    // You may want to use your own matrix utilities here
     const [x,y,z] = directionalLight.rotation
 
     const xMatrix = m4xRotation(x)
