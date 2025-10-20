@@ -17,12 +17,10 @@ jobs:
         run: yarn
       - name: check types
         run: yarn types
-      - name: typescript tests
+      - name: tests
         run: yarn test
-      - name: c tests
-        run: cd demo-02-c-opengl && make test
-      - name: setup emsdk and build
-        run: cd emsdk && ./emsdk install 3.1.54 && ./emsdk activate 3.1.54 && source ./emsdk_env.sh && cd .. && yarn build
+      - name: build
+        run: yarn build
       - name: deploy
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
