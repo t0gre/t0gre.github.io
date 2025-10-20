@@ -39,6 +39,11 @@ RenderProgram initShader(void)
     const GLuint shader_program = glCreateProgram();
     glAttachShader(shader_program, vertexShader);
     glAttachShader(shader_program, fragmentShader);
+
+     // IMPORTANT: bind attribute locations BEFORE linking so locations are consistent on WebGL2
+    glBindAttribLocation(shader_program, 0, "a_position");
+    glBindAttribLocation(shader_program, 1, "a_normal");
+
     glLinkProgram(shader_program);
     glUseProgram(shader_program);
     
@@ -87,6 +92,9 @@ Mesh initMesh(Mesh mesh, RenderProgram* render_program) {
         return mesh;
     }
 
+     // sanity check
+    assert(mesh.vertices.vertex_count >= 3 && "vertex_count must be >= 3");
+
     // setup vao
     GLuint vao;
     glGenVertexArrays(1, &vao);
@@ -102,9 +110,6 @@ Mesh initMesh(Mesh mesh, RenderProgram* render_program) {
 
     // Specify the layout of the shader vertex data (positions only, 3 floats)
     GLint posAttrib = 0;
-    glBindAttribLocation(render_program->shader_program, posAttrib, "a_position");
-    assert(posAttrib != -1); // fail on error
-
     glEnableVertexAttribArray(posAttrib);
     glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
@@ -117,13 +122,12 @@ Mesh initMesh(Mesh mesh, RenderProgram* render_program) {
     // Specify the layout of the shader vertex data (normals only, 3 floats)
     
     GLint normAttrib = 1;
-    glBindAttribLocation(render_program->shader_program, normAttrib, "a_normal");
-    assert(normAttrib != -1); // fail on error
-
     glEnableVertexAttribArray(normAttrib);
-    glVertexAttribPointer(normAttrib, 3, GL_FLOAT, GL_TRUE, 0, 0);
+    glVertexAttribPointer(normAttrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-    glBindVertexArray(vao);
+    // unbind VAO and array buffer to avoid accidental state changes
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
 
     mesh.id = vao;
 
@@ -213,12 +217,6 @@ ShadowMap createShadowMap() {
     
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture, 0);
-
-     // IMPORTANT: for a depth-only FBO, disable color draw/read buffers so GLES/WebGL2
-    // doesn't expect fragment shader color outputs.
-    // GLenum drawBuffersNone[1] = { GL_NONE };
-    // glDrawBuffers(1, drawBuffersNone);
-    // glReadBuffer(GL_NONE);
 
     // check completeness (helps catch errors early)
     GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);

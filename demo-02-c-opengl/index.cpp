@@ -114,6 +114,8 @@ void draw(
     glViewport(0, 0, shadow_map.size, shadow_map.size);
     glClear(GL_DEPTH_BUFFER_BIT);
 
+    // Disable color writes because framebuffer is depth-only (glDrawBuffers isn't available)
+    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
     glUseProgram(shadow_render_program.program);
 
 
@@ -139,6 +141,8 @@ void draw(
         drawSceneNodeShadow(node, render_program, shadow_render_program, lightViewProj);
     }
 
+    
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     glUseProgram(render_program.shader_program);
 
 
