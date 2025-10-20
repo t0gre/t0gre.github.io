@@ -31,6 +31,19 @@ Mat4 m4perspective(float field_of_view_in_radians, float aspect, float near, flo
         };
     }
 
+Mat4 m4orthographic(int left, int right, int bottom, int top, int near, int far) {
+    float lr = 1.f / (left - right);
+    float bt = 1.f / (bottom - top);
+    float nf = 1.f / (near - far);
+
+    return (Mat4){
+        -2 * lr, 0, 0, 0,
+        0, -2 * bt, 0, 0,
+        0, 0, 2 * nf, 0,
+        (left + right) * lr, (top + bottom) * bt, (far + near) * nf, 1
+    };
+}
+
 Mat4 m4projection(float width, float height, float depth) {
         // Note: This matrix flips the Y axis so 0 is at the top.
         return (Mat4){

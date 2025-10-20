@@ -1,7 +1,7 @@
 type ShaderType = WebGLRenderingContextBase["VERTEX_SHADER"] | WebGLRenderingContextBase["FRAGMENT_SHADER"]
 
 
-function createShader(gl: WebGLRenderingContext, type: ShaderType, source: string): WebGLShader | undefined {
+function createShader(gl: WebGLRenderingContext, type: ShaderType, source: string): WebGLShader {
     const shader = gl.createShader(type);
     if (shader) {
         gl.shaderSource(shader, source);
@@ -10,43 +10,71 @@ function createShader(gl: WebGLRenderingContext, type: ShaderType, source: strin
         if (success) {
             return shader;
         } else {
-            alert(`Error: ${gl.getShaderInfoLog(shader)})`);
-            gl.deleteShader(shader);
-            return undefined
+            throw new Error(`Error: ${gl.getShaderInfoLog(shader)})`);
         }
     } else {
-        alert('Failed to create shader')
-        return undefined
+        throw new Error('Failed to create shader')
     }
 }
 
-function createProgram(gl: WebGLRenderingContext, vertexShader: WebGLShader, fragmentShader: WebGLShader): WebGLProgram | undefined {
+export type AttributeBinding = {
+    name: string
+    location: number // integer
+}
+
+type ShaderProgramWithAttributes = {
+    vertexShader: WebGLShader, 
+    fragmentShader: WebGLShader
+    attributeBindings: AttributeBinding[]
+}
+
+function createProgram(gl: WebGLRenderingContext, shaderProgramWithAttributes: ShaderProgramWithAttributes): WebGLProgram {
     const program = gl.createProgram();
+
+    const { vertexShader, fragmentShader, attributeBindings } = shaderProgramWithAttributes
     if (program) {
         gl.attachShader(program, vertexShader);
         gl.attachShader(program, fragmentShader);
+
+        // Bind attribute locations before linking
+        if (attributeBindings) {
+            for (const {name, location} of attributeBindings) {
+                gl.bindAttribLocation(program, location, name);
+            }
+        }
+
         gl.linkProgram(program);
         const success = gl.getProgramParameter(program, gl.LINK_STATUS);
         if (success) {
             return program;
         } else {
-            alert(`Error: ${gl.getProgramInfoLog(program)}`);
-            gl.deleteProgram(program);
-            return undefined
+            throw new Error(`Error: ${gl.getProgramInfoLog(program)}`);
+            
         }
     } else {
-        alert('Failed to create WebGL program')
-        return undefined
+        throw new Error('Failed to create WebGL program')
     }
 }
 
-export function createProgramFromRaw(gl: WebGLRenderingContext, vertexShaderSource: string, fragmentShaderSource: string) {
+// type WebGLProgramWithAttributes = {
+//     vertexShader: WebGLShader, 
+//     fragmentShader: WebGLShader
+//     attributeBindings: AttributeBinding[]
+// }
+
+
+export function createProgramFromRaw(
+    gl: WebGLRenderingContext, 
+    vertexShaderSource: string, 
+    fragmentShaderSource: string, 
+    attributeBindings: AttributeBinding[]
+) {
     const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
     const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
     if (vertexShader && fragmentShader) {
-        return createProgram(gl, vertexShader, fragmentShader)
+        return createProgram(gl, {vertexShader, fragmentShader, attributeBindings })
 
     } else {
-        return undefined
+        throw new Error("failed to create ")
     }
 }

@@ -5,6 +5,7 @@
 #include <vector>
 #include "scene.h"
 #include "mesh.h"
+#include <string>
 
 typedef struct MaterialUniform {
       GLuint color_location;
@@ -29,6 +30,10 @@ typedef struct PointLightUniform {
       GLuint quadratic_location;
 } PointLightUniform;
 
+typedef struct ShadowUniform {
+      GLuint shadow_map_location;
+      GLuint light_view_location;
+} ShadowUniform;
 typedef struct RenderProgram  {
     GLuint shader_program;
     GLuint world_matrix_uniform_location;
@@ -39,7 +44,13 @@ typedef struct RenderProgram  {
     AmbientLightUniform ambient_light_uniform;
     DirectionalLightUniform directional_light_uniform;
     PointLightUniform point_light_uniform;
+    ShadowUniform shadow_uniform;
 } RenderProgram;
+
+typedef struct AttributeBinding {
+      const char* name;
+      int location;
+} AttributeBinding;
 
 RenderProgram initShader(void);
 
@@ -50,7 +61,30 @@ typedef struct GlState {
 
 Mesh initMesh(Vertices vertices, RenderProgram* render_program);
 
+typedef struct ShadowMap {
+      GLuint depthTexture;
+      GLuint framebuffer;
+      int size;
+} ShadowMap;
+
+ShadowMap createShadowMap(void);
+
+typedef struct ShadowRenderProgram {
+        
+        GLuint program;
+        GLuint u_model;
+        GLuint u_lightViewProj;
+} ShadowRenderProgram;
+
+ShadowRenderProgram initShadowRenderProgram();
+
 void drawSceneNode(SceneNode scene_node, RenderProgram render_program);
 
+void drawSceneNodeShadow(
+    SceneNode node,
+    RenderProgram renderProgram,
+    ShadowRenderProgram shadowProgram,
+    Mat4 lightViewProj
+);
 
 #endif //RENDER_PROGRAM_H

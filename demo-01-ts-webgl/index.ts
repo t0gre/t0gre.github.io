@@ -3,7 +3,7 @@ import { degToRad } from './lib/mathUtils'
 import { Vertices } from './lib/mesh'
 import { DirectionalLight, AmbientLight, PointLight } from './lib/light'
 import { Camera } from './lib/camera'
-import { initRenderProgram, drawScene } from './lib/BasicRenderProgram'
+import { initBasicRenderProgram, drawScene, createShadowMap, initShadowRenderProgram } from './lib/BasicRenderProgram'
 import { loadObj } from './lib/loaders/ObjLoader'
 import { InputState } from './lib/input'
 import { m4fromPositionAndEuler, m4lookAt, m4vectorMultiply, m4yRotation } from './lib/mat4'
@@ -64,12 +64,17 @@ gl.enable(gl.DEPTH_TEST);
 gl.clearColor(0.1, 0.1, 0.1 ,1);
 
 
-const basicRenderProgram = initRenderProgram(gl)
+const basicRenderProgram = initBasicRenderProgram(gl)
+
+ // Shadow map setup
+const shadowMap = createShadowMap(gl);
+const shadowRenderProgram = initShadowRenderProgram(gl);
 
 if (!basicRenderProgram) {
      alert('failed to compile shader')
     return 1;
 }
+
 
 const vertices = await loadObj('/rainbowtree.obj');
 
@@ -161,7 +166,7 @@ const ambientLight: AmbientLight = {
 
 const directionalLight: DirectionalLight = {
         rotation : [ 0.0,  -0.8 , -0.5],
-        color : [0.5,  0.5,  0.5],
+        color : [0.6,  0.6,  0.6],
     };
 
 const pointLight: PointLight = {
@@ -251,8 +256,12 @@ function animate(time: DOMHighResTimeStamp) {
     const dt = time - lastTime;
     lastTime = time;
     updateLight(pointLight, dt)
+    // updateDirectionalLight(directionalLight, time)
     resizeCanvasToDisplaySize(canvas);
     camera.aspect = canvas.clientWidth / canvas.clientHeight;
+
+    
+
     const drawError = drawScene(
         glState, 
         scene, 
@@ -260,7 +269,10 @@ function animate(time: DOMHighResTimeStamp) {
         directionalLight,
         pointLight, 
         camera, 
-        basicRenderProgram!);
+        basicRenderProgram!,
+        shadowMap,
+        shadowRenderProgram
+    );
     if (drawError) {
         console.log('draw error')
     }
@@ -290,6 +302,14 @@ function resizeCanvasToDisplaySize(canvas: HTMLCanvasElement): void {
     }
 
 }
+// function updateDirectionalLight(light: DirectionalLight, time: number) {
+    
+//     const oldRotation = light.rotation
+      
+   
+//     light.rotation = [oldRotation[0], Math.sin(time), oldRotation[2]]
+    
+// }
 
 function updateLight(pointLight: PointLight, dt: number) {
       const rotator = m4yRotation(Math.PI / (dt * 10000));

@@ -96,10 +96,69 @@ WindowState initWindow(const char* title)
 
 
 
-void draw(WindowState window, Camera camera, Scene* scene, RenderProgram render_program)
+void draw(
+    WindowState window, 
+    Camera camera, 
+    Scene* scene, 
+    RenderProgram render_program,
+    ShadowRenderProgram shadow_render_program,
+    ShadowMap shadow_map
+)
 {
     // Clear screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // draw shadows
+    // 1. Render to shadow map
+    glBindFramebuffer(GL_FRAMEBUFFER, shadow_map.framebuffer);
+    glViewport(0, 0, shadow_map.size, shadow_map.size);
+    glClear(GL_DEPTH_BUFFER_BIT);
+
+    // Disable color writes because framebuffer is depth-only (glDrawBuffers isn't available)
+    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+    glUseProgram(shadow_render_program.program);
+
+
+    // Compute light's view-projection matrix (for directional light)
+    Vec3 lightRotation = scene->directional_light.rotation;
+
+    Mat4 xMatrix = m4xRotation(lightRotation.x);
+    Mat4 yMatrix = m4xRotation(lightRotation.y);
+    Mat4 zMatrix = m4xRotation(lightRotation.z);
+
+    Vec3 imaginaryCameraPosition = {10,10,10};
+    Vec3 effectiveCameraPosition = m4PositionMultiply(imaginaryCameraPosition,xMatrix);
+    effectiveCameraPosition = m4PositionMultiply(effectiveCameraPosition,yMatrix);
+    effectiveCameraPosition = m4PositionMultiply(effectiveCameraPosition,zMatrix);
+
+    Mat4 lightView = m4fromPositionAndEuler(effectiveCameraPosition, lightRotation);
+    Mat4 lightProj = m4orthographic(-20, 20, -20, 20, 1, 100);
+    Mat4 lightViewProj = m4multiply(lightProj, lightView);
+
+
+    for (size_t i = 0; i < scene->nodes.size(); i++) {
+        SceneNode node = scene->nodes.at(i);
+        drawSceneNodeShadow(node, render_program, shadow_render_program, lightViewProj);
+    }
+
+    
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    glUseProgram(render_program.shader_program);
+
+
+    // draw scene with shadows as input
+
+     // 2. Render main scene
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(0, 0, window.width, window.height);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // Bind shadow map texture to texture unit 0
+    // bind the shadowmap
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, shadow_map.depthTexture);
+
+    glUniformMatrix4fv(render_program.shadow_uniform.light_view_location, 1,0, &lightViewProj.data[0][0]);
 
     // update camera uniforms
     const Mat4 projection = getProjectionMatrix(camera);
@@ -124,11 +183,13 @@ void draw(WindowState window, Camera camera, Scene* scene, RenderProgram render_
     glUniform1f(render_program.point_light_uniform.linear_location,scene->point_light.linear);
     glUniform1f(render_program.point_light_uniform.quadratic_location,scene->point_light.quadratic); 
 
+    
     for (size_t i = 0; i < scene->nodes.size(); i++) {
         SceneNode node = scene->nodes.at(i);
         drawSceneNode(node, render_program);
     }
-    
+   
+   
 
     #ifndef __EMSCRIPTEN__ 
     // Swap front/back framebuffers
@@ -177,7 +238,14 @@ void mainLoop(void* mainLoopArg)
 
     processEvents(state);
      
-    draw(state->window, state->camera, &state->scene, state->render_program);
+    draw(
+        state->window, 
+        state->camera, 
+        &state->scene, 
+        state->render_program, 
+        state->shadow_render_program,
+        state->shadow_map
+    );
 
 }
 
@@ -195,6 +263,10 @@ int main(int argc, char** argv)
        
     // Initialize shader and geometry
     RenderProgram render_program = initShader();
+
+    // Shadow map setup
+    ShadowMap shadowMap = createShadowMap();
+    ShadowRenderProgram shadowRenderProgram = initShadowRenderProgram();
 
     // create lights
     AmbientLight ambient_light = {
@@ -359,6 +431,8 @@ int main(int argc, char** argv)
         .input = input,
         .render_program = render_program,
         .scene = scene,
+        .shadow_render_program = shadowRenderProgram,
+        .shadow_map = shadowMap
     };
 
     // Start the main loop
