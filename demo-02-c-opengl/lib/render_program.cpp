@@ -216,9 +216,9 @@ ShadowMap createShadowMap() {
 
      // IMPORTANT: for a depth-only FBO, disable color draw/read buffers so GLES/WebGL2
     // doesn't expect fragment shader color outputs.
-    GLenum drawBuffersNone[1] = { GL_NONE };
-    glDrawBuffers(1, drawBuffersNone);
-    glReadBuffer(GL_NONE);
+    // GLenum drawBuffersNone[1] = { GL_NONE };
+    // glDrawBuffers(1, drawBuffersNone);
+    // glReadBuffer(GL_NONE);
 
     // check completeness (helps catch errors early)
     GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -308,8 +308,8 @@ void drawSceneNodeShadow(
             // draw initedMesh
             glUseProgram(shadowProgram.program);
         
-            glUniformMatrix4fv(shadowProgram.u_lightViewProj,1,0, &node.world_transform.data[0][0]);
-            glUniformMatrix4fv(shadowProgram.u_model,1,0, &lightViewProj.data[0][0]);
+            glUniformMatrix4fv(shadowProgram.u_model,1,0, &node.world_transform.data[0][0]);
+            glUniformMatrix4fv(shadowProgram.u_lightViewProj,1,0, &lightViewProj.data[0][0]);
   
             glBindVertexArray(initedMesh.id.value());
             // Draw the vertex buffer
