@@ -297,8 +297,8 @@ void drawSceneNodeShadow(
             // draw this mesh
             glUseProgram(shadowProgram.program);
         
-            glUniformMatrix4fv(shadowProgram.u_lightViewProj,1,0, &node.world_transform.data[0][0]);
-            glUniformMatrix4fv(shadowProgram.u_model,1,0, &lightViewProj.data[0][0]);
+            glUniformMatrix4fv(shadowProgram.u_model,1,0, &node.world_transform.data[0][0]);
+            glUniformMatrix4fv(shadowProgram.u_lightViewProj,1,0, &lightViewProj.data[0][0]);
 
             glBindVertexArray(node.mesh.value().id.value());
             // Draw the vertex buffer
