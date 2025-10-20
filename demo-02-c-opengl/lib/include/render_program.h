@@ -30,6 +30,10 @@ typedef struct PointLightUniform {
       GLuint quadratic_location;
 } PointLightUniform;
 
+typedef struct ShadowUniform {
+      GLuint shadow_map_location;
+      GLuint light_view_location;
+} ShadowUniform;
 typedef struct RenderProgram  {
     GLuint shader_program;
     GLuint world_matrix_uniform_location;
@@ -40,6 +44,7 @@ typedef struct RenderProgram  {
     AmbientLightUniform ambient_light_uniform;
     DirectionalLightUniform directional_light_uniform;
     PointLightUniform point_light_uniform;
+    ShadowUniform shadow_uniform;
 } RenderProgram;
 
 typedef struct AttributeBinding {

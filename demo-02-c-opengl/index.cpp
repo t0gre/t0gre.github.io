@@ -108,30 +108,12 @@ void draw(
     // Clear screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // update camera uniforms
-    const Mat4 projection = getProjectionMatrix(camera);
-    const Mat4 view = getViewMatrix(camera);
-    const Vec3 camera_position = getPositionVector(camera.transform);
-    glUniformMatrix4fv(render_program.view_uniform_location,1,0, &view.data[0][0]);  
-    glUniform3fv(render_program.view_position_uniform_location,1, &camera_position.data[0]); 
-    glUniformMatrix4fv(render_program.projection_uniform_location,1,0, &projection.data[0][0]);
+    // draw shadows
+    // 1. Render to shadow map
+    glBindFramebuffer(GL_FRAMEBUFFER, shadow_map.framebuffer);
+    glViewport(0, 0, shadow_map.size, shadow_map.size);
+    glClear(GL_DEPTH_BUFFER_BIT);
 
-    // update light uniforms
-    // set ambient light
-    glUniform3fv(render_program.ambient_light_uniform.color_location,1,scene->ambient_light.color.data);
-
-    // set directional light
-    glUniform3fv(render_program.directional_light_uniform.color_location,1,scene->directional_light.color.data);
-    glUniform3fv(render_program.directional_light_uniform.rotation_location,1,scene->directional_light.rotation.data);
-
-    // set point light
-    glUniform3fv(render_program.point_light_uniform.color_location,1,scene->point_light.color.data);
-    glUniform3fv(render_program.point_light_uniform.position_location,1,scene->point_light.position.data);
-    glUniform1f(render_program.point_light_uniform.constant_location,scene->point_light.constant);
-    glUniform1f(render_program.point_light_uniform.linear_location,scene->point_light.linear);
-    glUniform1f(render_program.point_light_uniform.quadratic_location,scene->point_light.quadratic); 
-
-     
     glUseProgram(shadow_render_program.program);
 
 
@@ -159,10 +141,50 @@ void draw(
 
     glUseProgram(render_program.shader_program);
 
+
+    // draw scene with shadows as input
+
+     // 2. Render main scene
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(0, 0, window.width, window.height);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // Bind shadow map texture to texture unit 0
+    // bind the shadowmap
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, shadow_map.depthTexture);
+
+    glUniformMatrix4fv(render_program.shadow_uniform.light_view_location, 1,0, &lightViewProj.data[0][0]);
+
+    // update camera uniforms
+    const Mat4 projection = getProjectionMatrix(camera);
+    const Mat4 view = getViewMatrix(camera);
+    const Vec3 camera_position = getPositionVector(camera.transform);
+    glUniformMatrix4fv(render_program.view_uniform_location,1,0, &view.data[0][0]);  
+    glUniform3fv(render_program.view_position_uniform_location,1, &camera_position.data[0]); 
+    glUniformMatrix4fv(render_program.projection_uniform_location,1,0, &projection.data[0][0]);
+
+    // update light uniforms
+    // set ambient light
+    glUniform3fv(render_program.ambient_light_uniform.color_location,1,scene->ambient_light.color.data);
+
+    // set directional light
+    glUniform3fv(render_program.directional_light_uniform.color_location,1,scene->directional_light.color.data);
+    glUniform3fv(render_program.directional_light_uniform.rotation_location,1,scene->directional_light.rotation.data);
+
+    // set point light
+    glUniform3fv(render_program.point_light_uniform.color_location,1,scene->point_light.color.data);
+    glUniform3fv(render_program.point_light_uniform.position_location,1,scene->point_light.position.data);
+    glUniform1f(render_program.point_light_uniform.constant_location,scene->point_light.constant);
+    glUniform1f(render_program.point_light_uniform.linear_location,scene->point_light.linear);
+    glUniform1f(render_program.point_light_uniform.quadratic_location,scene->point_light.quadratic); 
+
+    
     for (size_t i = 0; i < scene->nodes.size(); i++) {
         SceneNode node = scene->nodes.at(i);
         drawSceneNode(node, render_program);
     }
+   
    
 
     #ifndef __EMSCRIPTEN__ 

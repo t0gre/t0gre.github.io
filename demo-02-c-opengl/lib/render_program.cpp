@@ -70,6 +70,10 @@ RenderProgram initShader(void)
             .constant_location = guaranteeUniformLocation(shader_program, "u_point_light.constant"),
             .linear_location = guaranteeUniformLocation(shader_program, "u_point_light.linear"),
             .quadratic_location = guaranteeUniformLocation(shader_program, "u_point_light.quadratic")
+        },
+        .shadow_uniform = {
+            .shadow_map_location = guaranteeUniformLocation(shader_program, "u_shadowMap"),
+            .light_view_location = guaranteeUniformLocation(shader_program, "u_lightViewProj"),
         }
     }; 
 }
@@ -97,7 +101,8 @@ Mesh initMesh(Mesh mesh, RenderProgram* render_program) {
                  mesh.vertices.positions, GL_STATIC_DRAW);
 
     // Specify the layout of the shader vertex data (positions only, 3 floats)
-    GLint posAttrib = glGetAttribLocation(render_program->shader_program, "a_position");
+    GLint posAttrib = 0;
+    glBindAttribLocation(render_program->shader_program, posAttrib, "a_position");
     assert(posAttrib != -1); // fail on error
 
     glEnableVertexAttribArray(posAttrib);
@@ -110,7 +115,9 @@ Mesh initMesh(Mesh mesh, RenderProgram* render_program) {
                  mesh.vertices.normals, GL_STATIC_DRAW);
 
     // Specify the layout of the shader vertex data (normals only, 3 floats)
-    GLint normAttrib = glGetAttribLocation(render_program->shader_program, "a_normal");
+    
+    GLint normAttrib = 1;
+    glBindAttribLocation(render_program->shader_program, normAttrib, "a_normal");
     assert(normAttrib != -1); // fail on error
 
     glEnableVertexAttribArray(normAttrib);
@@ -207,6 +214,19 @@ ShadowMap createShadowMap() {
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture, 0);
 
+     // IMPORTANT: for a depth-only FBO, disable color draw/read buffers so GLES/WebGL2
+    // doesn't expect fragment shader color outputs.
+    GLenum drawBuffersNone[1] = { GL_NONE };
+    glDrawBuffers(1, drawBuffersNone);
+    glReadBuffer(GL_NONE);
+
+    // check completeness (helps catch errors early)
+    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if (status != GL_FRAMEBUFFER_COMPLETE) {
+        throw "failed to create complete framebuffer";
+    }
+
+
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     
@@ -241,6 +261,13 @@ ShadowRenderProgram initShadowRenderProgram() {
     const GLuint program = glCreateProgram();
     glAttachShader(program, vertexShader);
     glAttachShader(program, fragmentShader);
+
+    
+    for (auto& binding: attribBindings) {
+        glBindAttribLocation(program, binding.location, binding.name);
+    }
+    
+
     glLinkProgram(program);
 
      if (program == -1) {

@@ -19,7 +19,9 @@ build-en:
 	--preload-file positions.txt \
 	--preload-file normals.txt \
 	--preload-file ./lib/shaders/basic.vert@basic.vert \
-	--preload-file ./lib/shaders/basic.frag@basic.frag
+	--preload-file ./lib/shaders/basic.frag@basic.frag \
+	--preload-file ./lib/shaders/depth-only.vert@depth-only.vert \
+	--preload-file ./lib/shaders/depth-only.frag@depth-only.frag
 
 clean:
 	rm a.out.data a.out.js a.out.wasm
