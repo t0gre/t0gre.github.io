@@ -455,7 +455,7 @@ export function drawScene(
     // const target: Vec3 = [0, 0, 0]; // or your scene's center
     // const up: Vec3 = [0, 1, 0];
     // const lightView = m4lookAt(lightPosition, target, up);
-    const lightProj = m4orthographic(-20, 20, -20, 20, 1, 100);
+    const lightProj = m4orthographic(-50, 50, -50, 50, 1, 100);
     const lightViewProjectionMatrix = m4multiply(lightProj, lightView);
     
     // 1. Render to shadow map
