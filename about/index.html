@@ -9,7 +9,20 @@
 
 <body>
     <button onclick="location.href='/'" style="font-size: 30px;">Home</button>
-
+     <div style="text-align: right" >
+        <a style="margin-right: 50px" href="https://www.linkedin.com/in/tom-greenwood-01/">
+            <img alt="linkedin" 
+                src="/icon-linkedin.svg" width="50" height="50">
+        </a>
+        <a style="margin-right: 50px" href="https://github.com/t0gre/">
+            <img alt="github" 
+                src="/github-mark.svg" width="50" height="50">
+        </a>
+        <a href="https://stackoverflow.com/users/9740107/tom-greenwood/">
+            <img alt="stackoverflow" 
+                src="/stack-overflow.svg" width="50" height="50">
+        </a>
+    </div>
     <h6 style="margin-top: 50;">Hi, I'm Tom.</h6>
     <br>
     <img  style="float:right; margin-top: -20; margin-left: 10;" alt="profile-photo" 
@@ -38,6 +51,7 @@
          <a href="/cv.pdf" download="tom-greenwood-cv">&#128188;</a>
         <span>.</span>
     </p>
+    <br>
     <p>
         I like software that's fast, without bloat, and preferably in three dimensions
          &#128512;. 
@@ -116,27 +130,6 @@
         <button style="font-size: large;" id="quote-toggle" onclick="toggleQuotes()">show</button>
     </h6> 
     <div id='quotes' style="text-align: center;"></div>
-    <br>
-    <p style="text-align: center; margin-left: 50px; margin-right: 50px;" >
-        <a style="margin-right: 50px" href="https://www.linkedin.com/in/tom-greenwood-01/">
-            <img alt="linkedin" 
-                src="/icon-linkedin.svg" width="50" height="50">
-        </a>
-        <a style="margin-right: 50px" href="https://github.com/t0gre/">
-            <img alt="github" 
-                src="/github-mark.svg" width="50" height="50">
-        </a>
-        <a style="margin-right: 50px" href="https://stackoverflow.com/users/9740107/tom-greenwood/">
-            <img alt="stackoverflow" 
-                src="/stack-overflow.svg" width="50" height="50">
-        </a>
-        <a  href="https://x.com/t0gre">
-            <img alt="twitter-x" 
-                src="/twitter-x.svg" width="50" height="50">
-        </a>
-    </p>
-
-
     <script type="module">
         import { updateTimes } from "./index.ts"
         import { toggleQuotes,quotesList } from "./handlers.ts"
