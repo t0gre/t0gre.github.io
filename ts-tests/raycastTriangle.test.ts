@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 import { Ray, rayIntersectsTriangle, Triangle } from "demo-01-ts-webgl/lib/raycast";
-import { normalize } from 'demo-01-ts-webgl/lib/vec';
+import { normalized } from 'demo-01-ts-webgl/lib/vec';
 
 
 // triangle is symmetrical x-y and just a bit back from origin z
@@ -104,7 +104,7 @@ test('it correctly finds no intersection based on direction', () => {
     // this should intersect the triangles plane, but not the triangle itself
     const ray: Ray = {
     origin: {x: 0.5, y: 0.5, z: -10},
-    direction: normalize({x: 0, y: 1, z:1}) 
+    direction: normalized({x: 0, y: 1, z:1}) 
     }
 
     const result = rayIntersectsTriangle(ray, triangle)

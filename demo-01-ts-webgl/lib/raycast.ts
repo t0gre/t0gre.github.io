@@ -187,11 +187,11 @@ export function getWorldRayFromClipSpaceAndCamera(
 
     const rayDirection = subtractVectors(worldFar, worldNear);
 
-    const rayDirNorm = normalize(rayDirection);
+    normalize(rayDirection);
 
     const worldRay: Ray = {
         origin: rayOrigin,
-        direction: rayDirNorm as Vec3
+        direction: rayDirection
     };
 
     return worldRay

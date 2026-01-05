@@ -1,5 +1,5 @@
 import { Ray } from './raycast';
-import { Vec3, Vec4, normalize, subtractVectors, cross, vec3ToArray, vec4ToArray } from './vec'
+import { Vec3, Vec4, subtractVectors, cross, vec3ToArray, vec4ToArray, normalize } from './vec'
 
 
 export type Mat4 = [
@@ -9,11 +9,51 @@ export type Mat4 = [
     number, number, number, number,
 ]
 
+export type Mat4Scaling = [
+    number, 0,      0,      0,
+    0,      number, 0,      0,
+    0,      0,      number, 0,
+    0,      0,      0,      1,
+]
+
+export type Mat4Translation = [
+    1,      0,      0,      0,
+    0,      1,      0,      0,
+    0,      0,      1,      0,
+    number, number, number, 1,
+]
+
+export type Mat4XRotation = [
+    1,      0,      0,      0,
+    0,      number, number, 0,
+    0,      number, number, 0,
+    0,      0,      0,      1,
+]
+
+export type Mat4YRotation = [
+    number, 0,      number, 0,
+    0,      1,      0,      0,
+    number, 0,      number, 0,
+    0,      0,      0,      1,
+]
+
+export type Mat4ZRotation = [
+    number, number, 0,      0,
+    number, number, 0,      0,
+    0,      0,      1,      0,
+    0,      0,      0,      1,
+]
+
 export function m4lookAt(cameraPosition: Vec3, target: Vec3, up: Vec3): Mat4 {
-        const zAxis = normalize(
-            subtractVectors(cameraPosition, target));
-        const xAxis = normalize(cross(up, zAxis));
-        const yAxis = normalize(cross(zAxis, xAxis));
+        const zAxis = subtractVectors(cameraPosition, target)
+        normalize(zAxis)
+
+        const xAxis = cross(up, zAxis);
+        normalize(xAxis)
+
+        const yAxis = cross(zAxis, xAxis);
+        normalize(yAxis)
+      
 
         return [
             xAxis.x, xAxis.y, xAxis.z, 0,
@@ -117,7 +157,7 @@ export function m4multiply(a: Mat4, b: Mat4): Mat4 {
         ];
     }
 
-export function m4translation(tx: number, ty: number, tz: number): Mat4 {
+export function m4translation(tx: number, ty: number, tz: number): Mat4Translation {
         return [
             1, 0, 0, 0,
             0, 1, 0, 0,
@@ -126,7 +166,7 @@ export function m4translation(tx: number, ty: number, tz: number): Mat4 {
         ];
     }
 
-export function m4xRotation(angleInRadians: number): Mat4 {
+export function m4xRotation(angleInRadians: number): Mat4XRotation {
         const c = Math.cos(angleInRadians);
         const s = Math.sin(angleInRadians);
 
@@ -138,7 +178,7 @@ export function m4xRotation(angleInRadians: number): Mat4 {
         ];
     }
 
-export function m4yRotation(angleInRadians: number): Mat4 {
+export function m4yRotation(angleInRadians: number): Mat4YRotation {
         const c = Math.cos(angleInRadians);
         const s = Math.sin(angleInRadians);
 
@@ -150,7 +190,7 @@ export function m4yRotation(angleInRadians: number): Mat4 {
         ];
     }
 
-export function m4zRotation(angleInRadians: number): Mat4 {
+export function m4zRotation(angleInRadians: number): Mat4ZRotation {
         const c = Math.cos(angleInRadians);
         const s = Math.sin(angleInRadians);
 
@@ -197,7 +237,6 @@ export function m4scaling(sx: number, sy: number, sz: number): Mat4 {
    * @param {Matrix4} m matrix to transpose.
    * @param {Matrix4} [dst] optional matrix to store result
    * @return {Matrix4} dst or a new matrix if none provided
-   * @memberOf module:webgl-3d-math
    */
 export function m4transpose(m: Mat4) {
     const dst: Mat4 = [

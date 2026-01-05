@@ -49,7 +49,26 @@ export function scaleVector(vec: Vec3, scalar: number): Vec3 {
     }
 }
 
-export function normalize(v: Vec3): Vec3 {
+// operates in-place
+export function normalize(v: Vec3): void {
+    const length = Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+    // make sure we don't divide by 0.
+    if (length > 0.00001) {
+        
+        v.x /= length 
+        v.y /= length 
+        v.z /= length
+        
+    } else {
+
+        v.x = 0, 
+        v.y = 0, 
+        v.z = 0
+    };
+}
+
+// immutable, returns a new one
+export function normalized(v: Vec3): Vec3 {
     const length = Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
     // make sure we don't divide by 0.
     if (length > 0.00001) {
