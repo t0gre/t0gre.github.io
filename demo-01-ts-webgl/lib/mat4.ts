@@ -1,5 +1,5 @@
 import { Ray } from './raycast';
-import { Vec3, Vec4, normalize, subtractVectors, cross, QUAT_ORIGIN, vec3ToArray, vec4ToArray } from './vec'
+import { Vec3, Vec4, normalize, subtractVectors, cross, vec3ToArray, vec4ToArray } from './vec'
 
 
 export type Mat4 = [
@@ -8,8 +8,6 @@ export type Mat4 = [
     number, number, number, number,
     number, number, number, number,
 ]
-
-
 
 export function m4lookAt(cameraPosition: Vec3, target: Vec3, up: Vec3): Mat4 {
         const zAxis = normalize(
@@ -324,33 +322,10 @@ export function m4vectorMultiply(v: Vec4, m: Mat4): Vec4 {
         }
         return { x: dst[0], y: dst[1], z: dst[2], w: dst[3] };
 
-        // const m00 = m[0 * 4 + 0]!;
-        // const m01 = m[0 * 4 + 1]!;
-        // const m02 = m[0 * 4 + 2]!;
-        // const m03 = m[0 * 4 + 3]!;
-        // const m10 = m[1 * 4 + 0]!;
-        // const m11 = m[1 * 4 + 1]!;
-        // const m12 = m[1 * 4 + 2]!;
-        // const m13 = m[1 * 4 + 3]!;
-        // const m20 = m[2 * 4 + 0]!;
-        // const m21 = m[2 * 4 + 1]!;
-        // const m22 = m[2 * 4 + 2]!;
-        // const m23 = m[2 * 4 + 3]!;
-        // const m30 = m[3 * 4 + 0]!;
-        // const m31 = m[3 * 4 + 1]!;
-        // const m32 = m[3 * 4 + 2]!;
-        // const m33 = m[3 * 4 + 3]!;
-
-        // return {
-        //    x: m00 * v.x + m01 * v.y + m02 * v.z + m03 * v.w,
-        //    y: m10 * v.x + m11 * v.y + m12 * v.z + m13 * v.w,
-        //    z: m20 * v.x + m21 * v.y + m22 * v.z + m23 * v.w,
-        //    w: m30 * v.x + m31 * v.y + m32 * v.z + m33 * v.w
-        // }
     }
 
 export function m4PositionMultiply(v: Vec3, m: Mat4): Vec3 {
-        // const v1: Vec4 = {...v, w: 1}
+        
         const vArray: [number, number, number, number ] = [...vec3ToArray(v), 1]
         const dst: [number, number, number, number] = [0,0,0,0];
         for (let i = 0; i < 4; ++i) {
@@ -359,32 +334,6 @@ export function m4PositionMultiply(v: Vec3, m: Mat4): Vec3 {
             }
         }
 
-        // const m00 = m[0 * 4 + 0]!;
-        // const m01 = m[0 * 4 + 1]!;
-        // const m02 = m[0 * 4 + 2]!;
-        // const m03 = m[0 * 4 + 3]!;
-        // const m10 = m[1 * 4 + 0]!;
-        // const m11 = m[1 * 4 + 1]!;
-        // const m12 = m[1 * 4 + 2]!;
-        // const m13 = m[1 * 4 + 3]!;
-        // const m20 = m[2 * 4 + 0]!;
-        // const m21 = m[2 * 4 + 1]!;
-        // const m22 = m[2 * 4 + 2]!;
-        // const m23 = m[2 * 4 + 3]!;
-        // const m30 = m[3 * 4 + 0]!;
-        // const m31 = m[3 * 4 + 1]!;
-        // const m32 = m[3 * 4 + 2]!;
-        // const m33 = m[3 * 4 + 3]!;
-
-
-        // const dst: Vec4 = {
-        //    x: m00 * v1.x + m01 * v1.y + m02 * v1.z + m03 * v1.w,
-        //    y: m10 * v1.x + m11 * v1.y + m12 * v1.z + m13 * v1.w,
-        //    z: m20 * v1.x + m21 * v1.y + m22 * v1.z + m23 * v1.w,
-        //    w: m30 * v1.x + m31 * v1.y + m32 * v1.z + m33 * v1.w
-        // }
-
-        // return {x: dst.x/dst.w, y: dst.y/dst.w, z: dst.z/dst.w };
         return {x: dst[0]/dst[3], y: dst[1]/dst[3], z: dst[2]/dst[3] }
     }
 
@@ -400,32 +349,6 @@ export function m4DirectionMultiply(v: Vec3, m: Mat4): Vec3 {
 
         return { x: dst[0], y: dst[1], z: dst[2] };
 
-        // const m00 = m[0 * 4 + 0]!;
-        // const m01 = m[0 * 4 + 1]!;
-        // const m02 = m[0 * 4 + 2]!;
-        // const m03 = m[0 * 4 + 3]!;
-        // const m10 = m[1 * 4 + 0]!;
-        // const m11 = m[1 * 4 + 1]!;
-        // const m12 = m[1 * 4 + 2]!;
-        // const m13 = m[1 * 4 + 3]!;
-        // const m20 = m[2 * 4 + 0]!;
-        // const m21 = m[2 * 4 + 1]!;
-        // const m22 = m[2 * 4 + 2]!;
-        // const m23 = m[2 * 4 + 3]!;
-        // const m30 = m[3 * 4 + 0]!;
-        // const m31 = m[3 * 4 + 1]!;
-        // const m32 = m[3 * 4 + 2]!;
-        // const m33 = m[3 * 4 + 3]!;
-
-        // const v1: Vec4 = {...v, w: 0}
-        
-        // const dst: Vec4 = {
-        //    x: m00 * v1.x + m01 * v1.y + m02 * v1.z + m03 * v1.w,
-        //    y: m10 * v1.x + m11 * v1.y + m12 * v1.z + m13 * v1.w,
-        //    z: m20 * v1.x + m21 * v1.y + m22 * v1.z + m23 * v1.w,
-        //    w: m30 * v1.x + m31 * v1.y + m32 * v1.z + m33 * v1.w
-        // }
-        // return { x: dst.x, y: dst.y, z: dst.z };
     }
 
 export function m4RayMultiply(ray: Ray, m: Mat4) {
