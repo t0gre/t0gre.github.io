@@ -1,5 +1,5 @@
 
-import { Vec3 } from "./vec";
+import { Color } from "./vec";
 
 export type Vertices = {
     positions: Float32Array,
@@ -9,8 +9,8 @@ export type Vertices = {
   }
 
 export type Material = {
-    color: Vec3
-    specularColor: Vec3
+    color: Color
+    specularColor: Color
     shininess: number
 }
 

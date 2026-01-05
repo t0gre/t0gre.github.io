@@ -10,16 +10,16 @@ import { m4fromPositionAndEuler, m4lookAt, m4vectorMultiply, m4yRotation } from 
 import { initGlState } from './lib/gl'
 import { getWorldRayFromClipSpaceAndCamera, rayIntersectsScene, sortBySceneDepth } from './lib/raycast'
 import { getPointerClickInClipSpace } from './lib/events'
-import { Vec3, Vec4, calculateOrbitPosition } from './lib/vec'
+import { Color, POS_ORIGIN, ROT_NONE, Vec3, Vec4, calculateOrbitPosition } from './lib/vec'
 
 
 type NodeName = "yellow tree" | "orange tree" | "green tree" | "floor";
 
-const meshColorMap: Record<NodeName, Vec3> = {
-  "yellow tree": [0.7, 0.7, 0.01 ],
-  "orange tree": [0.6, 0.3, 0.001],
-  "green tree": [0.1, 0.6, 0.1],
-  "floor": [0.2, 0.2, 0.4]
+const meshColorMap: Record<NodeName, Color> = {
+  "yellow tree":    { r: 0.7, g: 0.7, b: 0.01 },
+  "orange tree":    { r: 0.6, g: 0.3, b: 0.001 },
+  "green tree":     { r: 0.1, g: 0.6, b: 0.1 },
+  "floor":          { r: 0.2, g: 0.2, b: 0.4}
 };
 
 type Orbit = {
@@ -33,7 +33,7 @@ const orbit: Orbit = {
     azimuth: Math.PI * -0.2,  // horizontal angle, in radians
     elevation: 3 * Math.PI / 4,  // vertical angle, in radians
     radius: 15,
-    target: [-3, 2, -2],
+    target: {x: -3, y: 2, z: -2},
     sensitivity: 0.01,
 } 
 
@@ -78,35 +78,35 @@ if (!basicRenderProgram) {
 
 const vertices = await loadObj('/rainbowtree.obj');
 
-const yellowTree = initSceneNode(m4fromPositionAndEuler( [0,0,0], [0, Math.PI /2, 0]),
+const yellowTree = initSceneNode(m4fromPositionAndEuler( POS_ORIGIN, { x: 0, y: Math.PI /2, z: 0}),
         {
         vertices,
         material: {
             color:  meshColorMap["yellow tree"],
-            specularColor: [0.2,0.2,0.2],
+            specularColor: { r: 0.2, g: 0.2, b:0.2 },
             shininess: 0.9
         }},
     "yellow tree")
 
 
 const orangeTree = initSceneNode(
-    m4fromPositionAndEuler( [5,0,0], [0, Math.PI /2, 0]),
+    m4fromPositionAndEuler( { x: 5, y: 0, z: 0 }, { x: 0, y: Math.PI /2, z: 0 }),
     { 
         vertices, 
         material: {
             color:  meshColorMap["orange tree"],
-            specularColor: [0.2,0.2,0.2],
+            specularColor: { r: 0.2, g: 0.2, b: 0.2},
             shininess: 0.9
         }},
     "orange tree")
 
 const greenTree  = initSceneNode(
-        m4fromPositionAndEuler( [5,0,0], [0, Math.PI /2, 0]),
+        m4fromPositionAndEuler( { x: 5, y: 0, z: 0}, { x: 0, y: Math.PI /2, z: 0 }),
         {
         vertices,
         material: {
             color:  meshColorMap["green tree"],
-            specularColor: [0.2,0.2,0.2],
+            specularColor: { r: 0.2, g: 0.2, b: 0.2},
             shininess: 0.5
         }},
     "green tree")
@@ -145,12 +145,12 @@ const floorVertices: Vertices = {
 } 
 
 
-const floorNode = initSceneNode(m4fromPositionAndEuler( [0,0.1,0], [0, 0, 0]),
+const floorNode = initSceneNode(m4fromPositionAndEuler( { x: 0, y: 0.1, z: 0}, ROT_NONE),
         {
         vertices: floorVertices,
         material: {
             color:  meshColorMap["floor"],
-            specularColor: [0.2,0.2,0.2],
+            specularColor: { r: 0.2, g: 0.2, b: 0.2},
             shininess: 0.9
         }},
     "floor")
@@ -161,17 +161,17 @@ const scene = [yellowTree, floorNode]
 
 // create lights
 const ambientLight: AmbientLight = {
-        color: [0.2, 0.2, 0.2]
+        color: { r: 0.2, g: 0.2, b: 0.2 }
     };
 
 const directionalLight: DirectionalLight = {
-        rotation : [ 0.0,  -0.8 , -0.5],
-        color : [0.6,  0.6,  0.6],
+        rotation : { x: 0,  y: -0.8 , z: -0.5},
+        color : { r: 0.6,  g: 0.6,  b: 0.6 },
     };
 
 const pointLight: PointLight = {
-        position: [ 0, 5.0, 5],
-        color: [ 0.7, 0.7, 0.7],
+        position: { x:  0, y: 5.0, z: 5 },
+        color: {r: 0.7, g: 0.7, b: 0.7 },
         constant: 1.0,
         linear: 0.009,
         quadratic: 0.032
@@ -184,7 +184,7 @@ const cameraPosition = calculateOrbitPosition(
         orbit.radius
     );
 
-const up: Vec3 = [0, 1, 0]
+const up: Vec3 = {x: 0, y: 1, z: 0 }
 const camera: Camera = {
     fieldOfViewRadians:  degToRad(60), 
     aspect: canvas.clientWidth / canvas.clientHeight,
@@ -197,7 +197,7 @@ const camera: Camera = {
 
 
 const input: InputState = {
-    pointerPosition: [0,0]
+    pointerPosition: {x: 0, y: 0 }
 }
 
 
@@ -313,13 +313,11 @@ function resizeCanvasToDisplaySize(canvas: HTMLCanvasElement): void {
 
 function updateLight(pointLight: PointLight, dt: number) {
       const rotator = m4yRotation(Math.PI / (dt * 10000));
-      const oldTransform: Vec4 = [
-        pointLight.position[0],
-        pointLight.position[1],
-        pointLight.position[2],
-         0.0
-      ];
+      const oldTransform: Vec4 = {
+        ...pointLight.position,
+        w: 0.0
+      };
    
     const newTransform = m4vectorMultiply(oldTransform, rotator);
-    pointLight.position = [newTransform[0],newTransform[1],newTransform[2]]
+    pointLight.position = { x: newTransform.x, y: newTransform.y, z: newTransform.z }
 }

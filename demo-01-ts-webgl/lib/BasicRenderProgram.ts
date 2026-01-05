@@ -14,7 +14,7 @@ import shadowFragmentSource from "./shaders/depth-only.frag?raw"
 import { GlState } from "./gl";
 import { Mesh } from "./mesh";
 import { SceneNode } from "./scene";
-import { Vec3 } from "./vec";
+import { colorToArray, eulerToArray, Vec3, vec3ToArray } from "./vec";
 
 function guaranteeUniformLocation(
     gl: WebGL2RenderingContext, 
@@ -108,17 +108,17 @@ export function updateUniforms(
         gl.uniformMatrix4fv(renderProgram.projectionUniformLocation, false, projectionMatrix);
         
         // update material uniforms
-        gl.uniform3fv(renderProgram.materialUniform.colorLocation, mesh.material.color);
-        gl.uniform3fv(renderProgram.materialUniform.specularColorLocation, mesh.material.specularColor);
+        gl.uniform3fv(renderProgram.materialUniform.colorLocation, colorToArray(mesh.material.color));
+        gl.uniform3fv(renderProgram.materialUniform.specularColorLocation, colorToArray(mesh.material.specularColor));
         gl.uniform1f(renderProgram.materialUniform.shininessLocation, mesh.material.shininess);
 
 
         // update light uniforms
         // set ambient light
-        gl.uniform3fv(renderProgram.ambientLightUniform.colorLocation,ambientLight.color);
+        gl.uniform3fv(renderProgram.ambientLightUniform.colorLocation, colorToArray(ambientLight.color));
         // set directional light
-        gl.uniform3fv(renderProgram.directionalLightUniform.colorLocation,directionalLight.color);
-        gl.uniform3fv(renderProgram.directionalLightUniform.rotationLocation,directionalLight.rotation);
+        gl.uniform3fv(renderProgram.directionalLightUniform.colorLocation,colorToArray(directionalLight.color));
+        gl.uniform3fv(renderProgram.directionalLightUniform.rotationLocation, eulerToArray(directionalLight.rotation));
 
         // shadows
         // shadow map must be bound
@@ -126,8 +126,8 @@ export function updateUniforms(
 
 
         // set point light
-        gl.uniform3fv(renderProgram.pointLightUniform.colorLocation,pointLight.color);
-        gl.uniform3fv(renderProgram.pointLightUniform.positionLocation,pointLight.position);
+        gl.uniform3fv(renderProgram.pointLightUniform.colorLocation, colorToArray(pointLight.color));
+        gl.uniform3fv(renderProgram.pointLightUniform.positionLocation, vec3ToArray(pointLight.position));
         gl.uniform1f(renderProgram.pointLightUniform.constantLocation,pointLight.constant);
         gl.uniform1f(renderProgram.pointLightUniform.linearLocation,pointLight.linear);
         gl.uniform1f(renderProgram.pointLightUniform.quadraticLocation,pointLight.quadratic); 
@@ -439,13 +439,15 @@ export function drawScene(
 
 
     // Compute light's view-projection matrix (for directional light)
-    const [x,y,z] = directionalLight.rotation
+    const x = directionalLight.rotation.x
+    const y = directionalLight.rotation.y
+    const z = directionalLight.rotation.z
 
     const xMatrix = m4xRotation(x)
     const yMatrix = m4xRotation(y)
     const zMatrix = m4xRotation(z)
 
-    const imaginaryCameraPosition: Vec3 = [10,10,10]
+    const imaginaryCameraPosition: Vec3 = { x: 10,y: 10, z: 10}
     let effectiveCameraPosition = m4PositionMultiply(imaginaryCameraPosition,xMatrix)
     effectiveCameraPosition = m4PositionMultiply(effectiveCameraPosition,yMatrix)
     effectiveCameraPosition = m4PositionMultiply(effectiveCameraPosition,zMatrix)
@@ -609,3 +611,4 @@ export function drawShadowScene(
         }
     });
 }
+
