@@ -1,5 +1,4 @@
-import { Ray } from './raycast';
-import { Vec3, Vec4, subtractVectors, cross, vec3ToArray, vec4ToArray, normalize } from './vec'
+import { Vec3, subtractVectors, cross, vec3ToArray, normalize } from './vec'
 
 
 export type Mat4 = [
@@ -44,51 +43,40 @@ export type Mat4ZRotation = [
     0,      0,      0,      1,
 ]
 
-type Mat4Positions = {
-    m00: number
-    m01: number
-    m02: number
-    m03: number
-    m10: number
-    m11: number
-    m12: number
-    m13: number
-    m20: number
-    m21: number
-    m22: number
-    m23: number
-    m30: number
-    m31: number
-    m32: number
-    m33: number
+type Row4 = [number, number, number, number]
+type Mat4D = [
+    Row4, Row4, Row4, Row4
+]
+
+function m4AsPositions(m: Mat4): Mat4D {
+        return [
+             
+            [m[0 * 4 + 0]!,
+             m[0 * 4 + 1]!,
+             m[0 * 4 + 2]!,
+             m[0 * 4 + 3]!
+            ],
+
+            [m[1 * 4 + 0]!,
+             m[1 * 4 + 1]!,
+             m[1 * 4 + 2]!,
+             m[1 * 4 + 3]!
+            ],
+
+            [m[2 * 4 + 0]!,
+             m[2 * 4 + 1]!,
+             m[2 * 4 + 2]!,
+             m[2 * 4 + 3]!
+            ],
+            [m[3 * 4 + 0]!,
+             m[3 * 4 + 1]!,
+             m[3 * 4 + 2]!,
+             m[3 * 4 + 3]!
+            ],
+        ]  
 }
 
-function m4AsPositions(m: Mat4): Mat4Positions {
-        return {
-             // row 0
-             m00 : m[0 * 4 + 0]!,
-             m01 : m[0 * 4 + 1]!,
-             m02 : m[0 * 4 + 2]!,
-             m03 : m[0 * 4 + 3]!,
-             // row 1
-             m10 : m[1 * 4 + 0]!,
-             m11 : m[1 * 4 + 1]!,
-             m12 : m[1 * 4 + 2]!,
-             m13 : m[1 * 4 + 3]!,
-             // row 2
-             m20 : m[2 * 4 + 0]!,
-             m21 : m[2 * 4 + 1]!,
-             m22 : m[2 * 4 + 2]!,
-             m23 : m[2 * 4 + 3]!,
-             // row 3
-             m30 : m[3 * 4 + 0]!,
-             m31 : m[3 * 4 + 1]!,
-             m32 : m[3 * 4 + 2]!,
-             m33 : m[3 * 4 + 3]!,
-        }  
-}
-
-function m4FromPositions(p: Mat4Positions): Mat4 {
+function m4FromPositions(p: Mat4D): Mat4 {
         
     const m: Mat4 = [
         0,0,0,0,
@@ -97,26 +85,23 @@ function m4FromPositions(p: Mat4Positions): Mat4 {
         0,0,0,0,
     ]
 
-    // row 0
-    m[0 * 4 + 0] = p.m00
-    m[0 * 4 + 1] = p.m01
-    m[0 * 4 + 2] = p.m02 
-    m[0 * 4 + 3] = p.m03
-    // row 1 p.
-    m[1 * 4 + 0] = p.m10
-    m[1 * 4 + 1] = p.m11 
-    m[1 * 4 + 2] = p.m12 
-    m[1 * 4 + 3] = p.m13 
-    // row 2 p.
-    m[2 * 4 + 0] = p.m20 
-    m[2 * 4 + 1] = p.m21 
-    m[2 * 4 + 2] = p.m22 
-    m[2 * 4 + 3] = p.m23 
-    // row 3 p.
-    m[3 * 4 + 0] = p.m30 
-    m[3 * 4 + 1] = p.m31 
-    m[3 * 4 + 2] = p.m32 
-    m[3 * 4 + 3] = p.m33 
+    
+    m[0 * 4 + 0] = p[0][0]
+    m[0 * 4 + 1] = p[0][1]
+    m[0 * 4 + 2] = p[0][2] 
+    m[0 * 4 + 3] = p[0][3]
+    m[1 * 4 + 0] = p[1][0]
+    m[1 * 4 + 1] = p[1][1] 
+    m[1 * 4 + 2] = p[1][2] 
+    m[1 * 4 + 3] = p[1][3] 
+    m[2 * 4 + 0] = p[2][0] 
+    m[2 * 4 + 1] = p[2][1] 
+    m[2 * 4 + 2] = p[2][2] 
+    m[2 * 4 + 3] = p[2][3] 
+    m[3 * 4 + 0] = p[3][0] 
+    m[3 * 4 + 1] = p[3][1] 
+    m[3 * 4 + 2] = p[3][2] 
+    m[3 * 4 + 3] = p[3][3] 
 
     return m
     
@@ -185,56 +170,34 @@ export function m4multiply(a: Mat4, b: Mat4): Mat4 {
         const ap = m4AsPositions(a);
         const bp = m4AsPositions(b);
         
-        const p: Mat4Positions = {
-            // row 0
-            m00 : bp.m00 * ap.m00 + bp.m01 * ap.m10 + bp.m02 * ap.m20 + bp.m03 * ap.m30,
-            m01 : bp.m00 * ap.m01 + bp.m01 * ap.m11 + bp.m02 * ap.m21 + bp.m03 * ap.m31,
-            m02 : bp.m00 * ap.m02 + bp.m01 * ap.m12 + bp.m02 * ap.m22 + bp.m03 * ap.m32,
-            m03 : bp.m00 * ap.m03 + bp.m01 * ap.m13 + bp.m02 * ap.m23 + bp.m03 * ap.m33,
-            // row 1
-            m10 : bp.m10 * ap.m00 + bp.m11 * ap.m10 + bp.m12 * ap.m20 + bp.m13 * ap.m30,
-            m11 : bp.m10 * ap.m01 + bp.m11 * ap.m11 + bp.m12 * ap.m21 + bp.m13 * ap.m31,
-            m12 : bp.m10 * ap.m02 + bp.m11 * ap.m12 + bp.m12 * ap.m22 + bp.m13 * ap.m32,
-            m13 : bp.m10 * ap.m03 + bp.m11 * ap.m13 + bp.m12 * ap.m23 + bp.m13 * ap.m33,
-            // row 2
-            m20 : bp.m20 * ap.m00 + bp.m21 * ap.m10 + bp.m22 * ap.m20 + bp.m23 * ap.m30,
-            m21 : bp.m20 * ap.m01 + bp.m21 * ap.m11 + bp.m22 * ap.m21 + bp.m23 * ap.m31,
-            m22 : bp.m20 * ap.m02 + bp.m21 * ap.m12 + bp.m22 * ap.m22 + bp.m23 * ap.m32,
-            m23 : bp.m20 * ap.m03 + bp.m21 * ap.m13 + bp.m22 * ap.m23 + bp.m23 * ap.m33,
-            // row 3
-            m30 : bp.m30 * ap.m00 + bp.m31 * ap.m10 + bp.m32 * ap.m20 + bp.m33 * ap.m30,
-            m31 : bp.m30 * ap.m01 + bp.m31 * ap.m11 + bp.m32 * ap.m21 + bp.m33 * ap.m31,
-            m32 : bp.m30 * ap.m02 + bp.m31 * ap.m12 + bp.m32 * ap.m22 + bp.m33 * ap.m32,
-            m33 : bp.m30 * ap.m03 + bp.m31 * ap.m13 + bp.m32 * ap.m23 + bp.m33 * ap.m33,
-        }
+        const p: Mat4D = [
+       
+            [bp[0][0] * ap[0][0] + bp[0][1] * ap[1][0] + bp[0][2] * ap[2][0] + bp[0][3] * ap[3][0],
+            bp[0][0] * ap[0][1] + bp[0][1] * ap[1][1] + bp[0][2] * ap[2][1] + bp[0][3] * ap[3][1],
+            bp[0][0] * ap[0][2] + bp[0][1] * ap[1][2] + bp[0][2] * ap[2][2] + bp[0][3] * ap[3][2],
+            bp[0][0] * ap[0][3] + bp[0][1] * ap[1][3] + bp[0][2] * ap[2][3] + bp[0][3] * ap[3][3],
+            ],
+            [bp[1][0] * ap[0][0] + bp[1][1] * ap[1][0] + bp[1][2] * ap[2][0] + bp[1][3] * ap[3][0],
+            bp[1][0] * ap[0][1] + bp[1][1] * ap[1][1] + bp[1][2] * ap[2][1] + bp[1][3] * ap[3][1],
+            bp[1][0] * ap[0][2] + bp[1][1] * ap[1][2] + bp[1][2] * ap[2][2] + bp[1][3] * ap[3][2],
+            bp[1][0] * ap[0][3] + bp[1][1] * ap[1][3] + bp[1][2] * ap[2][3] + bp[1][3] * ap[3][3],
+            ],
+            [bp[2][0] * ap[0][0] + bp[2][1] * ap[1][0] + bp[2][2] * ap[2][0] + bp[2][3] * ap[3][0],
+            bp[2][0] * ap[0][1] + bp[2][1] * ap[1][1] + bp[2][2] * ap[2][1] + bp[2][3] * ap[3][1],
+            bp[2][0] * ap[0][2] + bp[2][1] * ap[1][2] + bp[2][2] * ap[2][2] + bp[2][3] * ap[3][2],
+            bp[2][0] * ap[0][3] + bp[2][1] * ap[1][3] + bp[2][2] * ap[2][3] + bp[2][3] * ap[3][3],
+            ],
+            [bp[3][0] * ap[0][0] + bp[3][1] * ap[1][0] + bp[3][2] * ap[2][0] + bp[3][3] * ap[3][0],
+            bp[3][0] * ap[0][1] + bp[3][1] * ap[1][1] + bp[3][2] * ap[2][1] + bp[3][3] * ap[3][1],
+            bp[3][0] * ap[0][2] + bp[3][1] * ap[1][2] + bp[3][2] * ap[2][2] + bp[3][3] * ap[3][2],
+            bp[3][0] * ap[0][3] + bp[3][1] * ap[1][3] + bp[3][2] * ap[2][3] + bp[3][3] * ap[3][3],
+            ]
+        ]
 
         return m4FromPositions(p)
     }
 
-// export function m4multiply(a: Mat4, b: Mat4): Mat4 {
 
-//         const ap = m4AsPositions(a);
-//         const bp = m4AsPositions(b);
-        
-//         return [
-//             bp.m00 * ap.m00 + bp.m01 * ap.m10 + bp.m02 * ap.m20 + bp.m03 * ap.m30,
-//             bp.m00 * ap.m01 + bp.m01 * ap.m11 + bp.m02 * ap.m21 + bp.m03 * ap.m31,
-//             bp.m00 * ap.m02 + bp.m01 * ap.m12 + bp.m02 * ap.m22 + bp.m03 * ap.m32,
-//             bp.m00 * ap.m03 + bp.m01 * ap.m13 + bp.m02 * ap.m23 + bp.m03 * ap.m33,
-//             bp.m10 * ap.m00 + bp.m11 * ap.m10 + bp.m12 * ap.m20 + bp.m13 * ap.m30,
-//             bp.m10 * ap.m01 + bp.m11 * ap.m11 + bp.m12 * ap.m21 + bp.m13 * ap.m31,
-//             bp.m10 * ap.m02 + bp.m11 * ap.m12 + bp.m12 * ap.m22 + bp.m13 * ap.m32,
-//             bp.m10 * ap.m03 + bp.m11 * ap.m13 + bp.m12 * ap.m23 + bp.m13 * ap.m33,
-//             bp.m20 * ap.m00 + bp.m21 * ap.m10 + bp.m22 * ap.m20 + bp.m23 * ap.m30,
-//             bp.m20 * ap.m01 + bp.m21 * ap.m11 + bp.m22 * ap.m21 + bp.m23 * ap.m31,
-//             bp.m20 * ap.m02 + bp.m21 * ap.m12 + bp.m22 * ap.m22 + bp.m23 * ap.m32,
-//             bp.m20 * ap.m03 + bp.m21 * ap.m13 + bp.m22 * ap.m23 + bp.m23 * ap.m33,
-//             bp.m30 * ap.m00 + bp.m31 * ap.m10 + bp.m32 * ap.m20 + bp.m33 * ap.m30,
-//             bp.m30 * ap.m01 + bp.m31 * ap.m11 + bp.m32 * ap.m21 + bp.m33 * ap.m31,
-//             bp.m30 * ap.m02 + bp.m31 * ap.m12 + bp.m32 * ap.m22 + bp.m33 * ap.m32,
-//             bp.m30 * ap.m03 + bp.m31 * ap.m13 + bp.m32 * ap.m23 + bp.m33 * ap.m33,
-//         ];
-//     }
 
 // export function m4Vec4multiply(m: Mat4, v: Vec4): Vec4 {
 
@@ -374,71 +337,71 @@ export function m4transpose(m: Mat4) {
 export function m4inverse(m: Mat4): Mat4 {
         const p = m4AsPositions(m)
 
-        const tmp_0 =  p.m22 * p.m33;
-        const tmp_1 =  p.m32 * p.m23;
-        const tmp_2 =  p.m12 * p.m33;
-        const tmp_3 =  p.m32 * p.m13;
-        const tmp_4 =  p.m12 * p.m23;
-        const tmp_5 =  p.m22 * p.m13;
-        const tmp_6 =  p.m02 * p.m33;
-        const tmp_7 =  p.m32 * p.m03;
-        const tmp_8 =  p.m02 * p.m23;
-        const tmp_9 =  p.m22 * p.m03;
-        const tmp_10 = p.m02 * p.m13;
-        const tmp_11 = p.m12 * p.m03;
-        const tmp_12 = p.m20 * p.m31;
-        const tmp_13 = p.m30 * p.m21;
-        const tmp_14 = p.m10 * p.m31;
-        const tmp_15 = p.m30 * p.m11;
-        const tmp_16 = p.m10 * p.m21;
-        const tmp_17 = p.m20 * p.m11;
-        const tmp_18 = p.m00 * p.m31;
-        const tmp_19 = p.m30 * p.m01;
-        const tmp_20 = p.m00 * p.m21;
-        const tmp_21 = p.m20 * p.m01;
-        const tmp_22 = p.m00 * p.m11;
-        const tmp_23 = p.m10 * p.m01;
+        const tmp_0 =  p[2][2] * p[3][3];
+        const tmp_1 =  p[3][2] * p[2][3];
+        const tmp_2 =  p[1][2] * p[3][3];
+        const tmp_3 =  p[3][2] * p[1][3];
+        const tmp_4 =  p[1][2] * p[2][3];
+        const tmp_5 =  p[2][2] * p[1][3];
+        const tmp_6 =  p[0][2] * p[3][3];
+        const tmp_7 =  p[3][2] * p[0][3];
+        const tmp_8 =  p[0][2] * p[2][3];
+        const tmp_9 =  p[2][2] * p[0][3];
+        const tmp_10 = p[0][2] * p[1][3];
+        const tmp_11 = p[1][2] * p[0][3];
+        const tmp_12 = p[2][0] * p[3][1];
+        const tmp_13 = p[3][0] * p[2][1];
+        const tmp_14 = p[1][0] * p[3][1];
+        const tmp_15 = p[3][0] * p[1][1];
+        const tmp_16 = p[1][0] * p[2][1];
+        const tmp_17 = p[2][0] * p[1][1];
+        const tmp_18 = p[0][0] * p[3][1];
+        const tmp_19 = p[3][0] * p[0][1];
+        const tmp_20 = p[0][0] * p[2][1];
+        const tmp_21 = p[2][0] * p[0][1];
+        const tmp_22 = p[0][0] * p[1][1];
+        const tmp_23 = p[1][0] * p[0][1];
 
-        const t0 = (tmp_0 * p.m11 + tmp_3 * p.m21 + tmp_4 * p.m31) -
-            (tmp_1 * p.m11 + tmp_2 * p.m21 + tmp_5 * p.m31);
-        const t1 = (tmp_1 * p.m01 + tmp_6 * p.m21 + tmp_9 * p.m31) -
-            (tmp_0 * p.m01 + tmp_7 * p.m21 + tmp_8 * p.m31);
-        const t2 = (tmp_2 * p.m01 + tmp_7 * p.m11 + tmp_10 * p.m31) -
-            (tmp_3 * p.m01 + tmp_6 * p.m11 + tmp_11 * p.m31);
-        const t3 = (tmp_5 * p.m01 + tmp_8 * p.m11 + tmp_11 * p.m21) -
-            (tmp_4 * p.m01 + tmp_9 * p.m11 + tmp_10 * p.m21);
+        const t0 =  (tmp_0 * p[1][1] + tmp_3 *  p[2][1] + tmp_4 *   p[3][1]) -
+                    (tmp_1 * p[1][1] + tmp_2 * p[2][1] + tmp_5 *  p[3][1]);
+        const t1 =  (tmp_1 * p[0][1] + tmp_6 * p[2][1] + tmp_9 *  p[3][1]) -
+                    (tmp_0 * p[0][1] + tmp_7 * p[2][1] + tmp_8 *  p[3][1]);
+        const t2 =  (tmp_2 * p[0][1] + tmp_7 * p[1][1] + tmp_10 * p[3][1]) -
+                    (tmp_3 * p[0][1] + tmp_6 * p[1][1] + tmp_11 * p[3][1]);
+        const t3 =  (tmp_5 * p[0][1] + tmp_8 * p[1][1] + tmp_11 * p[2][1]) -
+                    (tmp_4 * p[0][1] + tmp_9 * p[1][1] + tmp_10 * p[2][1]);
 
-        const d = 1.0 / (p.m00 * t0 + p.m10 * t1 + p.m20 * t2 + p.m30 * t3);
+        const d = 1.0 / (p[0][0] * t0 + p[1][0] * t1 + p[2][0] * t2 + p[3][0] * t3);
 
         return [
             d * t0,
             d * t1,
             d * t2,
             d * t3,
-            d * ((tmp_1 *  p.m10 + tmp_2 *  p.m20 + tmp_5 *  p.m30) -
-                (tmp_0 *   p.m10 + tmp_3 *  p.m20 + tmp_4 *  p.m30)),
-            d * ((tmp_0 *  p.m00 + tmp_7 *  p.m20 + tmp_8 *  p.m30) -
-                (tmp_1 *   p.m00 + tmp_6 *  p.m20 + tmp_9 *  p.m30)),
-            d * ((tmp_3 *  p.m00 + tmp_6 *  p.m10 + tmp_11 * p.m30) -
-                (tmp_2 *   p.m00 + tmp_7 *  p.m10 + tmp_10 * p.m30)),
-            d * ((tmp_4 *  p.m00 + tmp_9 *  p.m10 + tmp_10 * p.m20) -
-                (tmp_5 *   p.m00 + tmp_8 *  p.m10 + tmp_11 * p.m20)),
-            d * ((tmp_12 * p.m13 + tmp_15 * p.m23 + tmp_16 * p.m33) -
-                (tmp_13 *  p.m13 + tmp_14 * p.m23 + tmp_17 * p.m33)),
-            d * ((tmp_13 * p.m03 + tmp_18 * p.m23 + tmp_21 * p.m33) -
-                (tmp_12 *  p.m03 + tmp_19 * p.m23 + tmp_20 * p.m33)),
-            d * ((tmp_14 * p.m03 + tmp_19 * p.m13 + tmp_22 * p.m33) -
-                (tmp_15 *  p.m03 + tmp_18 * p.m13 + tmp_23 * p.m33)),
-            d * ((tmp_17 * p.m03 + tmp_20 * p.m13 + tmp_23 * p.m23) -
-                (tmp_16 *  p.m03 + tmp_21 * p.m13 + tmp_22 * p.m23)),
-            d * ((tmp_14 * p.m22 + tmp_17 * p.m32 + tmp_13 * p.m12) -
-                (tmp_16 *  p.m32 + tmp_12 * p.m12 + tmp_15 * p.m22)),
-            d * ((tmp_20 * p.m32 + tmp_12 * p.m02 + tmp_19 * p.m22) -
-                (tmp_18 *  p.m22 + tmp_21 * p.m32 + tmp_13 * p.m02)),
-            d * ((tmp_18 * p.m12 + tmp_23 * p.m32 + tmp_15 * p.m02) -
-                (tmp_22 *  p.m32 + tmp_14 * p.m02 + tmp_19 * p.m12)),
-            d * ((tmp_22 * p.m22 + tmp_16 * p.m02 + tmp_21 * p.m12) -
-                (tmp_20 *  p.m12 + tmp_23 * p.m22 + tmp_17 * p.m02))
+            d * ((tmp_1 *  p[1][0] + tmp_2 *  p[2][0] + tmp_5 *  p[3][0]) -
+                (tmp_0 *   p[1][0] + tmp_3 *  p[2][0] + tmp_4 *  p[3][0])),
+            d * ((tmp_0 *  p[0][0] + tmp_7 *  p[2][0] + tmp_8 *  p[3][0]) -
+                (tmp_1 *   p[0][0] + tmp_6 *  p[2][0] + tmp_9 *  p[3][0])),
+            d * ((tmp_3 *  p[0][0] + tmp_6 *  p[1][0] + tmp_11 * p[3][0]) -
+                (tmp_2 *   p[0][0] + tmp_7 *  p[1][0] + tmp_10 * p[3][0])),
+            d * ((tmp_4 *  p[0][0] + tmp_9 *  p[1][0] + tmp_10 * p[2][0]) -
+                (tmp_5 *   p[0][0] + tmp_8 *  p[1][0] + tmp_11 * p[2][0])),
+            d * ((tmp_12 * p[1][3] + tmp_15 * p[2][3] + tmp_16 * p[3][3]) -
+                (tmp_13 *  p[1][3] + tmp_14 * p[2][3] + tmp_17 * p[3][3])),
+            d * ((tmp_13 * p[0][3] + tmp_18 * p[2][3] + tmp_21 * p[3][3]) -
+                (tmp_12 *  p[0][3] + tmp_19 * p[2][3] + tmp_20 * p[3][3])),
+            d * ((tmp_14 * p[0][3] + tmp_19 * p[1][3] + tmp_22 * p[3][3]) -
+                (tmp_15 *  p[0][3] + tmp_18 * p[1][3] + tmp_23 * p[3][3])),
+            d * ((tmp_17 * p[0][3] + tmp_20 * p[1][3] + tmp_23 * p[2][3]) -
+                (tmp_16 *  p[0][3] + tmp_21 * p[1][3] + tmp_22 * p[2][3])),
+            d * ((tmp_14 * p[2][2] + tmp_17 * p[3][2] + tmp_13 * p[1][2]) -
+                (tmp_16 *  p[3][2] + tmp_12 * p[1][2] + tmp_15 * p[2][2])),
+            d * ((tmp_20 * p[3][2] + tmp_12 * p[0][2] + tmp_19 * p[2][2]) -
+                (tmp_18 *  p[2][2] + tmp_21 * p[3][2] + tmp_13 * p[0][2])),
+            d * ((tmp_18 * p[1][2] + tmp_23 * p[3][2] + tmp_15 * p[0][2]) -
+                (tmp_22 *  p[3][2] + tmp_14 * p[0][2] + tmp_19 * p[1][2])),
+            d * ((tmp_22 * p[2][2] + tmp_16 * p[0][2] + tmp_21 * p[1][2]) -
+                (tmp_20 *  p[1][2] + tmp_23 * p[2][2] + tmp_17 * p[0][2]))
         ];
     }
 
