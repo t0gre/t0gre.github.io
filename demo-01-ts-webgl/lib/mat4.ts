@@ -1,4 +1,4 @@
-import { Vec3, subtractVectors, cross, vec3ToArray, normalize, Vec4 } from './vec'
+import { Vec3, subtractVectors, cross, vec3ToArray, normalize, Vec4, vec4ToArray } from './vec'
 
 
 export type Mat4 = [
@@ -199,21 +199,7 @@ export function m4multiply(a: Mat4, b: Mat4): Mat4 {
 
 
 
-export function m4Vec4multiply(m: Mat4, v: Vec4): Vec4 {
 
-        const mp = m4AsPositions(m);
-        
-        const p: Vec4 = {
-       
-            x: mp[0][0] * v.x  + mp[0][1] * v.x + mp[0][2] * v.x + mp[0][3] * v.x,
-            y: mp[1][0] * v.y  + mp[1][1] * v.y + mp[1][2] * v.y + mp[1][3] * v.y,
-            z: mp[2][0] * v.z  + mp[2][1] * v.z + mp[2][2] * v.z + mp[2][3] * v.z,
-            w: mp[3][0] * v.w  + mp[3][1] * v.w + mp[3][2] * v.w + mp[3][3] * v.w,
-           
-        }
-
-        return p
-    }
 
 export function m4translation(tx: number, ty: number, tz: number): Mat4Translation {
         return [
@@ -395,50 +381,37 @@ export function m4inverse(m: Mat4): Mat4 {
         ];
     }
 
-// export function m4PositionMultiply(v: Vec3, m: Mat4): Vec3 {
-    
-//     const v4 = {...v, w: 1}
-//     const dst = m4Vec4multiply(m, v4)
 
-//     return {x: dst.x/dst.w, y: dst.y/dst.w, z: dst.z/dst.w }
-// }
+export function m4Vec4multiply(m: Mat4, v: Vec4): Vec4 {
 
-// export function m4DirectionMultiply(v: Vec3, m: Mat4): Vec3 {
-    
-//     const v4 = {...v, w: 0}
-//     const dst = m4Vec4multiply(m, v4)
+        const mm = m4AsPositions(m)
 
-//     return { x: dst.x, y: dst.y, z: dst.z };
+        return { 
+            x: v.x * mm[0][0] + v.y * mm[1][0]! + v.z * mm[2][0]! + v.w * mm[3][0]!,
+            y: v.x * mm[0][1] + v.y * mm[1][1]! + v.z * mm[2][1]! + v.w * mm[3][1]!, 
+            z: v.x * mm[0][2] + v.y * mm[1][2]! + v.z * mm[2][2]! + v.w * mm[3][2]!, 
+            w: v.x * mm[0][3] + v.y * mm[1][3]! + v.z * mm[2][3]! + v.w * mm[3][3]!
 
-// }
+        }
+    }
+
 
 export function m4PositionMultiply(v: Vec3, m: Mat4): Vec3 {
-        
-        const vArray: [number, number, number, number ] = [...vec3ToArray(v), 1]
-        const dst: [number, number, number, number] = [0,0,0,0];
-        for (let i = 0; i < 4; ++i) {
-            for (let j = 0; j < 4; ++j) {
-                dst[i]! += vArray[j]! * m[j * 4 + i]!; // ts is not smart enough to see that we set dst[i] to a number already
-            }
-        }
+    
+    const v4 = {...v, w: 1}
+    const dst = m4Vec4multiply(m, v4)
 
-        return {x: dst[0]/dst[3], y: dst[1]/dst[3], z: dst[2]/dst[3] }
-    }
+    return {x: dst.x/dst.w, y: dst.y/dst.w, z: dst.z/dst.w }
+}
 
 export function m4DirectionMultiply(v: Vec3, m: Mat4): Vec3 {
-        
-        const vArray: [number, number, number, number ] = [...vec3ToArray(v), 0]
-        const dst: [number, number, number, number] = [0,0,0,0];
-        for (let i = 0; i < 4; ++i) {
-            for (let j = 0; j < 4; ++j) {
-                dst[i]! += vArray[j]! * m[j * 4 + i]!; // ts is not smart enough to see that we set dst[i] to a number already
-            }
-        }
+    
+    const v4 = {...v, w: 0}
+    const dst = m4Vec4multiply(m, v4)
 
-        return { x: dst[0], y: dst[1], z: dst[2] };
+    return { x: dst.x, y: dst.y, z: dst.z };
 
-    }
-
+}
 
 
 export function m4fromPositionAndEuler(position: Vec3, euler: Vec3): Mat4 {
