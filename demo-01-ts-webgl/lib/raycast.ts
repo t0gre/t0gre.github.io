@@ -60,26 +60,18 @@ export function rayIntersectsVertices(ray: Ray, vertices: Vertices): Intersectio
     const intersections: Intersection[] = []
 
     const positions = vertices.positions
-    
-    // console.log("positions", positions)
-    // console.log("length", positions.length)
 
     for (let i = 0; i < positions.length; i += 9) {
         
         const triangle: Triangle = [
-            [positions[i]!,positions[i+1]!,positions[i+2]!], 
-            [positions[i+3]!,positions[i+4]!,positions[i+5]!], 
-            [positions[i+6]!,positions[i+7]!,positions[i+8]!]
+            {x: positions[i]!,  y: positions[i+1]!,z: positions[i+2]!}, 
+            {x: positions[i+3]!,y: positions[i+4]!,z: positions[i+5]!}, 
+            {x: positions[i+6]!,y: positions[i+7]!,z: positions[i+8]!}
         ]
 
         const intersectionPoint = rayIntersectsTriangle(ray, triangle)
-        
-        // console.log("i", i)
-        // console.log("triangle", triangle)
-        // console.log("intersection", intersection)
 
         if (intersectionPoint) {
-            // console.log("adding intersection", intersection)
             intersections.push({ point: intersectionPoint, triangleIdx: i / 9})
         }
     }
@@ -109,7 +101,7 @@ export function rayIntersectsSceneNode(ray: Ray, node: SceneNode): Intersection[
     while (nodeStack.length > 0) {
 
         const nodeUnderTest = nodeStack.pop()!
-        // console.log(nodeUnderTest)
+        
         if (nodeUnderTest.mesh) {
             // transform the ray into mesh space
             const inverseTransform = m4inverse(nodeUnderTest._worldTransform)
@@ -179,9 +171,10 @@ export function getWorldRayFromClipSpaceAndCamera(
     clipSpacePoint: Vec2, 
     camera: Camera) {
 
-    const [x,y] = clipSpacePoint
-    const nearPoint: Vec3 = [x, y, -1];
-    const farPoint: Vec3  = [x, y,  1];
+    const x = clipSpacePoint.x
+    const y = clipSpacePoint.y
+    const nearPoint: Vec3 = {x, y, z: -1};
+    const farPoint: Vec3  = {x, y, z: 1};
 
     const viewMatrix = m4inverse(camera.transform);
     const projectionMatrix = getProjectionMatrix(camera);
@@ -194,11 +187,11 @@ export function getWorldRayFromClipSpaceAndCamera(
 
     const rayDirection = subtractVectors(worldFar, worldNear);
 
-    const rayDirNorm = normalize(rayDirection);
+    normalize(rayDirection);
 
     const worldRay: Ray = {
         origin: rayOrigin,
-        direction: rayDirNorm as Vec3
+        direction: rayDirection
     };
 
     return worldRay
@@ -213,7 +206,7 @@ export function sortBySceneDepth(intersections: Intersection[], camera: Camera
         const glPosA = m4PositionMultiply(a.point, viewProj)
         const glPosB = m4PositionMultiply(b.point, viewProj)
 
-        return   glPosA[2] - glPosB[2]
+        return   glPosA.z - glPosB.z
     })
 
     return sorted

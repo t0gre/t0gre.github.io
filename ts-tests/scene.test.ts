@@ -1,14 +1,14 @@
 import { expect, test } from 'vitest'
 import { setParent, initSceneNode } from "demo-01-ts-webgl/lib/scene";
 import { m4fromPositionAndEuler } from 'demo-01-ts-webgl/lib/mat4';
+import { POS_ORIGIN, ROT_NONE } from 'demo-01-ts-webgl/lib/vec';
 
 test('setParent updates parent and children correctly', () => {
 
-const childNode = initSceneNode(m4fromPositionAndEuler([1, 1, 1], [0, 0, 0]))
+const childNode = initSceneNode(m4fromPositionAndEuler({x: 1, y: 1, z: 1}, ROT_NONE))
    
-const parentNode1 = initSceneNode(m4fromPositionAndEuler([0, 0, 0], [0, 0, 0]))
-
-const parentNode2 = initSceneNode(m4fromPositionAndEuler([0, 0, 0], [0, 0, 0]))
+const parentNode1 = initSceneNode(m4fromPositionAndEuler(POS_ORIGIN, ROT_NONE))
+const parentNode2 = initSceneNode(m4fromPositionAndEuler(POS_ORIGIN, ROT_NONE))
 
 setParent(childNode, parentNode1);
 

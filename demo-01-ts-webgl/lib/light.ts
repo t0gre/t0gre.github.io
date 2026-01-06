@@ -1,7 +1,7 @@
-import { Vec3 } from "./vec";
+import { Color, Vec3, Euler } from "./vec";
 
 export type PointLight = {
-  color: Vec3;
+  color: Color;
   position: Vec3;
   constant: number;
   linear: number;
@@ -9,10 +9,10 @@ export type PointLight = {
 } 
 
 export type DirectionalLight = {
-  color: Vec3;
-  rotation: Vec3;
+  color: Color;
+  rotation: Euler;
 };
 
 export type AmbientLight = {
-  color: Vec3;
+  color: Color;
 }

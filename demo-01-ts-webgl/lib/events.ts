@@ -17,5 +17,5 @@ export function getPointerClickInClipSpace(
         x = x / canvas.width * 2 -1;
         y = y  / canvas.height * -2 + 1;
 
-        return [x,y]
+        return {x,y}
 }

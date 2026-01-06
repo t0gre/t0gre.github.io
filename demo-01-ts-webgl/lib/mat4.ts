@@ -1,175 +1,218 @@
-import { Ray } from './raycast';
-import { Vec3, Vec4, normalize, subtractVectors, cross } from './vec'
+import { Vec3, subtractVectors, cross, normalize, Vec4 } from './vec'
 
 
-export type Mat4 = [
+export type Mat4Array = [
     number, number, number, number,
     number, number, number, number,
     number, number, number, number,
     number, number, number, number,
 ]
 
+export type Mat4Scaling = [
+    [number, 0,      0,      0],
+    [0,      number, 0,      0],
+    [0,      0,      number, 0],
+    [0,      0,      0,      1]
+]
+
+export type Mat4Translation = [
+    [1,      0,      0,      0],
+    [0,      1,      0,      0],
+    [0,      0,      1,      0],
+    [number, number, number, 1]
+]
+
+export type Mat4XRotation = [
+    [1,      0,      0,      0],
+    [0,      number, number, 0],
+    [0,      number, number, 0],
+    [0,      0,      0,      1],
+]
+
+export type Mat4YRotation = [
+    [number, 0,      number, 0],
+    [0,      1,      0,      0],
+    [number, 0,      number, 0],
+    [0,      0,      0,      1],
+]
+
+export type Mat4ZRotation = [
+    [number, number, 0,      0],
+    [number, number, 0,      0],
+    [0,      0,      1,      0],
+    [0,      0,      0,      1],
+]
+
+export type Mat4 = [
+    [number, number, number, number],
+    [number, number, number, number],
+    [number, number, number, number],
+    [number, number, number, number]
+]
+
+export function m4ToArray(p: Mat4): Mat4Array {
+        
+    const m: Mat4Array = [
+        0,0,0,0,
+        0,0,0,0,
+        0,0,0,0,
+        0,0,0,0,
+    ]
+ 
+    m[0] = p[0][0]
+    m[1] = p[0][1]
+    m[2] = p[0][2] 
+    m[3] = p[0][3]
+    m[4] = p[1][0]
+    m[5] = p[1][1] 
+    m[6] = p[1][2] 
+    m[7] = p[1][3] 
+    m[8] = p[2][0] 
+    m[9] = p[2][1] 
+    m[10] = p[2][2] 
+    m[11] = p[2][3] 
+    m[12] = p[3][0] 
+    m[13] = p[3][1] 
+    m[14] = p[3][2] 
+    m[15] = p[3][3] 
+
+    return m
+   
+}
 
 
 export function m4lookAt(cameraPosition: Vec3, target: Vec3, up: Vec3): Mat4 {
-        const zAxis = normalize(
-            subtractVectors(cameraPosition, target));
-        const xAxis = normalize(cross(up, zAxis));
-        const yAxis = normalize(cross(zAxis, xAxis));
+        const zAxis = subtractVectors(cameraPosition, target)
+        normalize(zAxis)
 
+        const xAxis = cross(up, zAxis);
+        normalize(xAxis)
+
+        const yAxis = cross(zAxis, xAxis);
+        normalize(yAxis)
+      
         return [
-            xAxis[0], xAxis[1], xAxis[2], 0,
-            yAxis[0], yAxis[1], yAxis[2], 0,
-            zAxis[0], zAxis[1], zAxis[2], 0,
-            cameraPosition[0],
-            cameraPosition[1],
-            cameraPosition[2],
-            1,
+            [xAxis.x,          xAxis.y,          xAxis.z,          0],
+            [yAxis.x,          yAxis.y,          yAxis.z,          0],
+            [zAxis.x,          zAxis.y,          zAxis.z,          0],
+            [cameraPosition.x, cameraPosition.y, cameraPosition.z, 1]
         ];
     }
 
-export function m4perspective(fieldOfViewInRadians: number, aspect: number, near: number, far: number): Mat4 {
+export type Mat4Projection = [
+    [number, 0,      0,      0],
+    [0,      number, 0,      0],
+    [0,      0,      number,-1|0],
+    [number, number, number, 0|1],
+]
+
+export function m4perspective(fieldOfViewInRadians: number, aspect: number, near: number, far: number): Mat4Projection {
         const f = Math.tan(Math.PI * 0.5 - 0.5 * fieldOfViewInRadians);
         const rangeInv = 1.0 / (near - far);
 
         return [
-            f / aspect, 0, 0, 0,
-            0, f, 0, 0,
-            0, 0, (near + far) * rangeInv, -1,
-            0, 0, near * far * rangeInv * 2, 0
+            [f / aspect, 0,  0,                          0],
+            [0,          f,  0,                          0],
+            [0,          0,  (near + far) * rangeInv,   -1],
+            [0,          0,  near * far * rangeInv * 2,  0]
         ];
     }
 
 
 
-export function m4orthographic(left: number, right: number, bottom: number, top: number, near: number, far: number): Mat4 {
+export function m4orthographic(left: number, right: number, bottom: number, top: number, near: number, far: number): Mat4Projection {
     const lr = 1 / (left - right);
     const bt = 1 / (bottom - top);
     const nf = 1 / (near - far);
 
     return [
-        -2 * lr, 0, 0, 0,
-        0, -2 * bt, 0, 0,
-        0, 0, 2 * nf, 0,
-        (left + right) * lr, (top + bottom) * bt, (far + near) * nf, 1
+        [-2 * lr,             0,                   0,                 0],
+        [0,                   -2 * bt,             0,                 0],
+        [0,                   0,                   2 * nf,            0],
+        [(left + right) * lr, (top + bottom) * bt, (far + near) * nf, 1]
     ];
 }
 
-export function m4projection(width: number, height: number, depth: number): Mat4 {
-        // Note: This matrix flips the Y axis so 0 is at the top.
-        return [
-            2 / width, 0, 0, 0,
-            0, -2 / height, 0, 0,
-            0, 0, 2 / depth, 0,
-            -1, 1, 0, 1,
-        ];
-    }
-
 export function m4multiply(a: Mat4, b: Mat4): Mat4 {
-
-        const a00 = a[0 * 4 + 0]!;
-        const a01 = a[0 * 4 + 1]!;
-        const a02 = a[0 * 4 + 2]!;
-        const a03 = a[0 * 4 + 3]!;
-        const a10 = a[1 * 4 + 0]!;
-        const a11 = a[1 * 4 + 1]!;
-        const a12 = a[1 * 4 + 2]!;
-        const a13 = a[1 * 4 + 3]!;
-        const a20 = a[2 * 4 + 0]!;
-        const a21 = a[2 * 4 + 1]!;
-        const a22 = a[2 * 4 + 2]!;
-        const a23 = a[2 * 4 + 3]!;
-        const a30 = a[3 * 4 + 0]!;
-        const a31 = a[3 * 4 + 1]!;
-        const a32 = a[3 * 4 + 2]!;
-        const a33 = a[3 * 4 + 3]!;
-        const b00 = b[0 * 4 + 0]!;
-        const b01 = b[0 * 4 + 1]!;
-        const b02 = b[0 * 4 + 2]!;
-        const b03 = b[0 * 4 + 3]!;
-        const b10 = b[1 * 4 + 0]!;
-        const b11 = b[1 * 4 + 1]!;
-        const b12 = b[1 * 4 + 2]!;
-        const b13 = b[1 * 4 + 3]!;
-        const b20 = b[2 * 4 + 0]!;
-        const b21 = b[2 * 4 + 1]!;
-        const b22 = b[2 * 4 + 2]!;
-        const b23 = b[2 * 4 + 3]!;
-        const b30 = b[3 * 4 + 0]!;
-        const b31 = b[3 * 4 + 1]!;
-        const b32 = b[3 * 4 + 2]!;
-        const b33 = b[3 * 4 + 3]!;
+        
         return [
-            b00 * a00 + b01 * a10 + b02 * a20 + b03 * a30,
-            b00 * a01 + b01 * a11 + b02 * a21 + b03 * a31,
-            b00 * a02 + b01 * a12 + b02 * a22 + b03 * a32,
-            b00 * a03 + b01 * a13 + b02 * a23 + b03 * a33,
-            b10 * a00 + b11 * a10 + b12 * a20 + b13 * a30,
-            b10 * a01 + b11 * a11 + b12 * a21 + b13 * a31,
-            b10 * a02 + b11 * a12 + b12 * a22 + b13 * a32,
-            b10 * a03 + b11 * a13 + b12 * a23 + b13 * a33,
-            b20 * a00 + b21 * a10 + b22 * a20 + b23 * a30,
-            b20 * a01 + b21 * a11 + b22 * a21 + b23 * a31,
-            b20 * a02 + b21 * a12 + b22 * a22 + b23 * a32,
-            b20 * a03 + b21 * a13 + b22 * a23 + b23 * a33,
-            b30 * a00 + b31 * a10 + b32 * a20 + b33 * a30,
-            b30 * a01 + b31 * a11 + b32 * a21 + b33 * a31,
-            b30 * a02 + b31 * a12 + b32 * a22 + b33 * a32,
-            b30 * a03 + b31 * a13 + b32 * a23 + b33 * a33,
+       
+        [   b[0][0] * a[0][0] + b[0][1] * a[1][0] + b[0][2] * a[2][0] + b[0][3] * a[3][0],
+            b[0][0] * a[0][1] + b[0][1] * a[1][1] + b[0][2] * a[2][1] + b[0][3] * a[3][1],
+            b[0][0] * a[0][2] + b[0][1] * a[1][2] + b[0][2] * a[2][2] + b[0][3] * a[3][2],
+            b[0][0] * a[0][3] + b[0][1] * a[1][3] + b[0][2] * a[2][3] + b[0][3] * a[3][3]
+        ],
+        [   b[1][0] * a[0][0] + b[1][1] * a[1][0] + b[1][2] * a[2][0] + b[1][3] * a[3][0],
+            b[1][0] * a[0][1] + b[1][1] * a[1][1] + b[1][2] * a[2][1] + b[1][3] * a[3][1],
+            b[1][0] * a[0][2] + b[1][1] * a[1][2] + b[1][2] * a[2][2] + b[1][3] * a[3][2],
+            b[1][0] * a[0][3] + b[1][1] * a[1][3] + b[1][2] * a[2][3] + b[1][3] * a[3][3]
+        ],
+        [   b[2][0] * a[0][0] + b[2][1] * a[1][0] + b[2][2] * a[2][0] + b[2][3] * a[3][0],
+            b[2][0] * a[0][1] + b[2][1] * a[1][1] + b[2][2] * a[2][1] + b[2][3] * a[3][1],
+            b[2][0] * a[0][2] + b[2][1] * a[1][2] + b[2][2] * a[2][2] + b[2][3] * a[3][2],
+            b[2][0] * a[0][3] + b[2][1] * a[1][3] + b[2][2] * a[2][3] + b[2][3] * a[3][3]
+        ],
+        [   b[3][0] * a[0][0] + b[3][1] * a[1][0] + b[3][2] * a[2][0] + b[3][3] * a[3][0],
+            b[3][0] * a[0][1] + b[3][1] * a[1][1] + b[3][2] * a[2][1] + b[3][3] * a[3][1],
+            b[3][0] * a[0][2] + b[3][1] * a[1][2] + b[3][2] * a[2][2] + b[3][3] * a[3][2],
+            b[3][0] * a[0][3] + b[3][1] * a[1][3] + b[3][2] * a[2][3] + b[3][3] * a[3][3]
+        ]
+        ]
+
+    }
+
+
+export function m4translation(tx: number, ty: number, tz: number): Mat4Translation {
+        return [
+            [1,  0,  0,  0],
+            [0,  1,  0,  0],
+            [0,  0,  1,  0],
+            [tx, ty, tz, 1],
         ];
     }
 
-export function m4translation(tx: number, ty: number, tz: number): Mat4 {
-        return [
-            1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, 0, 1, 0,
-            tx, ty, tz, 1,
-        ];
-    }
-
-export function m4xRotation(angleInRadians: number): Mat4 {
+export function m4xRotation(angleInRadians: number): Mat4XRotation {
         const c = Math.cos(angleInRadians);
         const s = Math.sin(angleInRadians);
 
         return [
-            1, 0, 0, 0,
-            0, c, s, 0,
-            0, -s, c, 0,
-            0, 0, 0, 1,
+            [1,  0, 0, 0],
+            [0,  c, s, 0],
+            [0, -s, c, 0],
+            [0,  0, 0, 1],
         ];
     }
 
-export function m4yRotation(angleInRadians: number): Mat4 {
+export function m4yRotation(angleInRadians: number): Mat4YRotation {
         const c = Math.cos(angleInRadians);
         const s = Math.sin(angleInRadians);
 
         return [
-            c, 0, -s, 0,
-            0, 1, 0, 0,
-            s, 0, c, 0,
-            0, 0, 0, 1,
+            [c, 0, -s, 0],
+            [0, 1,  0, 0],
+            [s, 0,  c, 0],
+            [0, 0,  0, 1],
         ];
     }
 
-export function m4zRotation(angleInRadians: number): Mat4 {
+export function m4zRotation(angleInRadians: number): Mat4ZRotation {
         const c = Math.cos(angleInRadians);
         const s = Math.sin(angleInRadians);
 
         return [
-            c, s, 0, 0,
-            -s, c, 0, 0,
-            0, 0, 1, 0,
-            0, 0, 0, 1,
+            [ c, s, 0, 0],
+            [-s, c, 0, 0],
+            [ 0, 0, 1, 0],
+            [ 0, 0, 0, 1],
         ];
     }
 
 export function m4scaling(sx: number, sy: number, sz: number): Mat4 {
         return [
-            sx, 0, 0, 0,
-            0, sy, 0, 0,
-            0, 0, sz, 0,
-            0, 0, 0, 1,
+            [sx, 0, 0, 0],
+            [0, sy, 0, 0],
+            [0, 0, sz, 0],
+            [0, 0, 0,  1],
         ];
     }
 
@@ -194,170 +237,151 @@ export function m4scaling(sx: number, sy: number, sz: number): Mat4 {
     
     }
     
-/**
-   * Transposes a matrix.
-   * @param {Matrix4} m matrix to transpose.
-   * @param {Matrix4} [dst] optional matrix to store result
-   * @return {Matrix4} dst or a new matrix if none provided
-   * @memberOf module:webgl-3d-math
-   */
+
 export function m4transpose(m: Mat4) {
     const dst: Mat4 = [
-        0,0,0,0,
-        0,0,0,0,
-        0,0,0,0,
-        0,0,0,0,
+        [0,0,0,0],
+        [0,0,0,0],
+        [0,0,0,0],
+        [0,0,0,0],
     ];
 
-    dst[ 0] = m[0];
-    dst[ 1] = m[4];
-    dst[ 2] = m[8];
-    dst[ 3] = m[12];
-    dst[ 4] = m[1];
-    dst[ 5] = m[5];
-    dst[ 6] = m[9];
-    dst[ 7] = m[13];
-    dst[ 8] = m[2];
-    dst[ 9] = m[6];
-    dst[10] = m[10];
-    dst[11] = m[14];
-    dst[12] = m[3];
-    dst[13] = m[7];
-    dst[14] = m[11];
-    dst[15] = m[15];
+    dst[0][0] = m[0][0];
+    dst[0][1] = m[1][0];
+    dst[0][2] = m[2][0];
+    dst[0][3] = m[3][0];
+
+    dst[1][0] = m[0][1];
+    dst[1][1] = m[1][1];
+    dst[1][2] = m[2][1];
+    dst[1][3] = m[3][1];
+
+    dst[2][0] = m[0][2];
+    dst[2][1] = m[1][2];
+    dst[2][2] = m[2][2];
+    dst[2][3] = m[3][2];
+
+    dst[3][0] = m[0][3];
+    dst[3][1] = m[1][3];
+    dst[3][2] = m[2][3];
+    dst[3][3] = m[3][3];
 
     return dst;
   }
 
 export function m4inverse(m: Mat4): Mat4 {
-        const m00 = m[0 * 4 + 0]!;
-        const m01 = m[0 * 4 + 1]!;
-        const m02 = m[0 * 4 + 2]!;
-        const m03 = m[0 * 4 + 3]!;
-        const m10 = m[1 * 4 + 0]!;
-        const m11 = m[1 * 4 + 1]!;
-        const m12 = m[1 * 4 + 2]!;
-        const m13 = m[1 * 4 + 3]!;
-        const m20 = m[2 * 4 + 0]!;
-        const m21 = m[2 * 4 + 1]!;
-        const m22 = m[2 * 4 + 2]!;
-        const m23 = m[2 * 4 + 3]!;
-        const m30 = m[3 * 4 + 0]!;
-        const m31 = m[3 * 4 + 1]!;
-        const m32 = m[3 * 4 + 2]!;
-        const m33 = m[3 * 4 + 3]!;
-        const tmp_0 = m22 * m33;
-        const tmp_1 = m32 * m23;
-        const tmp_2 = m12 * m33;
-        const tmp_3 = m32 * m13;
-        const tmp_4 = m12 * m23;
-        const tmp_5 = m22 * m13;
-        const tmp_6 = m02 * m33;
-        const tmp_7 = m32 * m03;
-        const tmp_8 = m02 * m23;
-        const tmp_9 = m22 * m03;
-        const tmp_10 = m02 * m13;
-        const tmp_11 = m12 * m03;
-        const tmp_12 = m20 * m31;
-        const tmp_13 = m30 * m21;
-        const tmp_14 = m10 * m31;
-        const tmp_15 = m30 * m11;
-        const tmp_16 = m10 * m21;
-        const tmp_17 = m20 * m11;
-        const tmp_18 = m00 * m31;
-        const tmp_19 = m30 * m01;
-        const tmp_20 = m00 * m21;
-        const tmp_21 = m20 * m01;
-        const tmp_22 = m00 * m11;
-        const tmp_23 = m10 * m01;
+        
+        const tmp_0 =  m[2][2] * m[3][3];
+        const tmp_1 =  m[3][2] * m[2][3];
+        const tmp_2 =  m[1][2] * m[3][3];
+        const tmp_3 =  m[3][2] * m[1][3];
+        const tmp_4 =  m[1][2] * m[2][3];
+        const tmp_5 =  m[2][2] * m[1][3];
+        const tmp_6 =  m[0][2] * m[3][3];
+        const tmp_7 =  m[3][2] * m[0][3];
+        const tmp_8 =  m[0][2] * m[2][3];
+        const tmp_9 =  m[2][2] * m[0][3];
+        const tmp_10 = m[0][2] * m[1][3];
+        const tmp_11 = m[1][2] * m[0][3];
+        const tmp_12 = m[2][0] * m[3][1];
+        const tmp_13 = m[3][0] * m[2][1];
+        const tmp_14 = m[1][0] * m[3][1];
+        const tmp_15 = m[3][0] * m[1][1];
+        const tmp_16 = m[1][0] * m[2][1];
+        const tmp_17 = m[2][0] * m[1][1];
+        const tmp_18 = m[0][0] * m[3][1];
+        const tmp_19 = m[3][0] * m[0][1];
+        const tmp_20 = m[0][0] * m[2][1];
+        const tmp_21 = m[2][0] * m[0][1];
+        const tmp_22 = m[0][0] * m[1][1];
+        const tmp_23 = m[1][0] * m[0][1];
 
-        const t0 = (tmp_0 * m11 + tmp_3 * m21 + tmp_4 * m31) -
-            (tmp_1 * m11 + tmp_2 * m21 + tmp_5 * m31);
-        const t1 = (tmp_1 * m01 + tmp_6 * m21 + tmp_9 * m31) -
-            (tmp_0 * m01 + tmp_7 * m21 + tmp_8 * m31);
-        const t2 = (tmp_2 * m01 + tmp_7 * m11 + tmp_10 * m31) -
-            (tmp_3 * m01 + tmp_6 * m11 + tmp_11 * m31);
-        const t3 = (tmp_5 * m01 + tmp_8 * m11 + tmp_11 * m21) -
-            (tmp_4 * m01 + tmp_9 * m11 + tmp_10 * m21);
+        const t0 =  (tmp_0 * m[1][1] + tmp_3 *  m[2][1] + tmp_4 *   m[3][1]) -
+                    (tmp_1 * m[1][1] + tmp_2 * m[2][1] + tmp_5 *  m[3][1]);
+        const t1 =  (tmp_1 * m[0][1] + tmp_6 * m[2][1] + tmp_9 *  m[3][1]) -
+                    (tmp_0 * m[0][1] + tmp_7 * m[2][1] + tmp_8 *  m[3][1]);
+        const t2 =  (tmp_2 * m[0][1] + tmp_7 * m[1][1] + tmp_10 * m[3][1]) -
+                    (tmp_3 * m[0][1] + tmp_6 * m[1][1] + tmp_11 * m[3][1]);
+        const t3 =  (tmp_5 * m[0][1] + tmp_8 * m[1][1] + tmp_11 * m[2][1]) -
+                    (tmp_4 * m[0][1] + tmp_9 * m[1][1] + tmp_10 * m[2][1]);
 
-        const d = 1.0 / (m00 * t0 + m10 * t1 + m20 * t2 + m30 * t3);
+        const d = 1.0 / (m[0][0] * t0 + m[1][0] * t1 + m[2][0] * t2 + m[3][0] * t3);
 
         return [
-            d * t0,
-            d * t1,
-            d * t2,
-            d * t3,
-            d * ((tmp_1 * m10 + tmp_2 * m20 + tmp_5 * m30) -
-                (tmp_0 * m10 + tmp_3 * m20 + tmp_4 * m30)),
-            d * ((tmp_0 * m00 + tmp_7 * m20 + tmp_8 * m30) -
-                (tmp_1 * m00 + tmp_6 * m20 + tmp_9 * m30)),
-            d * ((tmp_3 * m00 + tmp_6 * m10 + tmp_11 * m30) -
-                (tmp_2 * m00 + tmp_7 * m10 + tmp_10 * m30)),
-            d * ((tmp_4 * m00 + tmp_9 * m10 + tmp_10 * m20) -
-                (tmp_5 * m00 + tmp_8 * m10 + tmp_11 * m20)),
-            d * ((tmp_12 * m13 + tmp_15 * m23 + tmp_16 * m33) -
-                (tmp_13 * m13 + tmp_14 * m23 + tmp_17 * m33)),
-            d * ((tmp_13 * m03 + tmp_18 * m23 + tmp_21 * m33) -
-                (tmp_12 * m03 + tmp_19 * m23 + tmp_20 * m33)),
-            d * ((tmp_14 * m03 + tmp_19 * m13 + tmp_22 * m33) -
-                (tmp_15 * m03 + tmp_18 * m13 + tmp_23 * m33)),
-            d * ((tmp_17 * m03 + tmp_20 * m13 + tmp_23 * m23) -
-                (tmp_16 * m03 + tmp_21 * m13 + tmp_22 * m23)),
-            d * ((tmp_14 * m22 + tmp_17 * m32 + tmp_13 * m12) -
-                (tmp_16 * m32 + tmp_12 * m12 + tmp_15 * m22)),
-            d * ((tmp_20 * m32 + tmp_12 * m02 + tmp_19 * m22) -
-                (tmp_18 * m22 + tmp_21 * m32 + tmp_13 * m02)),
-            d * ((tmp_18 * m12 + tmp_23 * m32 + tmp_15 * m02) -
-                (tmp_22 * m32 + tmp_14 * m02 + tmp_19 * m12)),
-            d * ((tmp_22 * m22 + tmp_16 * m02 + tmp_21 * m12) -
-                (tmp_20 * m12 + tmp_23 * m22 + tmp_17 * m02))
-        ];
-    }
-
-export function m4vectorMultiply(v: Vec4, m: Mat4): Vec4 {
-        const dst: Vec4 = [0,0,0,0];
-        for (let i = 0; i < 4; ++i) {
-            for (let j = 0; j < 4; ++j) {
-                dst[i]! += v[j]! * m[j * 4 + i]!; // ts is not smart enough to see that we set dst[i] to a number already
-            }
-        }
-        return dst;
-    }
-
-export function m4PositionMultiply(v: Vec3, m: Mat4): Vec3 {
-        const v1: Vec4 = [...v, 1]
-        const dst: Vec4 = [0,0,0,0];
-        for (let i = 0; i < 4; ++i) {
-            for (let j = 0; j < 4; ++j) {
-                dst[i]! += v1[j]! * m[j * 4 + i]!; // ts is not smart enough to see that we set dst[i] to a number already
-            }
-        }
-        return [dst[0]/dst[3],dst[1]/dst[3],dst[2]/dst[3]];
-    }
-
-export function m4DirectionMultiply(v: Vec3, m: Mat4): Vec3 {
-        const v1: Vec4 = [...v, 0]
-        const dst: Vec4 = [0,0,0,0];
-        for (let i = 0; i < 4; ++i) {
-            for (let j = 0; j < 4; ++j) {
-                dst[i]! += v1[j]! * m[j * 4 + i]!; // ts is not smart enough to see that we set dst[i] to a number already
-            }
-        }
-        return [dst[0],dst[1],dst[2]];
-    }
-
-export function m4RayMultiply(ray: Ray, m: Mat4) {
-    return {
-        origin: m4PositionMultiply(ray.origin, m),
-        direction: m4DirectionMultiply(ray.direction, m)
+            [
+                d * t0,
+                d * t1,
+                d * t2,
+                d * t3,
+            ],
+            [
+                d * ((tmp_1 *  m[1][0] + tmp_2 *  m[2][0] + tmp_5 *  m[3][0]) -
+                    (tmp_0 *   m[1][0] + tmp_3 *  m[2][0] + tmp_4 *  m[3][0])),
+                d * ((tmp_0 *  m[0][0] + tmp_7 *  m[2][0] + tmp_8 *  m[3][0]) -
+                    (tmp_1 *   m[0][0] + tmp_6 *  m[2][0] + tmp_9 *  m[3][0])),
+                d * ((tmp_3 *  m[0][0] + tmp_6 *  m[1][0] + tmp_11 * m[3][0]) -
+                    (tmp_2 *   m[0][0] + tmp_7 *  m[1][0] + tmp_10 * m[3][0])),
+                d * ((tmp_4 *  m[0][0] + tmp_9 *  m[1][0] + tmp_10 * m[2][0]) -
+                    (tmp_5 *   m[0][0] + tmp_8 *  m[1][0] + tmp_11 * m[2][0])),
+            ],
+            [
+                d * ((tmp_12 * m[1][3] + tmp_15 * m[2][3] + tmp_16 * m[3][3]) -
+                    (tmp_13 *  m[1][3] + tmp_14 * m[2][3] + tmp_17 * m[3][3])),
+                d * ((tmp_13 * m[0][3] + tmp_18 * m[2][3] + tmp_21 * m[3][3]) -
+                    (tmp_12 *  m[0][3] + tmp_19 * m[2][3] + tmp_20 * m[3][3])),
+                d * ((tmp_14 * m[0][3] + tmp_19 * m[1][3] + tmp_22 * m[3][3]) -
+                    (tmp_15 *  m[0][3] + tmp_18 * m[1][3] + tmp_23 * m[3][3])),
+                d * ((tmp_17 * m[0][3] + tmp_20 * m[1][3] + tmp_23 * m[2][3]) -
+                    (tmp_16 *  m[0][3] + tmp_21 * m[1][3] + tmp_22 * m[2][3])),
+            ],
+            [
+                d * ((tmp_14 * m[2][2] + tmp_17 * m[3][2] + tmp_13 * m[1][2]) -
+                    (tmp_16 *  m[3][2] + tmp_12 * m[1][2] + tmp_15 * m[2][2])),
+                d * ((tmp_20 * m[3][2] + tmp_12 * m[0][2] + tmp_19 * m[2][2]) -
+                    (tmp_18 *  m[2][2] + tmp_21 * m[3][2] + tmp_13 * m[0][2])),
+                d * ((tmp_18 * m[1][2] + tmp_23 * m[3][2] + tmp_15 * m[0][2]) -
+                    (tmp_22 *  m[3][2] + tmp_14 * m[0][2] + tmp_19 * m[1][2])),
+                d * ((tmp_22 * m[2][2] + tmp_16 * m[0][2] + tmp_21 * m[1][2]) -
+                    (tmp_20 *  m[1][2] + tmp_23 * m[2][2] + tmp_17 * m[0][2]))
+            ]
+        ]
         
     }
+
+
+export function m4Vec4multiply(m: Mat4, v: Vec4): Vec4 {
+
+        return { 
+            x: v.x * m[0][0] + v.y * m[1][0] + v.z * m[2][0] + v.w * m[3][0],
+            y: v.x * m[0][1] + v.y * m[1][1] + v.z * m[2][1] + v.w * m[3][1], 
+            z: v.x * m[0][2] + v.y * m[1][2] + v.z * m[2][2] + v.w * m[3][2], 
+            w: v.x * m[0][3] + v.y * m[1][3] + v.z * m[2][3] + v.w * m[3][3]
+        }
+    }
+
+
+export function m4PositionMultiply(v: Vec3, m: Mat4): Vec3 {
+    
+    const v4 = {...v, w: 1}
+    const dst = m4Vec4multiply(m, v4)
+
+    return {x: dst.x/dst.w, y: dst.y/dst.w, z: dst.z/dst.w }
 }
 
+export function m4DirectionMultiply(v: Vec3, m: Mat4): Vec3 {
+    
+    const v4 = {...v, w: 0}
+    const dst = m4Vec4multiply(m, v4)
+
+    return { x: dst.x, y: dst.y, z: dst.z };
+
+}
+
+
 export function m4fromPositionAndEuler(position: Vec3, euler: Vec3): Mat4 {
-    let mat4 = m4translate(m4yRotation(0), position[0], position[1], position[2]) ;
-    mat4 = m4xRotate(mat4, euler[0]);
-    mat4 = m4yRotate(mat4, euler[1]);
-    mat4 = m4zRotate(mat4, euler[2]);
+    let mat4 = m4translate(m4yRotation(0), position.x, position.y, position.z) ;
+    mat4 = m4xRotate(mat4, euler.x);
+    mat4 = m4yRotate(mat4, euler.y);
+    mat4 = m4zRotate(mat4, euler.z);
     return mat4;
 }

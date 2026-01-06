@@ -1,5 +1,6 @@
 import { m4fromPositionAndEuler, m4multiply, Mat4 } from "./mat4";
 import { Mesh } from "./mesh";
+import { POS_ORIGIN, ROT_NONE } from "./vec";
 
 
 export type SceneNode = {
@@ -16,7 +17,7 @@ export type Scene = SceneNode[]
 
 export function updateWorldTransform(node: SceneNode) {
    // n.b. this assumes the parent world transform is always up-to-date so we must keep it that way
-   const parentWorldTransform = node.parent?._worldTransform ?? m4fromPositionAndEuler([0,0,0], [0,0,0]);
+   const parentWorldTransform = node.parent?._worldTransform ?? m4fromPositionAndEuler(POS_ORIGIN, ROT_NONE);
    node._worldTransform = m4multiply(parentWorldTransform, node._localTransform);
 
    node.children.forEach(child => updateWorldTransform(child))
