@@ -6,11 +6,11 @@ import { Camera } from './lib/camera'
 import { initBasicRenderProgram, drawScene, createShadowMap, initShadowRenderProgram } from './lib/BasicRenderProgram'
 import { loadObj } from './lib/loaders/ObjLoader'
 import { InputState } from './lib/input'
-import { m4fromPositionAndEuler, m4lookAt, m4vectorMultiply, m4yRotation } from './lib/mat4'
+import { m4fromPositionAndEuler, m4lookAt } from './lib/mat4'
 import { initGlState } from './lib/gl'
 import { getWorldRayFromClipSpaceAndCamera, rayIntersectsScene, sortBySceneDepth } from './lib/raycast'
 import { getPointerClickInClipSpace } from './lib/events'
-import { Color, POS_ORIGIN, ROT_NONE, Vec3, Vec4, calculateOrbitPosition } from './lib/vec'
+import { Color, POS_ORIGIN, ROT_NONE, Vec3, calculateOrbitPosition } from './lib/vec'
 
 
 type NodeName = "yellow tree" | "orange tree" | "green tree" | "floor";
@@ -250,12 +250,12 @@ canvas.addEventListener('pointerdown', () => {
 
 ///////////////////////////
 
-let lastTime = 0;
+// let lastTime = 0;
 function animate(time: DOMHighResTimeStamp) {
     time *= 0.001 // convert from millis to seconds
-    const dt = time - lastTime;
-    lastTime = time;
-    updateLight(pointLight, dt)
+    // const dt = time - lastTime;
+    // lastTime = time;
+    // updateLight(pointLight, dt)  // this both break under the shadow mapping
     // updateDirectionalLight(directionalLight, time)
     resizeCanvasToDisplaySize(canvas);
     camera.aspect = canvas.clientWidth / canvas.clientHeight;
@@ -302,22 +302,24 @@ function resizeCanvasToDisplaySize(canvas: HTMLCanvasElement): void {
     }
 
 }
+
+
 // function updateDirectionalLight(light: DirectionalLight, time: number) {
     
 //     const oldRotation = light.rotation
       
    
-//     light.rotation = [oldRotation[0], Math.sin(time), oldRotation[2]]
+//     light.rotation = { x: oldRotation.x, y: Math.sin(time), z: oldRotation.z }
     
 // }
 
-function updateLight(pointLight: PointLight, dt: number) {
-      const rotator = m4yRotation(Math.PI / (dt * 10000));
-      const oldTransform: Vec4 = {
-        ...pointLight.position,
-        w: 0.0
-      };
+// function updateLight(pointLight: PointLight, dt: number) {
+//       const rotator = m4yRotation(Math.PI / (dt * 10000));
+//       const oldTransform: Vec4 = {
+//         ...pointLight.position,
+//         w: 0.0
+//       };
    
-    const newTransform = m4vectorMultiply(oldTransform, rotator);
-    pointLight.position = { x: newTransform.x, y: newTransform.y, z: newTransform.z }
-}
+//     const newTransform = m4PositionMultiply(oldTransform, rotator);
+//     pointLight.position = { x: newTransform.x, y: newTransform.y, z: newTransform.z }
+// }

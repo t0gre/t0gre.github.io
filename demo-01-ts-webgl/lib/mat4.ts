@@ -66,7 +66,14 @@ export function m4lookAt(cameraPosition: Vec3, target: Vec3, up: Vec3): Mat4 {
         ];
     }
 
-export function m4perspective(fieldOfViewInRadians: number, aspect: number, near: number, far: number): Mat4 {
+export type Mat4Projection = [
+    number, 0,      0,      0,
+    0,      number, 0,      0,
+    0,      0,      number,-1|0,
+    number, number, number, 0|1,
+]
+
+export function m4perspective(fieldOfViewInRadians: number, aspect: number, near: number, far: number): Mat4Projection {
         const f = Math.tan(Math.PI * 0.5 - 0.5 * fieldOfViewInRadians);
         const rangeInv = 1.0 / (near - far);
 
@@ -80,7 +87,7 @@ export function m4perspective(fieldOfViewInRadians: number, aspect: number, near
 
 
 
-export function m4orthographic(left: number, right: number, bottom: number, top: number, near: number, far: number): Mat4 {
+export function m4orthographic(left: number, right: number, bottom: number, top: number, near: number, far: number): Mat4Projection {
     const lr = 1 / (left - right);
     const bt = 1 / (bottom - top);
     const nf = 1 / (near - far);
@@ -93,15 +100,6 @@ export function m4orthographic(left: number, right: number, bottom: number, top:
     ];
 }
 
-export function m4projection(width: number, height: number, depth: number): Mat4 {
-        // Note: This matrix flips the Y axis so 0 is at the top.
-        return [
-            2 / width, 0, 0, 0,
-            0, -2 / height, 0, 0,
-            0, 0, 2 / depth, 0,
-            -1, 1, 0, 1,
-        ];
-    }
 
 export function m4multiply(a: Mat4, b: Mat4): Mat4 {
 
@@ -351,17 +349,6 @@ export function m4inverse(m: Mat4): Mat4 {
         ];
     }
 
-export function m4vectorMultiply(v: Vec4, m: Mat4): Vec4 {
-        const dst: [number, number, number, number] = [0,0,0,0];
-        const vArray = vec4ToArray(v)
-        for (let i = 0; i < 4; ++i) {
-            for (let j = 0; j < 4; ++j) {
-                dst[i]! += vArray[j]! * m[j * 4 + i]!; // ts is not smart enough to see that we set dst[i] to a number already
-            }
-        }
-        return { x: dst[0], y: dst[1], z: dst[2], w: dst[3] };
-
-    }
 
 export function m4PositionMultiply(v: Vec3, m: Mat4): Vec3 {
         
@@ -390,13 +377,7 @@ export function m4DirectionMultiply(v: Vec3, m: Mat4): Vec3 {
 
     }
 
-export function m4RayMultiply(ray: Ray, m: Mat4) {
-    return {
-        origin: m4PositionMultiply(ray.origin, m),
-        direction: m4DirectionMultiply(ray.direction, m)
-        
-    }
-}
+
 
 export function m4fromPositionAndEuler(position: Vec3, euler: Vec3): Mat4 {
     let mat4 = m4translate(m4yRotation(0), position.x, position.y, position.z) ;
