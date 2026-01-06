@@ -1,6 +1,6 @@
 import { AttributeBinding, createProgramFromRaw } from "./shaderUtils"
 import { AmbientLight, DirectionalLight, PointLight } from "./light";
-import {  m4fromPositionAndEuler, m4inverse, m4multiply, m4orthographic, m4perspective, m4PositionMultiply, m4xRotation, Mat4 } from "./mat4";
+import {  m4fromPositionAndEuler, m4inverse, m4multiply, m4orthographic, m4perspective, m4PositionMultiply, m4ToArray, m4xRotation, Mat4 } from "./mat4";
 import { Camera } from "./camera";
 import { InputState } from "./input";
 
@@ -103,9 +103,9 @@ export function updateUniforms(
             camera.aspect, 
             camera.near, 
             camera.far)
-        gl.uniformMatrix4fv(renderProgram.worldMatrixUniformLocation, false, shapeWorld);  
-        gl.uniformMatrix4fv(renderProgram.viewUniformLocation, false, viewMatrix); 
-        gl.uniformMatrix4fv(renderProgram.projectionUniformLocation, false, projectionMatrix);
+        gl.uniformMatrix4fv(renderProgram.worldMatrixUniformLocation, false, m4ToArray(shapeWorld));  
+        gl.uniformMatrix4fv(renderProgram.viewUniformLocation, false, m4ToArray(viewMatrix)); 
+        gl.uniformMatrix4fv(renderProgram.projectionUniformLocation, false, m4ToArray(projectionMatrix));
         
         // update material uniforms
         gl.uniform3fv(renderProgram.materialUniform.colorLocation, colorToArray(mesh.material.color));
@@ -122,7 +122,7 @@ export function updateUniforms(
 
         // shadows
         // shadow map must be bound
-        gl.uniformMatrix4fv(renderProgram.shadowUniform.lightViewLocation, false, lightViewProjectionMatrix);
+        gl.uniformMatrix4fv(renderProgram.shadowUniform.lightViewLocation, false, m4ToArray(lightViewProjectionMatrix));
 
 
         // set point light
@@ -585,8 +585,8 @@ export function drawShadowScene(
             const drawInitializedMesh = (mesh: Mesh) => {
                 const vao = glState.vaos.get(mesh._id!)!;
                 gl.bindVertexArray(vao);
-                gl.uniformMatrix4fv(shadowProgram.u_model, false, node._worldTransform);
-                gl.uniformMatrix4fv(shadowProgram.u_lightViewProj, false, lightViewProj);
+                gl.uniformMatrix4fv(shadowProgram.u_model, false, m4ToArray(node._worldTransform));
+                gl.uniformMatrix4fv(shadowProgram.u_lightViewProj, false, m4ToArray(lightViewProj));
                 if (mesh.vertices.indices) {
                     gl.drawElements(gl.TRIANGLES, mesh.vertices.indices.length, gl.UNSIGNED_SHORT, 0);
                 } else {
