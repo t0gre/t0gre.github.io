@@ -65,23 +65,62 @@ type Mat4Positions = {
 
 function m4AsPositions(m: Mat4): Mat4Positions {
         return {
+             // row 0
              m00 : m[0 * 4 + 0]!,
              m01 : m[0 * 4 + 1]!,
              m02 : m[0 * 4 + 2]!,
              m03 : m[0 * 4 + 3]!,
+             // row 1
              m10 : m[1 * 4 + 0]!,
              m11 : m[1 * 4 + 1]!,
              m12 : m[1 * 4 + 2]!,
              m13 : m[1 * 4 + 3]!,
+             // row 2
              m20 : m[2 * 4 + 0]!,
              m21 : m[2 * 4 + 1]!,
              m22 : m[2 * 4 + 2]!,
              m23 : m[2 * 4 + 3]!,
+             // row 3
              m30 : m[3 * 4 + 0]!,
              m31 : m[3 * 4 + 1]!,
              m32 : m[3 * 4 + 2]!,
              m33 : m[3 * 4 + 3]!,
         }  
+}
+
+function m4FromPositions(p: Mat4Positions): Mat4 {
+        
+    const m: Mat4 = [
+        0,0,0,0,
+        0,0,0,0,
+        0,0,0,0,
+        0,0,0,0,
+    ]
+
+    // row 0
+    m[0 * 4 + 0] = p.m00
+    m[0 * 4 + 1] = p.m01
+    m[0 * 4 + 2] = p.m02 
+    m[0 * 4 + 3] = p.m03
+    // row 1 p.
+    m[1 * 4 + 0] = p.m10
+    m[1 * 4 + 1] = p.m11 
+    m[1 * 4 + 2] = p.m12 
+    m[1 * 4 + 3] = p.m13 
+    // row 2 p.
+    m[2 * 4 + 0] = p.m20 
+    m[2 * 4 + 1] = p.m21 
+    m[2 * 4 + 2] = p.m22 
+    m[2 * 4 + 3] = p.m23 
+    // row 3 p.
+    m[3 * 4 + 0] = p.m30 
+    m[3 * 4 + 1] = p.m31 
+    m[3 * 4 + 2] = p.m32 
+    m[3 * 4 + 3] = p.m33 
+
+    return m
+    
+      
 }
 
 
@@ -141,31 +180,87 @@ export function m4orthographic(left: number, right: number, bottom: number, top:
     ];
 }
 
-
 export function m4multiply(a: Mat4, b: Mat4): Mat4 {
 
         const ap = m4AsPositions(a);
         const bp = m4AsPositions(b);
         
-        return [
-            bp.m00 * ap.m00 + bp.m01 * ap.m10 + bp.m02 * ap.m20 + bp.m03 * ap.m30,
-            bp.m00 * ap.m01 + bp.m01 * ap.m11 + bp.m02 * ap.m21 + bp.m03 * ap.m31,
-            bp.m00 * ap.m02 + bp.m01 * ap.m12 + bp.m02 * ap.m22 + bp.m03 * ap.m32,
-            bp.m00 * ap.m03 + bp.m01 * ap.m13 + bp.m02 * ap.m23 + bp.m03 * ap.m33,
-            bp.m10 * ap.m00 + bp.m11 * ap.m10 + bp.m12 * ap.m20 + bp.m13 * ap.m30,
-            bp.m10 * ap.m01 + bp.m11 * ap.m11 + bp.m12 * ap.m21 + bp.m13 * ap.m31,
-            bp.m10 * ap.m02 + bp.m11 * ap.m12 + bp.m12 * ap.m22 + bp.m13 * ap.m32,
-            bp.m10 * ap.m03 + bp.m11 * ap.m13 + bp.m12 * ap.m23 + bp.m13 * ap.m33,
-            bp.m20 * ap.m00 + bp.m21 * ap.m10 + bp.m22 * ap.m20 + bp.m23 * ap.m30,
-            bp.m20 * ap.m01 + bp.m21 * ap.m11 + bp.m22 * ap.m21 + bp.m23 * ap.m31,
-            bp.m20 * ap.m02 + bp.m21 * ap.m12 + bp.m22 * ap.m22 + bp.m23 * ap.m32,
-            bp.m20 * ap.m03 + bp.m21 * ap.m13 + bp.m22 * ap.m23 + bp.m23 * ap.m33,
-            bp.m30 * ap.m00 + bp.m31 * ap.m10 + bp.m32 * ap.m20 + bp.m33 * ap.m30,
-            bp.m30 * ap.m01 + bp.m31 * ap.m11 + bp.m32 * ap.m21 + bp.m33 * ap.m31,
-            bp.m30 * ap.m02 + bp.m31 * ap.m12 + bp.m32 * ap.m22 + bp.m33 * ap.m32,
-            bp.m30 * ap.m03 + bp.m31 * ap.m13 + bp.m32 * ap.m23 + bp.m33 * ap.m33,
-        ];
+        const p: Mat4Positions = {
+            // row 0
+            m00 : bp.m00 * ap.m00 + bp.m01 * ap.m10 + bp.m02 * ap.m20 + bp.m03 * ap.m30,
+            m01 : bp.m00 * ap.m01 + bp.m01 * ap.m11 + bp.m02 * ap.m21 + bp.m03 * ap.m31,
+            m02 : bp.m00 * ap.m02 + bp.m01 * ap.m12 + bp.m02 * ap.m22 + bp.m03 * ap.m32,
+            m03 : bp.m00 * ap.m03 + bp.m01 * ap.m13 + bp.m02 * ap.m23 + bp.m03 * ap.m33,
+            // row 1
+            m10 : bp.m10 * ap.m00 + bp.m11 * ap.m10 + bp.m12 * ap.m20 + bp.m13 * ap.m30,
+            m11 : bp.m10 * ap.m01 + bp.m11 * ap.m11 + bp.m12 * ap.m21 + bp.m13 * ap.m31,
+            m12 : bp.m10 * ap.m02 + bp.m11 * ap.m12 + bp.m12 * ap.m22 + bp.m13 * ap.m32,
+            m13 : bp.m10 * ap.m03 + bp.m11 * ap.m13 + bp.m12 * ap.m23 + bp.m13 * ap.m33,
+            // row 2
+            m20 : bp.m20 * ap.m00 + bp.m21 * ap.m10 + bp.m22 * ap.m20 + bp.m23 * ap.m30,
+            m21 : bp.m20 * ap.m01 + bp.m21 * ap.m11 + bp.m22 * ap.m21 + bp.m23 * ap.m31,
+            m22 : bp.m20 * ap.m02 + bp.m21 * ap.m12 + bp.m22 * ap.m22 + bp.m23 * ap.m32,
+            m23 : bp.m20 * ap.m03 + bp.m21 * ap.m13 + bp.m22 * ap.m23 + bp.m23 * ap.m33,
+            // row 3
+            m30 : bp.m30 * ap.m00 + bp.m31 * ap.m10 + bp.m32 * ap.m20 + bp.m33 * ap.m30,
+            m31 : bp.m30 * ap.m01 + bp.m31 * ap.m11 + bp.m32 * ap.m21 + bp.m33 * ap.m31,
+            m32 : bp.m30 * ap.m02 + bp.m31 * ap.m12 + bp.m32 * ap.m22 + bp.m33 * ap.m32,
+            m33 : bp.m30 * ap.m03 + bp.m31 * ap.m13 + bp.m32 * ap.m23 + bp.m33 * ap.m33,
+        }
+
+        return m4FromPositions(p)
     }
+
+// export function m4multiply(a: Mat4, b: Mat4): Mat4 {
+
+//         const ap = m4AsPositions(a);
+//         const bp = m4AsPositions(b);
+        
+//         return [
+//             bp.m00 * ap.m00 + bp.m01 * ap.m10 + bp.m02 * ap.m20 + bp.m03 * ap.m30,
+//             bp.m00 * ap.m01 + bp.m01 * ap.m11 + bp.m02 * ap.m21 + bp.m03 * ap.m31,
+//             bp.m00 * ap.m02 + bp.m01 * ap.m12 + bp.m02 * ap.m22 + bp.m03 * ap.m32,
+//             bp.m00 * ap.m03 + bp.m01 * ap.m13 + bp.m02 * ap.m23 + bp.m03 * ap.m33,
+//             bp.m10 * ap.m00 + bp.m11 * ap.m10 + bp.m12 * ap.m20 + bp.m13 * ap.m30,
+//             bp.m10 * ap.m01 + bp.m11 * ap.m11 + bp.m12 * ap.m21 + bp.m13 * ap.m31,
+//             bp.m10 * ap.m02 + bp.m11 * ap.m12 + bp.m12 * ap.m22 + bp.m13 * ap.m32,
+//             bp.m10 * ap.m03 + bp.m11 * ap.m13 + bp.m12 * ap.m23 + bp.m13 * ap.m33,
+//             bp.m20 * ap.m00 + bp.m21 * ap.m10 + bp.m22 * ap.m20 + bp.m23 * ap.m30,
+//             bp.m20 * ap.m01 + bp.m21 * ap.m11 + bp.m22 * ap.m21 + bp.m23 * ap.m31,
+//             bp.m20 * ap.m02 + bp.m21 * ap.m12 + bp.m22 * ap.m22 + bp.m23 * ap.m32,
+//             bp.m20 * ap.m03 + bp.m21 * ap.m13 + bp.m22 * ap.m23 + bp.m23 * ap.m33,
+//             bp.m30 * ap.m00 + bp.m31 * ap.m10 + bp.m32 * ap.m20 + bp.m33 * ap.m30,
+//             bp.m30 * ap.m01 + bp.m31 * ap.m11 + bp.m32 * ap.m21 + bp.m33 * ap.m31,
+//             bp.m30 * ap.m02 + bp.m31 * ap.m12 + bp.m32 * ap.m22 + bp.m33 * ap.m32,
+//             bp.m30 * ap.m03 + bp.m31 * ap.m13 + bp.m32 * ap.m23 + bp.m33 * ap.m33,
+//         ];
+//     }
+
+// export function m4Vec4multiply(m: Mat4, v: Vec4): Vec4 {
+
+//         const mp = m4AsPositions(m);
+    
+        
+//         return [
+//             //
+//             ap.m00 * bp.m00 + ap.m01 * bp.m10 + ap.m02 * bp.m20 + ap.m03 * bp.m30,
+//             ap.m00 * bp.m01 + ap.m01 * bp.m11 + ap.m02 * bp.m21 + ap.m03 * bp.m31,
+//             ap.m00 * bp.m02 + ap.m01 * bp.m12 + ap.m02 * bp.m22 + ap.m03 * bp.m32,
+//             ap.m00 * bp.m03 + ap.m01 * bp.m13 + ap.m02 * bp.m23 + ap.m03 * bp.m33,
+//             ap.m10 * bp.m00 + ap.m11 * bp.m10 + ap.m12 * bp.m20 + ap.m13 * bp.m30,
+//             ap.m10 * bp.m01 + ap.m11 * bp.m11 + ap.m12 * bp.m21 + ap.m13 * bp.m31,
+//             ap.m10 * bp.m02 + ap.m11 * bp.m12 + ap.m12 * bp.m22 + ap.m13 * bp.m32,
+//             ap.m10 * bp.m03 + ap.m11 * bp.m13 + ap.m12 * bp.m23 + ap.m13 * bp.m33,
+//             ap.m20 * bp.m00 + ap.m21 * bp.m10 + ap.m22 * bp.m20 + ap.m23 * bp.m30,
+//             ap.m20 * bp.m01 + ap.m21 * bp.m11 + ap.m22 * bp.m21 + ap.m23 * bp.m31,
+//             ap.m20 * bp.m02 + ap.m21 * bp.m12 + ap.m22 * bp.m22 + ap.m23 * bp.m32,
+//             ap.m20 * bp.m03 + ap.m21 * bp.m13 + ap.m22 * bp.m23 + ap.m23 * bp.m33,
+//             ap.m30 * bp.m00 + ap.m31 * bp.m10 + ap.m32 * bp.m20 + ap.m33 * bp.m30,
+//             ap.m30 * bp.m01 + ap.m31 * bp.m11 + ap.m32 * bp.m21 + ap.m33 * bp.m31,
+//             ap.m30 * bp.m02 + ap.m31 * bp.m12 + ap.m32 * bp.m22 + ap.m33 * bp.m32,
+//             ap.m30 * bp.m03 + ap.m31 * bp.m13 + ap.m32 * bp.m23 + ap.m33 * bp.m33,
+//         ];
+//     }
 
 export function m4translation(tx: number, ty: number, tz: number): Mat4Translation {
         return [
