@@ -1,4 +1,4 @@
-import { Vec3, subtractVectors, cross, vec3ToArray, normalize } from './vec'
+import { Vec3, subtractVectors, cross, vec3ToArray, normalize, Vec4 } from './vec'
 
 
 export type Mat4 = [
@@ -199,31 +199,21 @@ export function m4multiply(a: Mat4, b: Mat4): Mat4 {
 
 
 
-// export function m4Vec4multiply(m: Mat4, v: Vec4): Vec4 {
+export function m4Vec4multiply(m: Mat4, v: Vec4): Vec4 {
 
-//         const mp = m4AsPositions(m);
-    
+        const mp = m4AsPositions(m);
         
-//         return [
-//             //
-//             ap.m00 * bp.m00 + ap.m01 * bp.m10 + ap.m02 * bp.m20 + ap.m03 * bp.m30,
-//             ap.m00 * bp.m01 + ap.m01 * bp.m11 + ap.m02 * bp.m21 + ap.m03 * bp.m31,
-//             ap.m00 * bp.m02 + ap.m01 * bp.m12 + ap.m02 * bp.m22 + ap.m03 * bp.m32,
-//             ap.m00 * bp.m03 + ap.m01 * bp.m13 + ap.m02 * bp.m23 + ap.m03 * bp.m33,
-//             ap.m10 * bp.m00 + ap.m11 * bp.m10 + ap.m12 * bp.m20 + ap.m13 * bp.m30,
-//             ap.m10 * bp.m01 + ap.m11 * bp.m11 + ap.m12 * bp.m21 + ap.m13 * bp.m31,
-//             ap.m10 * bp.m02 + ap.m11 * bp.m12 + ap.m12 * bp.m22 + ap.m13 * bp.m32,
-//             ap.m10 * bp.m03 + ap.m11 * bp.m13 + ap.m12 * bp.m23 + ap.m13 * bp.m33,
-//             ap.m20 * bp.m00 + ap.m21 * bp.m10 + ap.m22 * bp.m20 + ap.m23 * bp.m30,
-//             ap.m20 * bp.m01 + ap.m21 * bp.m11 + ap.m22 * bp.m21 + ap.m23 * bp.m31,
-//             ap.m20 * bp.m02 + ap.m21 * bp.m12 + ap.m22 * bp.m22 + ap.m23 * bp.m32,
-//             ap.m20 * bp.m03 + ap.m21 * bp.m13 + ap.m22 * bp.m23 + ap.m23 * bp.m33,
-//             ap.m30 * bp.m00 + ap.m31 * bp.m10 + ap.m32 * bp.m20 + ap.m33 * bp.m30,
-//             ap.m30 * bp.m01 + ap.m31 * bp.m11 + ap.m32 * bp.m21 + ap.m33 * bp.m31,
-//             ap.m30 * bp.m02 + ap.m31 * bp.m12 + ap.m32 * bp.m22 + ap.m33 * bp.m32,
-//             ap.m30 * bp.m03 + ap.m31 * bp.m13 + ap.m32 * bp.m23 + ap.m33 * bp.m33,
-//         ];
-//     }
+        const p: Vec4 = {
+       
+            x: mp[0][0] * v.x  + mp[0][1] * v.x + mp[0][2] * v.x + mp[0][3] * v.x,
+            y: mp[1][0] * v.y  + mp[1][1] * v.y + mp[1][2] * v.y + mp[1][3] * v.y,
+            z: mp[2][0] * v.z  + mp[2][1] * v.z + mp[2][2] * v.z + mp[2][3] * v.z,
+            w: mp[3][0] * v.w  + mp[3][1] * v.w + mp[3][2] * v.w + mp[3][3] * v.w,
+           
+        }
+
+        return p
+    }
 
 export function m4translation(tx: number, ty: number, tz: number): Mat4Translation {
         return [
@@ -405,6 +395,22 @@ export function m4inverse(m: Mat4): Mat4 {
         ];
     }
 
+// export function m4PositionMultiply(v: Vec3, m: Mat4): Vec3 {
+    
+//     const v4 = {...v, w: 1}
+//     const dst = m4Vec4multiply(m, v4)
+
+//     return {x: dst.x/dst.w, y: dst.y/dst.w, z: dst.z/dst.w }
+// }
+
+// export function m4DirectionMultiply(v: Vec3, m: Mat4): Vec3 {
+    
+//     const v4 = {...v, w: 0}
+//     const dst = m4Vec4multiply(m, v4)
+
+//     return { x: dst.x, y: dst.y, z: dst.z };
+
+// }
 
 export function m4PositionMultiply(v: Vec3, m: Mat4): Vec3 {
         
