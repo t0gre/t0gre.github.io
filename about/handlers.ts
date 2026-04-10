@@ -6,6 +6,12 @@ type Quote = {
 
 const quotes: Quote[] = [ 
 {
+    quote: `Program testing can be a very effective way to show the presence of bugs
+            but it is hopelessly inadequate for showing their absence.`,
+    author: "Edsger W. Dijkstra",
+    citation: "The Humble Programmer"
+},
+{
     quote: `A complex system that works is invariably found to have evolved 
             from a simple system that worked. 
             The inverse proposition also appears to be true: a complex system designed
